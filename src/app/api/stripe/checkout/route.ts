@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     // --- MODO REAL (Si hay claves de Stripe) ---
+    if (!stripe) throw new Error("Stripe not initialized"); // Should be caught by the block above, but satisfies TS
     const stripeSession = await stripe.checkout.sessions.create({
       success_url: `${appUrl}/dashboard/perfil?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/dashboard/planes`,
