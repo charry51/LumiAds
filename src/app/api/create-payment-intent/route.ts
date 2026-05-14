@@ -15,6 +15,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Monto inválido' }, { status: 400 });
     }
 
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 });
+    }
+
     // Crear un PaymentIntent en Stripe
     // El monto en Stripe debe ir en la unidad mínima de la moneda (ej. centavos para EUR)
     // 10 EUR = 1000 centavos

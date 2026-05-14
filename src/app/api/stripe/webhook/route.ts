@@ -11,6 +11,10 @@ export async function POST(req: Request) {
   const signature = req.headers.get('Stripe-Signature') as string
 
   let event: Stripe.Event
+  
+  if (!stripe) {
+    return new NextResponse("Stripe is not configured", { status: 500 })
+  }
 
   try {
     event = stripe.webhooks.constructEvent(
@@ -31,9 +35,9 @@ export async function POST(req: Request) {
 
   if (event.type === 'checkout.session.completed') {
     // Retrieve the subscription details from Stripe
-    const stripeSubscription = await stripe.subscriptions.retrieve(
+    const stripeSubscription = (await stripe.subscriptions.retrieve(
       session.subscription as string
-    )
+    )) as any;
 
     if (!session?.metadata?.userId) {
       return new NextResponse('User id is required in metadata', { status: 400 })
@@ -56,9 +60,9 @@ export async function POST(req: Request) {
 
   if (event.type === 'invoice.payment_succeeded') {
     // Retrieve the subscription details from Stripe
-    const stripeSubscription = await stripe.subscriptions.retrieve(
+    const stripeSubscription = (await stripe.subscriptions.retrieve(
       session.subscription as string
-    )
+    )) as any;
 
     await supabase
       .from('perfiles')

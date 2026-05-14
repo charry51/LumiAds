@@ -56,6 +56,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: `${appUrl}/dashboard?sandbox=true` })
     }
 
+    // Validar si el customer ID es válido (no es de sandbox)
+    const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox');
+
     // --- MODO REAL (Si hay claves de Stripe) ---
     if (!stripe) throw new Error("Stripe not initialized"); // Should be caught by the block above, but satisfies TS
     const stripeSession = await stripe.checkout.sessions.create({
@@ -64,8 +67,8 @@ export async function POST(req: Request) {
       payment_method_types: ['card'],
       mode: 'subscription',
       billing_address_collection: 'auto',
-      customer_email: profile?.stripe_customer_id ? undefined : user.email,
-      customer: profile?.stripe_customer_id || undefined,
+      customer_email: isValidCustomer ? undefined : user.email,
+      customer: isValidCustomer ? profile.stripe_customer_id : undefined,
       line_items: [
         {
           price: plan.stripePriceId,
