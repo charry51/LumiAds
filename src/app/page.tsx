@@ -28,7 +28,7 @@ export default async function Home() {
     totalNodes: totalNodes || 0,
     liveFeed: recentCampaigns?.map(c => ({
       time: new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      node: c.pantallas?.nombre?.split(' ')[0] || 'NODO',
+      node: (c.pantallas as any)?.[0]?.nombre?.split(' ')[0] || 'NODO',
       action: 'PoP Verificado', // En español
       res: `+${(c.impactos_reales || 0)}`
     })) || []

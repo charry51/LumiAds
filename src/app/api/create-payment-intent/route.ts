@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
 export async function POST(req: Request) {
+  if (!stripe) {
+    console.error('Stripe is not initialized. Check your STRIPE_SECRET_KEY.');
+    return NextResponse.json({ error: 'Servicio de pagos no disponible' }, { status: 503 });
+  }
   try {
     const body = await req.json();
     const { amount, currency = 'eur' } = body;
