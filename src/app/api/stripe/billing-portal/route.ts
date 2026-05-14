@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single()
 
-    if (!stripe || !profile?.stripe_customer_id) {
+    if (!stripe || !profile?.stripe_customer_id || profile.stripe_customer_id.includes('sandbox')) {
       // En modo sandbox, no hay portal real
       return new NextResponse("Portal no disponible en modo Sandbox", { status: 400 })
     }
