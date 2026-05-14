@@ -4,6 +4,7 @@ import HeroSection from '@/components/landing/HeroSection'
 import FeaturesSection from '@/components/landing/FeaturesSection'
 import ContactSection from '@/components/landing/ContactSection'
 import { Monitor } from 'lucide-react'
+export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -40,7 +41,7 @@ export default async function Home() {
       <header className="fixed top-0 left-0 w-full z-[100] border-b border-white/[0.05] bg-black/50 backdrop-blur-md">
         <div className="container mx-auto px-6 h-32 flex items-center justify-between relative">
           <Link href="/" className="flex items-center gap-2 group">
-             <img src="/LogoPequeño.png" alt="LumiAds Icon" className="h-[60px] md:h-[80px] w-auto group-hover:scale-110 transition-transform" />
+             <img src="/LogoPequeno.png" alt="LumiAds Icon" className="h-[60px] md:h-[80px] w-auto group-hover:scale-110 transition-transform" />
              <img src="/LogoTexto.png" alt="LumiAds Brand" className="h-[80px] md:h-[100px] w-auto hidden sm:block" />
           </Link>
           
@@ -90,7 +91,7 @@ export default async function Home() {
       <footer className="py-12 border-t border-white/5 bg-black">
          <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-[10px] uppercase tracking-widest font-bold text-zinc-600">
             <div className="flex items-center gap-4">
-               <img src="/LogoPequeño.png" alt="LumiAds" className="h-4 w-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
+               <img src="/LogoPequeno.png" alt="LumiAds" className="h-4 w-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
                <span className="text-zinc-300">© 2026 <img src="/LogoTexto.png" alt="LumiAds" className="h-3 w-auto inline-block mx-1" /></span>
                <span>•</span>
                <span>Digital Signage Intelligence</span>
