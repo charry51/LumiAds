@@ -4,6 +4,9 @@ import { createAdminClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
 export async function POST(req: Request) {
+  if (!stripe) {
+    return new NextResponse('Stripe not initialized', { status: 503 })
+  }
   const body = await req.text()
   const signature = req.headers.get('Stripe-Signature') as string
 
