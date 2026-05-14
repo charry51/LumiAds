@@ -1,12 +1,13 @@
-import Stripe from 'stripe';
+import Stripe from 'stripe'
 
-// Inicializamos la instancia de Stripe de forma segura para no romper el build si falta la clave
+// En modo Sandbox (sin claves), exportamos null para que el resto del código lo maneje
+// Esto evita errores de compilación y permite probar el flujo sin claves reales.
 export const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2026-04-22.dahlia' as any, // Cast to any to avoid TS issues if the SDK type is older
+      apiVersion: '2025-02-24.acacia',
       appInfo: {
-        name: 'LumiAds App',
-        version: '1.0.0',
+        name: 'LumiAds',
+        version: '0.1.0',
       },
     })
-  : null;
+  : null
