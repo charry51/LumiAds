@@ -20,41 +20,21 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     setLoading(true)
     try {
-      // Simulamos un retraso de pasarela de pago
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        toast.error('Sesión expirada. Por favor, inicia sesión de nuevo.')
-        router.push('/login')
-        return
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ planId }),
+      })
+
+      if (!response.ok) {
+        const errorMsg = await response.text()
+        throw new Error(errorMsg || 'Error al inicializar el pago')
       }
 
-      const updateData: any = {
-        plan_id: planId,
-        suscripcion_activa: true
-      }
-
-      if (planId === 'presencia') {
-        const trialDate = new Date()
-        trialDate.setDate(trialDate.getDate() + 30)
-        updateData.prueba_fin = trialDate.toISOString()
-      }
-
-      const { error } = await supabase
-        .from('perfiles')
-        .update(updateData)
-        .eq('id', user.id)
-
-      if (error) {
-        throw error
-      }
-      
-      toast.success('¡Suscripción actualizada con éxito!')
-      window.location.href = '/dashboard'
+      const { url } = await response.json()
+      window.location.href = url // Redirect to Stripe Checkout
     } catch (err: any) {
       toast.error('Error al procesar el pago: ' + (err.message || 'Error desconocido'))
       setLoading(false)
@@ -76,8 +56,8 @@ export default function CheckoutPage() {
         
         <div className="p-8 space-y-8">
           <div className="flex justify-between items-center text-zinc-400 border-b border-border/30 pb-4 font-mono text-[11px] uppercase tracking-widest">
-            <span>Protocolo de Suscripción</span>
-            <span className="font-bold text-primary">Sincronizado</span>
+            <span>Protocolo de Pago</span>
+            <span className="font-bold text-primary">Stripe Secured</span>
           </div>
 
           <div className="bg-primary/5 p-5 border border-primary/20 relative overflow-hidden group">
@@ -91,7 +71,7 @@ export default function CheckoutPage() {
                 <p className="text-[9px] text-zinc-400 leading-relaxed font-sans uppercase tracking-tight">
                   {planId === 'presencia' 
                     ? 'Disfruta de todas las funciones del plan Presencia sin coste durante un mes. Luego 79€/mes.' 
-                    : 'Al confirmar, se simulará una autorización bancaria encriptada para activar sus privilegios de red.'}
+                    : 'Al confirmar, serás redirigido a la pasarela de pago segura de Stripe para procesar tu suscripción.'}
                 </p>
               </div>
             </div>
@@ -101,7 +81,7 @@ export default function CheckoutPage() {
              <div className="flex justify-between text-[11px] font-mono uppercase text-zinc-500 tracking-widest">
                 <span>Total a Pagar Hoy</span>
                 <span className={planId === 'presencia' ? 'text-green-500 font-bold' : ''}>
-                  {planId === 'presencia' ? '0.00€' : 'Simulado'}
+                  {planId === 'presencia' ? '0.00€' : 'Pago Seguro'}
                 </span>
              </div>
              {planId === 'presencia' && (
@@ -125,7 +105,7 @@ export default function CheckoutPage() {
                 Validando...
               </>
             ) : (
-                planId === 'presencia' ? "Iniciar Prueba Gratuita" : "Autorizar Transacción"
+                planId === 'presencia' ? "Iniciar Prueba Gratuita" : "Pagar con Stripe"
             )}
           </button>
           <button 

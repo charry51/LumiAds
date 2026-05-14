@@ -14,12 +14,45 @@ import { ProfileForm } from './ProfileForm'
 import { PlanManager } from './PlanManager'
 
 
-export default async function PerfilPage() {
+export default async function PerfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const resolvedParams = await searchParams;
+  const success = resolvedParams.success === 'true';
+  const sessionId = resolvedParams.session_id as string;
+
   const supabase = await createClient()
 
   // Recuperar sesión activa
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  // --- FALLBACK DE ACTUALIZACIÓN INMEDIATA (Para local/webhooks lentos) ---
+  if (success && sessionId) {
+    try {
+      const { stripe } = await import('@/lib/stripe')
+      if (stripe) {
+        const session = await stripe.checkout.sessions.retrieve(sessionId)
+        
+        if (session.payment_status === 'paid' && session.metadata?.userId === user.id) {
+          // Actualizamos el perfil directamente si el pago fue exitoso
+          await supabase
+            .from('perfiles')
+            .update({
+              plan_id: session.metadata.planId,
+              suscripcion_activa: true,
+              stripe_customer_id: session.customer as string,
+              stripe_subscription_id: session.subscription as string
+            })
+            .eq('id', user.id)
+        }
+      }
+    } catch (error) {
+      console.error("[STRIPE_FALLBACK_UPDATE_ERROR]", error)
+    }
+  }
 
   const { data: profile } = await supabase
     .from('perfiles')
