@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { cancelPlan } from '@/app/actions/profile'
 import { Button } from '@/components/ui/button'
-import { CreditCard, XCircle, ArrowRight, Loader2, AlertTriangle } from 'lucide-react'
+import { CreditCard, ExternalLink, ArrowRight, Loader2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface PlanManagerProps {
     planName: string | null;
@@ -12,25 +12,28 @@ interface PlanManagerProps {
 }
 
 export function PlanManager({ planName, isSubscribed }: PlanManagerProps) {
-    const [isCancelling, setIsCancelling] = useState(false)
-    const [showConfirm, setShowConfirm] = useState(false)
-    const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null)
+    const [isManaging, setIsManaging] = useState(false)
 
     const currentPlan = planName || 'Sin Plan Activo'
 
-    const handleCancel = async () => {
-        setIsCancelling(true)
-        setMessage(null)
+    const handleManageSubscription = async () => {
+        setIsManaging(true)
+        try {
+            const response = await fetch('/api/stripe/billing-portal', {
+                method: 'POST',
+            })
 
-        const result = await cancelPlan()
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(errorText || 'Error al acceder al portal de pagos')
+            }
 
-        if (result.success) {
-            setMessage({ text: 'Plan cancelado exitosamente.', type: 'success' })
-            setShowConfirm(false)
-        } else {
-            setMessage({ text: result.error || 'Error al cancelar el plan.', type: 'error' })
+            const { url } = await response.json()
+            window.location.href = url
+        } catch (error: any) {
+            toast.error(error.message)
+            setIsManaging(false)
         }
-        setIsCancelling(false)
     }
 
     return (
@@ -57,51 +60,31 @@ export function PlanManager({ planName, isSubscribed }: PlanManagerProps) {
                 )}
             </div>
 
-            {message && (
-                <div className={`p-4 text-sm font-medium rounded-lg flex items-start gap-3 ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                    <AlertTriangle className="w-5 h-5 shrink-0" />
-                    <p>{message.text}</p>
-                </div>
-            )}
-
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Link href="/dashboard/planes" className="flex-1">
-                    <Button className="w-full gap-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90">
-                        Cambiar o Renovar Plan
-                        <ArrowRight className="w-4 h-4" />
-                    </Button>
-                </Link>
-                
-                {isSubscribed && !showConfirm && (
-                    <Button 
-                        variant="outline" 
-                        className="flex-1 gap-2 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-500"
-                        onClick={() => setShowConfirm(true)}
-                    >
-                        <XCircle className="w-4 h-4" />
-                        Cancelar Plan
-                    </Button>
-                )}
-
-                {showConfirm && (
-                    <div className="flex-1 flex gap-2">
-                        <Button 
-                            variant="destructive" 
-                            className="flex-1 gap-2"
-                            onClick={handleCancel}
-                            disabled={isCancelling}
-                        >
-                            {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmar'}
+                {!isSubscribed ? (
+                    <Link href="/dashboard/planes" className="flex-1">
+                        <Button className="w-full gap-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90">
+                            Explorar Planes
+                            <ArrowRight className="w-4 h-4" />
                         </Button>
+                    </Link>
+                ) : (
+                    <>
+                        <Link href="/dashboard/planes" className="flex-1">
+                            <Button variant="outline" className="w-full gap-2 hover:bg-white/5 border-zinc-800 text-white">
+                                Cambiar Plan
+                                <ArrowRight className="w-4 h-4" />
+                            </Button>
+                        </Link>
                         <Button 
-                            variant="ghost" 
-                            className="flex-1"
-                            onClick={() => setShowConfirm(false)}
-                            disabled={isCancelling}
+                            className="flex-1 gap-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90"
+                            onClick={handleManageSubscription}
+                            disabled={isManaging}
                         >
-                            Volver
+                            {isManaging ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+                            Portal de Facturación
                         </Button>
-                    </div>
+                    </>
                 )}
             </div>
         </div>
