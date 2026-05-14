@@ -7,7 +7,32 @@ import { Monitor } from 'lucide-react'
 
 export default async function Home() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  
+  // 1. Estadísticas Globales para el Hero
+  const { data: statsData } = await supabase.from('campanas').select('impactos_reales, presupuesto_total')
+  const { count: totalNodes } = await supabase.from('pantallas').select('*', { count: 'exact', head: true })
+  
+  // Últimas campañas para el "Live Logic Feed"
+  const { data: recentCampaigns } = await supabase
+    .from('campanas')
+    .select('id, nombre_campana, impactos_reales, created_at, pantallas(nombre)')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  const totalImpacts = statsData?.reduce((sum, c) => sum + (c.impactos_reales || 0), 0) || 0
+  const totalYield = statsData?.reduce((sum, c) => sum + (c.presupuesto_total || 0), 0) || 0
+
+  const stats = {
+    totalImpacts,
+    totalYield,
+    totalNodes: totalNodes || 0,
+    liveFeed: recentCampaigns?.map(c => ({
+      time: new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      node: c.pantallas?.nombre?.split(' ')[0] || 'NODO',
+      action: 'PoP Verificado', // En español
+      res: `+${(c.impactos_reales || 0)}`
+    })) || []
+  }
 
   return (
     <div className="dark min-h-screen bg-black flex flex-col selection:bg-lumi-violet selection:text-white">
@@ -40,7 +65,7 @@ export default async function Home() {
       </header>
 
       <main className="flex-grow">
-        <HeroSection />
+        <HeroSection stats={stats} />
         <div id="features">
            <FeaturesSection />
         </div>
@@ -81,6 +106,3 @@ export default async function Home() {
     </div>
   )
 }
-
-
-
