@@ -72,23 +72,23 @@
 }
 
 .light {
-  --background: #ffffff;
-  --foreground: #04060F;
-  --card: #F4F6FB;
-  --card-foreground: #04060F;
-  --popover: #ffffff;
-  --popover-foreground: #04060F;
+  --background: #04060F;
+  --foreground: #F4F6FB;
+  --card: #0E1426;
+  --card-foreground: #F4F6FB;
+  --popover: #0E1426;
+  --popover-foreground: #F4F6FB;
   --primary: #7C3CFF;
-  --primary-foreground: #ffffff;
-  --secondary: #e2e8f0;
-  --secondary-foreground: #04060F;
-  --muted: #f8f9fa;
-  --muted-foreground: #6B7590;
+  --primary-foreground: #F4F6FB;
+  --secondary: #0A0F1F;
+  --secondary-foreground: #F4F6FB;
+  --muted: #131A2E;
+  --muted-foreground: #A6AFC4;
   --accent: #2BC8FF;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: #ffffff;
+  --accent-foreground: #F4F6FB;
+  --destructive: #ff4757;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #0E1426;
   --ring: #7C3CFF;
 }
 
@@ -122,7 +122,7 @@
     transition: font-size 0.3s ease;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
     background-image: 
       radial-gradient(at 0% 0%, rgba(124,60,255, 0.05) 0px, transparent 50%),
       radial-gradient(at 100% 100%, rgba(124,60,255, 0.05) 0px, transparent 50%);
@@ -165,9 +165,6 @@
 
   .cyber-glass-ui {
      @apply bg-card/60 dark:bg-[#0A0F1F]/60 border-[rgba(255,255,255,0.08)] rounded-[22px] backdrop-blur-[14px] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)];
-     &:is(.light *) {
-       @apply bg-white border-blue-600/20 shadow-[0_4px_20px_rgba(0,0,0,0.02)];
-     }
   }
 
   .landing-glass-ui {
