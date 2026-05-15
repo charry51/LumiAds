@@ -37,7 +37,7 @@ export default async function GestionCampanasPage() {
       </header>
 
       <div className="cyber-card overflow-x-auto">
-        <table className="w-full text-sm text-left border-collapse">
+        <table className="w-full min-w-[900px] text-sm text-left border-collapse">
           <thead className="bg-zinc-950 text-zinc-400 font-heading text-[10px] uppercase tracking-widest border-b border-zinc-800">
             <tr>
               <th className="px-6 py-4">Campaña / IA Status</th>

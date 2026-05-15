@@ -89,7 +89,7 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-x-auto">
-      <table className="w-full text-sm text-left text-zinc-300">
+      <table className="w-full min-w-[700px] text-sm text-left text-zinc-300">
         <thead className="text-xs text-zinc-400 uppercase bg-zinc-950 border-b border-zinc-800">
           <tr>
             <th className="px-6 py-4">ID</th>

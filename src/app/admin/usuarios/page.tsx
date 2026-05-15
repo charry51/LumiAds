@@ -62,7 +62,7 @@ export default async function UserManagementPage({
         </CardHeader>
         <CardContent className="pt-6">
           <div className="rounded-xl border border-zinc-800 overflow-x-auto bg-black/20">
-            <table className="w-full text-sm text-left">
+            <table className="w-full min-w-[800px] text-sm text-left">
               <thead className="bg-zinc-950/50 text-zinc-400 font-medium">
                 <tr>
                   <th className="px-6 py-4">Usuario / Empresa</th>
