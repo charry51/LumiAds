@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "LuminAdd | Inteligencia Digital Signage",
   description: "Plataforma SaaS avanzada para la gestión dinámica de pantallas publicitarias con LuminAdd.",
   icons: {
-    icon: "/LogoPequeño.png",
+    icon: "/LogoPequeno.png",
   },
   manifest: "/manifest.json",
 };
