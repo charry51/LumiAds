@@ -18,8 +18,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LuminAdd | Inteligencia Digital Signage",
-  description: "Plataforma SaaS avanzada para la gestión dinámica de pantallas publicitarias con LuminAdd.",
+  title: "LumiAds | Inteligencia Digital Signage",
+  description: "Plataforma SaaS avanzada para la gestión dinámica de pantallas publicitarias con LumiAds.",
   icons: {
     icon: "/LogoPequeno.png",
   },
