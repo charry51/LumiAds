@@ -83,7 +83,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8 font-sans">
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border pb-6">
         <div className="flex items-center gap-2">
-          <img src="/LogoPequeño.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
+          <img src="/LogoPequeno.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
           <img src="/LogoTexto.png" alt="LumiAds" className="h-[100px] w-auto" />
         </div>
 

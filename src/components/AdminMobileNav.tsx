@@ -13,7 +13,7 @@ export default function AdminMobileNav() {
       {/* Top Bar */}
       <div className="bg-black border-b border-zinc-900 p-4 flex justify-between items-center fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center gap-3">
-           <img src="/LogoPequeño.png" alt="LuminAdd" className="h-10 w-auto" />
+           <img src="/LogoPequeno.png" alt="LuminAdd" className="h-10 w-auto" />
            <img src="/LogoTexto.png" alt="LuminAdd" className="h-[40px] w-auto" />
            <span className="text-[8px] text-[#7C3CFF] font-black uppercase tracking-[0.2em] border-l border-zinc-800 pl-2 ml-1">Admin</span>
         </div>
