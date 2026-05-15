@@ -219,9 +219,9 @@ export default async function DashboardPage() {
                )
             })
           ) : (
-            <div className="col-span-full py-16 text-center cyber-card border-dashed bg-lumi-blue/5 border-lumi-blue/20">
+            <div className="col-span-full py-16 flex flex-col items-center justify-center text-center cyber-card border-dashed bg-lumi-blue/5 border-lumi-blue/20">
               <p className="text-lumi-blue dark:text-[#2BC8FF] font-heading uppercase text-sm mb-2">Sin pantallas activas</p>
-              <Link href="/vincular">
+              <Link href="/vincular" className="flex justify-center">
                 <Button size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black mt-4 shadow-lg shadow-[#2BC8FF]/10 text-xs font-bold uppercase tracking-widest px-6 py-2">Vincular mi TV ahora</Button>
               </Link>
             </div>
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
            <BarChart3 className="w-5 h-5 text-lumi-violet dark:text-[#7C3CFF]" />
            Rendimiento de Campañas
         </h2>
-        <div className="responsive-table-container cyber-card shadow-2xl overflow-hidden bg-card border-border transition-all duration-500">
+        <div className="cyber-card shadow-2xl overflow-x-auto bg-card border-border transition-all duration-500">
           {misCampanas && misCampanas.length > 0 ? (
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 border-b border-border">
@@ -301,9 +301,9 @@ export default async function DashboardPage() {
               </tbody>
             </table>
           ) : (
-            <div className="p-12 text-center">
+            <div className="p-12 flex flex-col items-center justify-center text-center">
               <p className="text-muted-foreground italic mb-6 text-sm">No tienes ninguna campaña activa.</p>
-              <Link href="/dashboard/nueva">
+              <Link href="/dashboard/nueva" className="flex justify-center">
                 <button className="cyber-button-ui shadow-[0_0_20px_rgba(124,60,255,0.2)]">Crear Primera Campaña</button>
               </Link>
             </div>
