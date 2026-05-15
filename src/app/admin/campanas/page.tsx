@@ -36,7 +36,7 @@ export default async function GestionCampanasPage() {
         </div>
       </header>
 
-      <div className="cyber-card overflow-hidden">
+      <div className="cyber-card overflow-x-auto">
         <table className="w-full text-sm text-left border-collapse">
           <thead className="bg-zinc-950 text-zinc-400 font-heading text-[10px] uppercase tracking-widest border-b border-zinc-800">
             <tr>
