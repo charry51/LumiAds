@@ -265,7 +265,7 @@ export default async function AdminDashboardPage() {
             <DollarSign className="text-zinc-400" /> Flujo de Ingresos Recientes
           </h2>
           <div className="bg-zinc-900/50 rounded-xl border border-zinc-800/50 overflow-x-auto">
-            <table className="w-full min-w-[600px] text-sm text-left">
+            <table className="w-full min-w-[600px] whitespace-nowrap text-sm text-left">
               <thead className="bg-zinc-950/50 text-zinc-400 font-medium">
                 <tr>
                   <th className="px-6 py-4">Campaña</th>
@@ -310,7 +310,7 @@ export default async function AdminDashboardPage() {
           </h2>
           <div className="bg-zinc-900/50 rounded-xl border border-zinc-800/50 overflow-x-auto">
             {campañasPendientes.length > 0 ? (
-              <table className="w-full min-w-[500px] text-sm text-left">
+              <table className="w-full min-w-[500px] whitespace-nowrap text-sm text-left">
                 <thead className="bg-zinc-950/50 text-zinc-400 font-medium">
                   <tr>
                     <th className="px-6 py-4">Campaña</th>

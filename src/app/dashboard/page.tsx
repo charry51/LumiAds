@@ -234,7 +234,7 @@ export default async function DashboardPage() {
            <BarChart3 className="w-5 h-5 text-lumi-violet dark:text-[#7C3CFF]" />
            Rendimiento de Campañas
         </h2>
-        <div className="responsive-table-container cyber-card shadow-2xl overflow-hidden bg-card border-border transition-all duration-500">
+        <div className="cyber-card shadow-2xl overflow-x-auto bg-card border-border transition-all duration-500">
           {misCampanas && misCampanas.length > 0 ? (
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 border-b border-border">
