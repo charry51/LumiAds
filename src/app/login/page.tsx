@@ -5,6 +5,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Iniciar Sesión | LumiAds',
+}
 
 export default async function LoginPage({
   searchParams,
@@ -42,7 +47,7 @@ export default async function LoginPage({
 
           <form className="flex flex-col gap-5 relative z-10" action={login}>
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">E-Mail Access</Label>
+              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Correo Electrónico</Label>
               <Input 
                 id="email" 
                 name="email" 
@@ -55,8 +60,8 @@ export default async function LoginPage({
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-center px-1">
-                <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Security Key</Label>
-                <Link href="#" className="text-[9px] uppercase tracking-widest text-zinc-600 hover:text-lumi-blue transition-colors">Forgot?</Link>
+                <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Contraseña</Label>
+                <Link href="#" className="text-[9px] uppercase tracking-widest text-zinc-600 hover:text-lumi-blue transition-colors">¿Olvidaste tu contraseña?</Link>
               </div>
               <Input 
                 id="password" 
@@ -70,12 +75,12 @@ export default async function LoginPage({
             
             {resolvedSearchParams?.message && (
               <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg animate-shake">
-                System Alert: {resolvedSearchParams.message}
+                Alerta del Sistema: {resolvedSearchParams.message}
               </div>
             )}
 
             <button className="cyber-button-ui mt-4 py-4 text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(124,60,255,0.2)] hover:shadow-[0_0_60px_rgba(124,60,255,0.4)] transform hover:-translate-y-0.5 transition-all">
-              Authorize Access
+              Iniciar Sesión
             </button>
           </form>
 
