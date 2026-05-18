@@ -98,9 +98,9 @@ export default async function Home() {
             </div>
             
             <div className="flex gap-8">
-               <Link href="#" className="hover:text-white transition-colors">Términos</Link>
-               <Link href="#" className="hover:text-white transition-colors">Privacidad</Link>
-               <Link href="#" className="hover:text-white transition-colors">Contacto</Link>
+               <Link href="/terminos" className="hover:text-white transition-colors">Términos</Link>
+               <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
+               <Link href="/#contacto" className="hover:text-white transition-colors">Contacto</Link>
             </div>
          </div>
       </footer>
