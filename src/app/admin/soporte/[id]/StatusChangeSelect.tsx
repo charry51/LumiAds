@@ -39,10 +39,10 @@ export function StatusChangeSelect({ ticketId, currentStatus }: { ticketId: stri
         disabled={loading}
       >
         <SelectTrigger className={`w-[180px] h-10 border-zinc-800 font-bold text-[10px] uppercase tracking-widest transition-all ${
-           status === 'PENDIENTE' ? 'bg-amber-500 text-black' :
-           status === 'EN_PROCESO' ? 'bg-[#7C3CFF] text-black shadow-[0_0_15px_rgba(124,60,255,0.2)]' :
-           status === 'RESUELTO' ? 'bg-green-500 text-black' :
-           'bg-zinc-800 text-zinc-400'
+           status === 'PENDIENTE' ? '!bg-amber-500 !text-black hover:!bg-amber-600' :
+           status === 'EN_PROCESO' ? '!bg-[#7C3CFF] !text-black hover:!bg-[#6b30f2] shadow-[0_0_15px_rgba(124,60,255,0.2)]' :
+           status === 'RESUELTO' ? '!bg-green-500 !text-black hover:!bg-green-600' :
+           '!bg-zinc-800 !text-zinc-300 hover:!bg-zinc-700'
         }`}>
           <SelectValue />
         </SelectTrigger>
