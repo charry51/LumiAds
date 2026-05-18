@@ -46,8 +46,8 @@ export default function FeaturesSection() {
                 <span className="w-10 h-[1px] bg-[#7C3CFF]" />
                 <h2 className="text-[#7C3CFF] text-[10px] uppercase tracking-[0.3em] font-black">El Motor del Futuro</h2>
              </div>
-             <h3 className="text-3xl md:text-5xl font-heading text-white font-light tracking-tighter">
-                Publicidad <span className="text-gradient-ui italic">Programática</span> <br />
+             <h3 className="text-3xl md:text-5xl font-heading text-white font-light tracking-tighter leading-tight">
+                Publicidad <span className="text-gradient-ui italic">Programática</span>{' '}
                 <span className="text-gradient-ui">Bajo Demanda.</span>
              </h3>
           </div>

@@ -47,10 +47,10 @@ export async function POST(req: Request) {
       .from('perfiles')
       .update({
         stripe_subscription_id: stripeSubscription.id,
-        stripe_customer_id: stripeSubscription.customer as string,
-        stripe_price_id: stripeSubscription.items.data[0].price.id,
+        stripe_customer_id: (stripeSubscription as any).customer as string,
+        stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
         stripe_current_period_end: new Date(
-          stripeSubscription.current_period_end * 1000
+          (stripeSubscription as any).current_period_end * 1000
         ).toISOString(),
         plan_id: session.metadata.planId,
         suscripcion_activa: true,
@@ -67,13 +67,13 @@ export async function POST(req: Request) {
     await supabase
       .from('perfiles')
       .update({
-        stripe_price_id: stripeSubscription.items.data[0].price.id,
+        stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
         stripe_current_period_end: new Date(
-          stripeSubscription.current_period_end * 1000
+          (stripeSubscription as any).current_period_end * 1000
         ).toISOString(),
         suscripcion_activa: true,
       })
-      .eq('stripe_subscription_id', stripeSubscription.id)
+      .eq('stripe_subscription_id', (stripeSubscription as any).id)
   }
   
   if (event.type === 'customer.subscription.deleted') {

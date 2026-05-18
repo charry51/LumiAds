@@ -46,8 +46,8 @@ export default async function AdminLayout({
       <aside className="hidden md:flex w-64 border-r border-zinc-900 bg-black flex-col flex-shrink-0">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-2">
-            <img src="/LogoPequeno.png" alt="LumiAds Icon" className="h-[60px] w-auto" />
-            <img src="/LogoTexto.png" alt="LumiAds" className="h-[80px] w-auto" />
+            <img src="/LogoPequeno.png" alt="LuminAdd Icon" className="h-[60px] w-auto" />
+            <img src="/LogoTexto.png" alt="LuminAdd" className="h-[80px] w-auto" />
           </div>
           <span className="text-[10px] text-[#7C3CFF] font-black uppercase tracking-[0.3em] mt-2 block pl-1">Admin Panel</span>
         </div>

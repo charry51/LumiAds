@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function createPantalla(formData: FormData) {
@@ -72,15 +72,40 @@ export async function createPantalla(formData: FormData) {
 export async function deletePantalla(id: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Not authorized' }
+    if (!user) return { success: false, error: 'No autorizado' }
     
-    // Seguridad: Solo admin puede borrar pantallas arbitrarias
+    // Verificar rol antes de proceder con el cliente admin
     const { data: perfil } = await supabase.from('perfiles').select('rol').eq('id', user.id).single()
     if (perfil?.rol !== 'superadmin') return { success: false, error: 'Acceso denegado' }
 
-    const { error } = await supabase.from('pantallas').delete().eq('id', id)
-    if (error) return { success: false, error: error.message }
+    const adminClient = await createAdminClient()
+    
+    try {
+      // 1. Limpiar dependencias para evitar errores de Foreign Key (FK)
+      
+      // Desvincular códigos de emparejamiento
+      await adminClient.from('pairing_codes').delete().eq('pantalla_id', id)
+      
+      // Borrar registros de host/propiedad de esta pantalla
+      await adminClient.from('hosts').delete().eq('pantalla_id', id)
+      
+      // Desvincular campañas (las ponemos en NULL para no borrar el historial de la campaña)
+      // Si la campaña era específica para esta pantalla, ahora será "Red Global"
+      await adminClient.from('campanas').update({ pantalla_id: null }).eq('pantalla_id', id)
+
+      // 2. Ahora sí, borrar la pantalla
+      const { error } = await adminClient.from('pantallas').delete().eq('id', id)
+      
+      if (error) {
+        console.error('Error al eliminar pantalla:', error)
+        return { success: false, error: error.message }
+      }
   
-    revalidatePath('/admin/pantallas')
-    return { success: true }
+      revalidatePath('/admin/pantallas')
+      revalidatePath('/dashboard')
+      return { success: true }
+    } catch (err: any) {
+      console.error('Excepción en deletePantalla:', err)
+      return { success: false, error: err.message || 'Error inesperado al eliminar' }
+    }
 }

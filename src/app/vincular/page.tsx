@@ -154,7 +154,7 @@ export default function VincularPage() {
       <div className="relative z-10 flex flex-col items-center gap-8 text-center px-8">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-4">
-          <img src="/LogoPequeno.png" alt="LumiAds" className="h-14 w-auto" />
+          <img src="/LogoPequeno.png" alt="LuminAdd" className="h-14 w-auto" />
           <span className="text-4xl font-black text-white tracking-[0.2em] uppercase"
             style={{ fontFamily: 'var(--font-heading)' }}>
             LumiAds

@@ -90,7 +90,7 @@ export default async function PerfilPage({
                         <User className="w-8 h-8 text-primary" />
                     </div>
                 </div>
-                <h2 className="text-xl font-heading font-bold text-white mb-1 uppercase tracking-tight">{profile?.nombre_empresa || profile?.nombre || 'Usuario LuminAdd'}</h2>
+                <h2 className="text-xl font-heading font-bold text-white mb-1 uppercase tracking-tight">{profile?.nombre_empresa || profile?.nombre || 'Usuario LumiAds'}</h2>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
                     <Mail className="w-3 h-3" />
                     {user.email}
