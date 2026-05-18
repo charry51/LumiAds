@@ -45,7 +45,7 @@ export default async function NuevaCampanaPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <img src="/LogoPequeño.png" alt="LuminAdd Logo" className="h-10 w-auto" />
+          <img src="/LogoPequeno.png" alt="LuminAdd Logo" className="h-10 w-auto" />
         </div>
         <div>
             <h1 className="text-2xl font-bold text-foreground italic tracking-tight uppercase group flex items-center gap-2">

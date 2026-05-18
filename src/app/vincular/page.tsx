@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { generatePairingCode, checkPairingStatus } from './actions'
 
 // Generar un ID de dispositivo persistente (se guarda en localStorage)
@@ -134,6 +137,16 @@ export default function VincularPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Botón de volver */}
+      <div className="absolute top-8 left-8 z-50">
+        <Link href="/dashboard">
+          <Button variant="ghost" className="text-zinc-500 hover:text-white flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest">
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </Button>
+        </Link>
+      </div>
+
       {/* Fondo decorativo */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,60,255,0.05)_0%,transparent_70%)]" />
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#7C3CFF] to-transparent opacity-60" />
@@ -144,7 +157,7 @@ export default function VincularPage() {
           <img src="/LogoPequeno.png" alt="LuminAdd" className="h-14 w-auto" />
           <span className="text-4xl font-black text-white tracking-[0.2em] uppercase"
             style={{ fontFamily: 'var(--font-heading)' }}>
-            LuminAdd
+            LumiAds
           </span>
         </div>
 
@@ -218,7 +231,7 @@ export default function VincularPage() {
             </div>
 
             <p className="text-zinc-700 text-[10px] uppercase tracking-[0.4em] mt-4 font-black">
-              LuminAdd v3.0 · SMART GEOLOCATION LOCKED
+              LumiAds v3.0 · SMART GEOLOCATION LOCKED
             </p>
           </>
         )}
@@ -231,7 +244,7 @@ export default function VincularPage() {
               ¡Vinculada!
             </h2>
             <p className="text-zinc-400 text-xl">
-              Esta pantalla ya es parte de tu red LuminAdd.
+              Esta pantalla ya es parte de tu red LumiAds.
             </p>
             <div className="flex items-center gap-2 text-[#7C3CFF] font-mono animate-pulse">
               <div className="w-2 h-2 bg-[#7C3CFF] rounded-full animate-pulse" />
@@ -263,7 +276,7 @@ export default function VincularPage() {
       {/* Instrucciones inferiores */}
       {status === 'esperando' && (
         <div className="absolute bottom-8 flex items-center gap-8 text-zinc-700 text-[10px] uppercase tracking-widest font-mono">
-          <span>1. Abre LuminAdd.app en tu ordenador</span>
+          <span>1. Abre LumiAds.app en tu ordenador</span>
           <span className="text-zinc-800">|</span>
           <span>2. Ve a Pantallas → Vincular TV</span>
           <span className="text-zinc-800">|</span>

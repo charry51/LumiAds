@@ -103,7 +103,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto w-full pt-16 md:pt-0">
+      <main className="flex-1 overflow-y-auto w-full pt-24 md:pt-0">
         <div className="p-4 sm:p-8">
           {children}
         </div>
