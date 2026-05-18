@@ -5,6 +5,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Crear Cuenta | LumiAds',
+}
 
 export default async function RegisterPage({
   searchParams,
@@ -34,14 +39,14 @@ export default async function RegisterPage({
           <header className="mb-8 relative z-10">
             <h2 className="text-3xl font-heading font-light text-white tracking-tighter leading-tight">
               Crea tu <br />
-              <span className="text-gradient-ui font-medium">Cuenta Maestro</span>
+              <span className="text-gradient-ui font-medium">Cuenta</span>
             </h2>
             <p className="text-[11px] text-zinc-400 font-sans tracking-wide mt-2">Únete a la red publicitaria más avanzada del sector.</p>
           </header>
 
           <form className="flex flex-col gap-5 relative z-10" action={signup}>
             <div className="space-y-1.5">
-              <Label htmlFor="nombre" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Company / Full Name</Label>
+              <Label htmlFor="nombre" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Empresa / Nombre Completo</Label>
               <Input 
                 id="nombre" 
                 name="nombre" 
@@ -53,7 +58,7 @@ export default async function RegisterPage({
             </div>
             
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">E-Mail Address</Label>
+              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Correo Electrónico</Label>
               <Input 
                 id="email" 
                 name="email" 
@@ -65,7 +70,7 @@ export default async function RegisterPage({
             </div>
             
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Security Credentials</Label>
+              <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Contraseña</Label>
               <Input 
                 id="password" 
                 name="password" 
@@ -78,12 +83,12 @@ export default async function RegisterPage({
             
             {resolvedSearchParams?.message && (
               <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg">
-                System Alert: {resolvedSearchParams.message}
+                Alerta del Sistema: {resolvedSearchParams.message}
               </div>
             )}
 
             <button className="cyber-button-ui mt-4 py-4 text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(124,60,255,0.2)] hover:shadow-[0_0_60px_rgba(124,60,255,0.4)] transform hover:-translate-y-0.5 transition-all">
-              Initialize Account
+              Crear Cuenta
             </button>
           </form>
 
