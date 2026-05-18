@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function Home() {
   const supabase = await createClient()
   
+  /*
   // 1. Estadísticas Globales para el Hero
   const { data: statsData } = await supabase.from('campanas').select('impactos_reales, presupuesto_total')
   const { count: totalNodes } = await supabase.from('pantallas').select('*', { count: 'exact', head: true })
@@ -34,6 +35,7 @@ export default async function Home() {
       res: `+${(c.impactos_reales || 0)}`
     })) || []
   }
+  */
 
   return (
     <div className="dark min-h-screen bg-black flex flex-col selection:bg-lumi-violet selection:text-white">
@@ -66,7 +68,7 @@ export default async function Home() {
       </header>
 
       <main className="flex-grow">
-        <HeroSection stats={stats} />
+        <HeroSection />
         <div id="features">
            <FeaturesSection />
         </div>

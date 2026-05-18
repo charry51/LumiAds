@@ -91,7 +91,7 @@ export default async function HostDashboardPage({
       {/* Header Premium - Balanced Cyan Logo */}
       <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b border-border pb-8">
         <div className="flex items-center gap-4">
-           <img src="/LogoPequeño.png" alt="LuminAdd Logo" className="h-10 w-auto" />
+           <img src="/LogoPequeno.png" alt="LuminAdd Logo" className="h-10 w-auto" />
            <div>
               <Link href="/dashboard" className="inline-block mb-1 text-[10px] text-muted-foreground hover:text-primary transition-colors uppercase tracking-[3px] font-bold">← Dashboard Principal</Link>
               <div className="flex items-center gap-3">

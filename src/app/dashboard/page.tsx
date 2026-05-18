@@ -83,7 +83,7 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8 font-sans">
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border pb-6">
         <div className="flex items-center gap-2">
-          <img src="/LogoPequeño.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
+          <img src="/LogoPequeno.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
           <img src="/LogoTexto.png" alt="LumiAds" className="h-[100px] w-auto" />
         </div>
 
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
         </div>
       </div>
       
-      <div className="mb-12">
+      <div className="mt-12 mb-12">
         <h2 className="text-xl font-heading mb-6 flex items-center gap-2 uppercase tracking-widest text-sm text-gradient-ui">
            <Monitor className="w-5 h-5 text-lumi-blue dark:text-[#2BC8FF]" />
            Red de Pantallas
