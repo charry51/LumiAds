@@ -6,108 +6,83 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger, 
-  DialogFooter 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { createSupportTicket, analyzeTicketMessage, TicketCategory, TicketPriority } from '@/app/actions/support'
+import { createSupportTicket } from '@/app/actions/support'
 import { toast } from 'sonner'
-import { LifeBuoy, Loader2, Upload, Paperclip } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { LifeBuoy, Loader2 } from 'lucide-react'
+
+const ticketCategories = [
+  {
+    value: 'Problema con la pantalla / Interfaz visual',
+    description: 'Errores de visualización, bloqueos o distorsiones en la interfaz.',
+  },
+  {
+    value: 'Fallo en la aplicación / Error de carga',
+    description: 'Caídas de la app, errores de carga o contenido que no aparece.',
+  },
+  {
+    value: 'Problema de cuenta / Inicio de sesión',
+    description: 'Problemas para entrar, restablecer contraseña o permisos de usuario.',
+  },
+  {
+    value: 'Otro problema (Especificar)',
+    description: 'Cualquier otra incidencia que necesites comunicar al soporte.',
+  },
+]
 
 export function NewTicketDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [archivoUrl, setArchivoUrl] = useState<string | null>(null)
-  const [ticketCategory, setTicketCategory] = useState<TicketCategory>('Otros')
-  const [ticketPriority, setTicketPriority] = useState<TicketPriority>('MEDIA')
-  const supabase = createClient()
-
-  const handleManualAnalysis = async (text: string) => {
-    if (text.length < 10) return
-    setIsAnalyzing(true)
-    const result = await analyzeTicketMessage(text)
-    setTicketCategory(result.categoria)
-    setTicketPriority(result.prioridad)
-    setIsAnalyzing(false)
-    toast.info('IA: Categoría y prioridad ajustadas automáticamente')
-  }
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `tickets/${fileName}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('support-attachments')
-      .upload(filePath, file)
-
-    if (uploadError) {
-      toast.error('Error al subir archivo: ' + uploadError.message)
-      setUploading(false)
-      return
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('support-attachments')
-      .getPublicUrl(filePath)
-
-    setArchivoUrl(publicUrl)
-    setUploading(false)
-    toast.success('Archivo subido')
-  }
+  const [ticketCategory, setTicketCategory] = useState('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const text = formData.get('mensaje') as string
+    const asunto = (formData.get('asunto') as string)?.trim()
+    const mensaje = (formData.get('mensaje') as string)?.trim()
 
-    // Guaranty AI classification is complete and accurate before submission
-    let finalCategoria = ticketCategory
-    let finalPrioridad = ticketPriority
-
-    if (text && text.length >= 10) {
-       const result = await analyzeTicketMessage(text)
-       finalCategoria = result.categoria
-       finalPrioridad = result.prioridad
+    if (!ticketCategory || !asunto || !mensaje) {
+      toast.error('Selecciona categoría, asunto y descripción antes de enviar.')
+      return
     }
 
-    formData.set('categoria', finalCategoria)
-    formData.set('prioridad', finalPrioridad)
-    if (archivoUrl) formData.append('archivo_url', archivoUrl)
+    setLoading(true)
+    formData.set('categoria', ticketCategory)
 
-    const res = await createSupportTicket(formData)
-    if (res.success) {
-      toast.success('Ticket creado correctamente. El soporte te responderá pronto.')
-      setOpen(false)
-      setArchivoUrl(null)
-      // Reset defaults
-      setTicketCategory('Otros')
-      setTicketPriority('MEDIA')
-    } else {
-      toast.error(res.error || 'Error al crear ticket')
+    const payload = {
+      categoria: ticketCategory,
+      asunto,
+      mensaje,
     }
-    setLoading(false)
+    console.log('Enviar ticket:', payload)
+
+    try {
+      const res = await createSupportTicket(formData)
+      if (res?.success) {
+        toast.success('Ticket creado correctamente. El soporte te responderá pronto.')
+        setOpen(false)
+        setTicketCategory('')
+        e.currentTarget.reset()
+      } else {
+        toast.error(res?.error || 'No se pudo crear el ticket. Intenta de nuevo.')
+      }
+    } catch (error: any) {
+      console.error('Error al enviar ticket:', error)
+      toast.error('Error al enviar ticket. Revisa la consola.')
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const isSubmitDisabled = loading || !ticketCategory
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -116,118 +91,91 @@ export function NewTicketDialog() {
           <LifeBuoy className="w-4 h-4" /> Nuevo Ticket de Soporte
         </Button>
       } />
-      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[500px]">
+      <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle className="text-[#7C3CFF] font-heading font-black uppercase tracking-[0.2em] text-sm flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-[#7C3CFF] animate-pulse" />
-            Abrir Incidencia Técnica
+            Abrir Nuevo Ticket
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Clasificación LuminAdd AI</span>
-              {isAnalyzing && <Loader2 className="w-3 h-3 text-[#7C3CFF] animate-spin" />}
-            </div>
-            
-            <div className="flex flex-wrap gap-3">
-              {ticketCategory !== 'Otros' || ticketPriority !== 'MEDIA' ? (
-                <>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#7C3CFF]/10 border border-[#7C3CFF]/30 rounded-full">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#7C3CFF] animate-pulse" />
-                    <span className="text-[10px] text-[#7C3CFF] font-black uppercase tracking-tighter">{ticketCategory}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-full">
-                    <span className="text-[10px] text-zinc-400 font-black uppercase tracking-tighter">Prioridad: {ticketPriority}</span>
-                  </div>
-                </>
-              ) : (
-                <p className="text-[10px] text-zinc-600 italic uppercase">Escribe la descripción para que la IA clasifique tu ticket automáticamente...</p>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-5 mt-6">
+          <div className="space-y-3">
+            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Selecciona la categoría *</Label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {ticketCategories.map((category) => {
+                const active = ticketCategory === category.value
+                return (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() => setTicketCategory(category.value)}
+                    className={`rounded-2xl border px-4 py-4 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-[#7C3CFF] ${
+                      active
+                        ? 'border-[#7C3CFF] bg-[#7C3CFF]/10 text-white'
+                        : 'border-zinc-800 bg-zinc-900 text-zinc-300 hover:border-[#7C3CFF] hover:bg-zinc-900/80'
+                    }`}
+                  >
+                    <span className="block font-semibold">{category.value}</span>
+                    <span className="text-[11px] text-zinc-500">{category.description}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Asunto</Label>
-            <Input 
-              name="asunto" 
-              required 
-              placeholder="Ej: Problema con la carga de videos en TV 1" 
+            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Asunto *</Label>
+            <Input
+              name="asunto"
+              placeholder="Ej: No puedo acceder a mi cuenta"
               className="bg-zinc-900 border-zinc-800 h-11 text-sm focus-visible:ring-[#7C3CFF]"
+              required
             />
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Descripción del Problema</Label>
-              {isAnalyzing && (
-                <span className="text-[9px] text-[#7C3CFF] font-bold animate-pulse flex items-center gap-1">
-                  <Loader2 className="w-2 h-2 animate-spin" /> ✨ IA ANALIZANDO...
-                </span>
-              )}
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Descripción detallada *</Label>
+              <span className="text-[9px] text-zinc-500 uppercase tracking-[0.24em]">Mínimo 10 caracteres</span>
             </div>
-            <Textarea 
-              name="mensaje" 
-              required 
-              onBlur={(e) => handleManualAnalysis(e.target.value)}
-              placeholder="Describe lo que sucede con el máximo detalle posible..." 
-              className="bg-zinc-900 border-zinc-800 min-h-[120px] text-sm leading-relaxed focus-visible:ring-[#7C3CFF]"
+            <Textarea
+              name="mensaje"
+              placeholder="Describe qué sucede, cuándo aparece el problema y qué has intentado..."
+              className="bg-zinc-900 border-zinc-800 min-h-[140px] text-sm leading-relaxed focus-visible:ring-[#7C3CFF]"
+              required
+              minLength={10}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Adjuntar Foto (Opcional)</Label>
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <Input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleFileUpload} 
-                  disabled={uploading}
-                  className="hidden" 
-                  id="ticket-photo"
-                />
-                <label 
-                  htmlFor="ticket-photo"
-                  className="flex items-center justify-between px-4 h-11 bg-zinc-900 border border-zinc-800 rounded-md cursor-pointer hover:bg-zinc-800 transition-colors text-xs text-zinc-400"
-                >
-                  <span className="flex items-center gap-2">
-                    {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Paperclip className="w-3 h-3" />}
-                    {archivoUrl ? 'Foto lista ✓' : (uploading ? 'Subiendo...' : 'Seleccionar archivo')}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[10px] text-zinc-500">
+              {ticketCategory ? `Categoría seleccionada: ${ticketCategory}` : 'Selecciona una categoría para activar el envío.'}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                className="text-[10px] uppercase font-bold text-zinc-500 hover:text-white"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitDisabled}
+                className="bg-[#7C3CFF] text-black hover:bg-[#7C3CFF]/90 font-black uppercase tracking-widest text-[10px] px-6 h-11 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Enviando...
                   </span>
-                  <Upload className="w-3 h-3 opacity-50" />
-                </label>
-              </div>
-              {archivoUrl && (
-                <div className="w-11 h-11 rounded border border-primary/30 overflow-hidden">
-                  <img src={archivoUrl} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
+                ) : (
+                  'Enviar Ticket'
+                )}
+              </Button>
             </div>
           </div>
-
-          <DialogFooter className="pt-4">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              onClick={() => setOpen(false)} 
-              className="text-[10px] uppercase font-bold text-zinc-500 hover:text-white"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || uploading} 
-              className="bg-[#7C3CFF] text-black hover:bg-[#7C3CFF]/80 font-black uppercase tracking-widest text-[10px] px-8 h-11"
-            >
-              {loading ? (
-                <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Creando...</>
-              ) : (
-                'Abrir Ticket'
-              )}
-            </Button>
-          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

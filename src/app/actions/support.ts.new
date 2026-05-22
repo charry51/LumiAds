@@ -4,12 +4,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { Resend } from 'resend'
 
-// Lazy initialization: only create Resend client if API key is present
-// This prevents ticket creation from failing when email is not configured
-const getResend = (): Resend | null => {
-  if (!process.env.RESEND_API_KEY) return null
-  return new Resend(process.env.RESEND_API_KEY)
-}
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export type TicketCategory = 'Hardware / Pantalla' | 'Facturación / Pagos' | 'Contenido / Campañas' | 'Reportar Error' | 'Otros'
 export type TicketStatus = 'PENDIENTE' | 'EN_PROCESO' | 'RESUELTO' | 'CERRADO'
@@ -69,11 +64,10 @@ export async function createSupportTicket(formData: FormData) {
     const adminEmail = process.env.ADMIN_EMAIL
     if (adminEmail && process.env.RESEND_API_KEY) {
       try {
-        // Sandbox Mode Bypass
         const isSandbox = !process.env.RESEND_DOMAIN || process.env.RESEND_DOMAIN === 'onboarding@resend.dev';
         const toEmail = isSandbox ? (process.env.ADMIN_EMAIL || 'francharrielromero@gmail.com') : adminEmail;
 
-        await getResend()?.emails.send({
+        await resend.emails.send({
           from: `LuminAdd Support <${process.env.RESEND_DOMAIN || 'onboarding@resend.dev'}>`,
           to: toEmail,
           subject: `NEW TICKET: [${categoria}] ${asunto}`,
@@ -93,7 +87,6 @@ export async function createSupportTicket(formData: FormData) {
           `
         })
       } catch (err) {
-        // Log pero no fallar si el email no se envía
         console.warn('Warning: Could not send admin email notification:', err)
       }
     }
@@ -143,7 +136,7 @@ export async function replyToSupportTicket(
         .update({ estado: 'EN_PROCESO', updated_at: new Date().toISOString() })
         .eq('id', ticketId)
 
-      // Notificar al usuario (host)
+      // Notificar al usuario
       const { data: ticket } = await supabase
         .from('soporte_tickets')
         .select('*, perfiles:user_id(email, nombre_empresa)')
@@ -151,12 +144,11 @@ export async function replyToSupportTicket(
         .single()
 
       if (ticket?.perfiles?.email && process.env.RESEND_API_KEY) {
-        // Sandbox Mode Bypass
-        const isSandbox = !process.env.RESEND_DOMAIN || process.env.RESEND_DOMAIN === 'onboarding@resend.dev';
-        const toEmail = isSandbox ? (process.env.ADMIN_EMAIL || 'francharrielromero@gmail.com') : ticket.perfiles.email;
-
         try {
-          await getResend()?.emails.send({
+          const isSandbox = !process.env.RESEND_DOMAIN || process.env.RESEND_DOMAIN === 'onboarding@resend.dev';
+          const toEmail = isSandbox ? (process.env.ADMIN_EMAIL || 'francharrielromero@gmail.com') : ticket.perfiles.email;
+
+          await resend.emails.send({
             from: `LuminAdd Support <${process.env.RESEND_DOMAIN || 'onboarding@resend.dev'}>`,
             to: toEmail,
             replyTo: 'soporte@LuminAdd.com',
@@ -179,38 +171,37 @@ export async function replyToSupportTicket(
         }
       }
     } else {
-        // Si responde el usuario, volver a marcar como PENDIENTE para el admin y notificarle
-        await supabase
+      // Si responde el usuario, volver a marcar como PENDIENTE para el admin y notificarle
+      await supabase
         .from('soporte_tickets')
         .update({ estado: 'PENDIENTE', updated_at: new Date().toISOString() })
         .eq('id', ticketId)
 
-        const adminEmail = process.env.ADMIN_EMAIL
-        if (adminEmail && process.env.RESEND_API_KEY) {
-          try {
-            // Sandbox Mode Bypass
-            const isSandbox = !process.env.RESEND_DOMAIN || process.env.RESEND_DOMAIN === 'onboarding@resend.dev';
-            const toEmail = isSandbox ? (process.env.ADMIN_EMAIL || 'francharrielromero@gmail.com') : adminEmail;
+      const adminEmail = process.env.ADMIN_EMAIL
+      if (adminEmail && process.env.RESEND_API_KEY) {
+        try {
+          const isSandbox = !process.env.RESEND_DOMAIN || process.env.RESEND_DOMAIN === 'onboarding@resend.dev';
+          const toEmail = isSandbox ? (process.env.ADMIN_EMAIL || 'francharrielromero@gmail.com') : adminEmail;
 
-            await getResend()?.emails.send({
-              from: `LuminAdd Support <${process.env.RESEND_DOMAIN || 'onboarding@resend.dev'}>`,
-              to: toEmail,
-              subject: `REPLY: Support #${ticketId.slice(0, 5)}`,
-              html: `
-                <div style="font-family: sans-serif; padding: 20px; color: #333;">
-                   <h2 style="color: #7C3CFF;">El usuario ha respondido en LuminAdd</h2>
-                   <p><strong>Ticket ID:</strong> ${ticketId}</p>
-                   <p><strong>Mensaje:</strong></p>
-                   <p style="white-space: pre-wrap;">${mensaje}</p>
-                   <br />
-                   <a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin/soporte/${ticketId}" style="background: #7C3CFF; color: black; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir a Consultas</a>
-                </div>
-              `
-            })
-          } catch (err) {
-            console.warn('Warning: Could not send admin notification:', err)
-          }
+          await resend.emails.send({
+            from: `LuminAdd Support <${process.env.RESEND_DOMAIN || 'onboarding@resend.dev'}>`,
+            to: toEmail,
+            subject: `REPLY: Support #${ticketId.slice(0, 5)}`,
+            html: `
+              <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                 <h2 style="color: #7C3CFF;">El usuario ha respondido en LuminAdd</h2>
+                 <p><strong>Ticket ID:</strong> ${ticketId}</p>
+                 <p><strong>Mensaje:</strong></p>
+                 <p style="white-space: pre-wrap;">${mensaje}</p>
+                 <br />
+                 <a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin/soporte/${ticketId}" style="background: #7C3CFF; color: black; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;">Ir a Consultas</a>
+              </div>
+            `
+          })
+        } catch (err) {
+          console.warn('Warning: Could not send admin notification:', err)
         }
+      }
     }
 
     revalidatePath(`/dashboard/soporte/${ticketId}`)
@@ -295,7 +286,6 @@ export async function deleteSupportTicket(ticketId: string) {
     }
 
     // El borrado en cascada debería encargarse de soporte_mensajes si está configurado en DB
-    // Pero por seguridad lo hacemos explícito o confiamos en cascada.
     const adminSupabase = await createAdminClient()
     const { error } = await adminSupabase
         .from('soporte_tickets')
@@ -308,6 +298,3 @@ export async function deleteSupportTicket(ticketId: string) {
     revalidatePath('/dashboard/soporte')
     return { success: true }
 }
-
-
-

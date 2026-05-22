@@ -183,6 +183,10 @@
      box-shadow: 0 0 60px rgba(124,60,255, 0.2), 0 0 100px rgba(124,60,255, 0.1);
   }
 
+  .soporte-badge {
+    @apply absolute -top-1.5 -right-1.5 min-w-[1.5rem] h-6 rounded-full bg-destructive text-white text-[10px] font-semibold leading-none flex items-center justify-center shadow-lg shadow-black/20 border border-white/10;
+  }
+
   .responsive-table-container {
     @apply w-full overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0;
     scrollbar-width: thin;
