@@ -126,10 +126,23 @@ export async function createCampaign(data: CampaignData) {
       console.error("DB insert error: ", insertError)
       return { type: 'error', message: `Error de Base de Datos: ${insertError.message} (${insertError.code})` }
     }
+    // Descontar presupuesto de la billetera
+    if (data.presupuesto_total && data.presupuesto_total > 0) {
+      const nuevoSaldo = (profile?.saldo_billetera || 0) - data.presupuesto_total
+      
+      const { error: walletError } = await supabase
+        .from('perfiles')
+        .update({ saldo_billetera: nuevoSaldo })
+        .eq('id', user.id)
+
+      if (walletError) {
+        console.error("Error al descontar saldo de la billetera: ", walletError)
+        // Note: Campañas creadas pero no se descontó el saldo (issue DB)
+      }
+    }
 
     revalidatePath('/dashboard')
-    revalidatePath('/admin')
-    
+    revalidatePath('/admin')    
     let successMessage = `¡${totalNew} ${totalNew > 1 ? 'campañas creadas' : 'campaña creada'} con éxito!`
     if (iaResult.status === 'safe') successMessage += " (IA: Validada como segura ✅)"
     if (iaResult.status === 'flagged') successMessage += " (IA: Requiere revisión manual ⚠️)"
