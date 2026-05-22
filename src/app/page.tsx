@@ -83,10 +83,10 @@ export default async function Home() {
                   <span className="text-gradient-ui">el OOH Programático?</span>
                </h2>
                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/register?type=advertiser" className="cyber-button-ui inline-block bg-[#2BC8FF] text-black hover:bg-white border-none shadow-[0_0_20px_rgba(43,200,255,0.3)]">
+                  <Link href="/register?type=advertiser" className="inline-block px-8 py-4 rounded-full bg-[#2BC8FF] text-black font-bold uppercase tracking-widest text-[11px] hover:bg-white transition-all shadow-[0_0_20px_rgba(43,200,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]">
                      Soy Anunciante
                   </Link>
-                  <Link href="/register?type=host" className="cyber-button-ui inline-block bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] hover:bg-[#7C3CFF] hover:text-white shadow-[0_0_20px_rgba(124,60,255,0)]">
+                  <Link href="/register?type=host" className="inline-block px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)]">
                      Soy Host (Dueño de Pantalla)
                   </Link>
                </div>
