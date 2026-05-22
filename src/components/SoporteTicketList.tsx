@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronRight, Clock, MessageSquare } from 'lucide-react'
-
-const LAST_READ_KEY = 'soporte_last_read_ts'
+import {
+  getTicketLastRead,
+  markTicketAsRead,
+  SOPORTE_READ_UPDATED_EVENT,
+} from '@/lib/soporte/unread'
 
 type Ticket = {
   id: string
@@ -21,8 +24,6 @@ export function SoporteTicketList({ tickets }: { tickets: Ticket[] }) {
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
   const supabaseRef = useRef(createClient())
   const ticketIds = useMemo(() => tickets.map((ticket) => ticket.id), [tickets])
-
-  const storageKey = useCallback((ticketId: string) => `${LAST_READ_KEY}_${ticketId}`, [])
 
   const loadUnreadCounts = useCallback(async () => {
     if (ticketIds.length === 0) {
@@ -44,17 +45,23 @@ export function SoporteTicketList({ tickets }: { tickets: Ticket[] }) {
     }, {})
 
     data.forEach((message) => {
-      const lastRead = localStorage.getItem(storageKey(message.ticket_id)) || new Date(0).toISOString()
+      const lastRead = getTicketLastRead(message.ticket_id)
       if (message.created_at > lastRead) {
         counts[message.ticket_id] = (counts[message.ticket_id] || 0) + 1
       }
     })
 
     setUnreadCounts(counts)
-  }, [storageKey, ticketIds])
+  }, [ticketIds])
 
   useEffect(() => {
     loadUnreadCounts()
+  }, [loadUnreadCounts])
+
+  useEffect(() => {
+    const onReadUpdated = () => loadUnreadCounts()
+    window.addEventListener(SOPORTE_READ_UPDATED_EVENT, onReadUpdated)
+    return () => window.removeEventListener(SOPORTE_READ_UPDATED_EVENT, onReadUpdated)
   }, [loadUnreadCounts])
 
   useEffect(() => {
@@ -87,10 +94,10 @@ export function SoporteTicketList({ tickets }: { tickets: Ticket[] }) {
     }
   }, [ticketIds])
 
-  const markTicketAsRead = useCallback((ticketId: string) => {
-    localStorage.setItem(storageKey(ticketId), new Date().toISOString())
+  const handleTicketClick = useCallback((ticketId: string) => {
+    markTicketAsRead(ticketId)
     setUnreadCounts((prev) => ({ ...prev, [ticketId]: 0 }))
-  }, [storageKey])
+  }, [])
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -102,7 +109,7 @@ export function SoporteTicketList({ tickets }: { tickets: Ticket[] }) {
             key={ticket.id}
             href={`/dashboard/soporte/${ticket.id}`}
             className="group block"
-            onClick={() => markTicketAsRead(ticket.id)}
+            onClick={() => handleTicketClick(ticket.id)}
           >
             <div className="relative cyber-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-[#7C3CFF]/50 transition-all duration-300">
               {unread > 0 && (

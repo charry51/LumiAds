@@ -1,7 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Users, ActivitySquare, ShieldAlert, Monitor, DollarSign, LogOut } from 'lucide-react'
+import { AdminContactNavLink } from '@/components/admin/AdminContactNavLink'
+
+export const dynamic = 'force-dynamic'
 
 export default async function AdminLayout({
   children,
@@ -28,11 +31,19 @@ export default async function AdminLayout({
     redirect('/login?message=' + encodeURIComponent('Acceso denegado. Se requiere nivel de Superadmin.'))
   }
 
+  const adminClient = await createAdminClient()
+
   // Obtener conteo de tickets pendientes
   const { count: pendingTickets } = await supabase
     .from('soporte_tickets')
     .select('*', { count: 'exact', head: true })
     .eq('estado', 'PENDIENTE')
+
+  // Mensajes de contacto sin leer (buzón público)
+  const { count: unreadContactMessages } = await adminClient
+    .from('contact_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'unread')
 
   return (
     <div className="dark min-h-screen bg-black text-zinc-100 flex font-[family-name:var(--font-geist-sans)] selection:bg-red-500/30">
@@ -90,6 +101,8 @@ export default async function AdminLayout({
                </span>
             ) : null}
           </Link>
+
+          <AdminContactNavLink initialUnreadCount={unreadContactMessages || 0} />
 
         </nav>
         

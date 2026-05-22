@@ -9,6 +9,7 @@ import { replyToSupportTicket } from '@/app/actions/support'
 import { toast } from 'sonner'
 import { Send, Loader2, Paperclip, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export function SupportReplyForm({ ticketId, esAdmin = false }: { ticketId: string, esAdmin?: boolean }) {
   const [mensaje, setMensaje] = useState('')
@@ -16,6 +17,7 @@ export function SupportReplyForm({ ticketId, esAdmin = false }: { ticketId: stri
   const [uploading, setUploading] = useState(false)
   const [archivoUrl, setArchivoUrl] = useState<string | null>(null)
   const supabase = createClient()
+  const router = useRouter()
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -54,6 +56,7 @@ export function SupportReplyForm({ ticketId, esAdmin = false }: { ticketId: stri
       setMensaje('')
       setArchivoUrl(null)
       toast.success('Mensaje enviado')
+      router.refresh()
     } else {
       toast.error(res.error || 'Error al enviar respuesta')
     }
