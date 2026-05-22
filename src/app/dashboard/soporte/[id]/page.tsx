@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, User, ShieldCheck, Mail, Clock, ExternalLink, Tag, AlertTriangle } from 'lucide-react'
 import { SupportReplyForm } from '../SupportReplyForm'
+import { MarkTicketReadOnMount } from '@/components/MarkTicketReadOnMount'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,6 +39,7 @@ export default async function TicketDetailPage({ params }: { params: { id: strin
 
   return (
     <div className="min-h-screen bg-zinc-950 text-foreground p-4 sm:p-8 font-sans">
+      <MarkTicketReadOnMount ticketId={ticket.id} />
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Breadcrumbs / Back */}

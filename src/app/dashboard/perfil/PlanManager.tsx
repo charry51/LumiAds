@@ -28,10 +28,14 @@ export function PlanManager({ planName, isSubscribed }: PlanManagerProps) {
                 throw new Error(errorText || 'Error al acceder al portal de pagos')
             }
 
-            const { url } = await response.json()
-            window.location.href = url
+            const data = await response.json()
+            if (data.warning) {
+                toast.warning(data.warning)
+            }
+            window.open(data.url, '_blank')
         } catch (error: any) {
             toast.error(error.message)
+        } finally {
             setIsManaging(false)
         }
     }
@@ -62,7 +66,7 @@ export function PlanManager({ planName, isSubscribed }: PlanManagerProps) {
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 {!isSubscribed ? (
-                    <Link href="/dashboard/planes" className="flex-1">
+                  <Link href="/dashboard/planes" className="flex-1" target="_blank">
                         <Button className="w-full gap-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90">
                             Explorar Planes
                             <ArrowRight className="w-4 h-4" />
@@ -70,7 +74,7 @@ export function PlanManager({ planName, isSubscribed }: PlanManagerProps) {
                     </Link>
                 ) : (
                     <>
-                        <Link href="/dashboard/planes" className="flex-1">
+                      <Link href="/dashboard/planes" className="flex-1" target="_blank">
                             <Button variant="outline" className="w-full gap-2 hover:bg-white/5 border-zinc-800 text-white">
                                 Cambiar Plan
                                 <ArrowRight className="w-4 h-4" />

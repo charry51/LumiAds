@@ -27,19 +27,60 @@ export async function POST(req: Request) {
 
     const plan = subscriptionPlans.find((p) => p.id === planId)
 
-    if (!plan || (!stripe && !plan.stripePriceId && false)) { // No bloquear si estamos en sandbox
-      // Dejamos pasar si es sandbox aunque no haya price ID
-    }
-
-    if (!plan || (stripe && !plan.stripePriceId)) {
-      return new NextResponse("Plan not found or Stripe Price ID missing", { status: 400 })
+    if (!plan) {
+      return new NextResponse("Plan not found", { status: 404 })
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // --- MODO SANDBOX (Si no hay claves de Stripe) ---
-    if (!stripe) {
-      console.log("⚠️ Ejecutando en MODO SANDBOX (Sin claves de Stripe)")
+    let priceId = plan.stripePriceId
+
+    // Si Stripe está configurado pero no hay Price ID, intentamos crearlo en la cuenta del cliente dinámicamente
+    if (stripe && !priceId) {
+      try {
+        console.log(`🔍 Buscando o creando producto/precio en Stripe para el plan: ${plan.name}`)
+        const existingProducts = await stripe.products.list({ limit: 100 })
+        let product = existingProducts.data.find(p => p.metadata.planId === plan.id)
+        
+        if (product) {
+          const prices = await stripe.prices.list({ product: product.id, limit: 1 })
+          if (prices.data.length > 0) {
+            priceId = prices.data[0].id
+          }
+        }
+        
+        if (!priceId) {
+          if (!product) {
+            product = await stripe.products.create({
+              name: `LumiAds - ${plan.name}`,
+              metadata: { planId: plan.id }
+            })
+          }
+          
+          const planPriceAmount = plan.id === 'presencia' ? 7900 
+            : plan.id === 'presencia_pro' ? 14900 
+            : plan.id === 'impacto_senior' ? 29900 
+            : 49900
+
+          const price = await stripe.prices.create({
+            product: product.id,
+            unit_amount: planPriceAmount,
+            currency: 'eur',
+            recurring: {
+              interval: 'month',
+            },
+          })
+          priceId = price.id
+        }
+        console.log(`✅ Usando Price ID dinámico: ${priceId}`)
+      } catch (stripeSetupError) {
+        console.error("❌ Error al auto-configurar producto/precio en Stripe:", stripeSetupError)
+      }
+    }
+
+    // --- MODO SANDBOX (Si no hay claves de Stripe o no pudimos obtener/crear un Price ID) ---
+    if (!stripe || !priceId) {
+      console.log("⚠️ Ejecutando en MODO SANDBOX (Sin claves de Stripe o sin Price ID)")
       
       // En modo sandbox, actualizamos la DB directamente (simulando el Webhook)
       await supabase
@@ -53,11 +94,11 @@ export async function POST(req: Request) {
         .eq('id', user.id)
 
       // Devolvemos una URL de éxito directa
-      return NextResponse.json({ url: `${appUrl}/dashboard?sandbox=true` })
+      return NextResponse.json({ url: `${appUrl}/dashboard/perfil?success=true&sandbox=true` })
     }
 
     // Validar si el customer ID es válido (no es de sandbox)
-    const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox');
+    const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
 
     // --- MODO REAL (Si hay claves de Stripe) ---
     if (!stripe) throw new Error("Stripe not initialized"); // Should be caught by the block above, but satisfies TS
@@ -71,7 +112,7 @@ export async function POST(req: Request) {
       customer: isValidCustomer ? profile.stripe_customer_id : undefined,
       line_items: [
         {
-          price: plan.stripePriceId,
+          price: priceId,
           quantity: 1,
         },
       ],

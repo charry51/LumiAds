@@ -70,7 +70,7 @@ export default function HeroSection({ stats }: { stats?: HeroStats }) {
       </div>
       
       {/* Floating UI Elements Mockup: The Intelligence Engine */}
-      <div className="mt-16 relative w-full max-w-6xl mx-auto animate-float px-4 sm:px-10 flex flex-col items-center justify-center">
+      <div id="impact" className="mt-16 relative w-full max-w-6xl mx-auto animate-float px-4 sm:px-10 flex flex-col items-center justify-center">
           <div className="landing-glass-ui p-1 rounded-[2.2rem] shadow-[0_0_80px_rgba(124,60,255,0.15)] relative z-20 w-full">
              <div className="bg-black/95 rounded-[2rem] overflow-hidden border border-white/10 min-h-[600px] relative flex flex-col">
                 {/* Simulated Dashboard UI */}

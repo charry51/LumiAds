@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export default async function PlanesPage() {
   const supabase = await createClient()
@@ -22,6 +23,17 @@ export default async function PlanesPage() {
 
   return (
     <div className="p-8 min-h-screen bg-background text-foreground font-sans">
+      
+      {/* Botón de volver */}
+      <div className="max-w-7xl mx-auto mb-8 flex items-center justify-between">
+        <Link href="/dashboard">
+          <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-white group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Volver al Dashboard
+          </Button>
+        </Link>
+      </div>
+
       <header className="text-center mb-16">
         <h1 className="text-5xl font-heading uppercase tracking-tighter text-foreground dark:text-zinc-100 mb-4">Planes de Emisión</h1>
         <p className="text-sm text-muted-foreground font-mono uppercase tracking-[3px] max-w-2xl mx-auto">
