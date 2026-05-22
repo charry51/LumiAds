@@ -16,7 +16,7 @@ export default async function NuevaCampanaPage() {
     .eq('id', user?.id)
     .single()
 
-  if (!profile?.plan_id || profile?.suscripcion_activa === false) {
+  if (!profile?.es_anunciante && (!profile?.plan_id || profile?.suscripcion_activa === false)) {
      redirect('/dashboard/planes')
   }
 
@@ -37,30 +37,40 @@ export default async function NuevaCampanaPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6 bg-background text-foreground min-h-screen">
-      <header className="mb-8 border-b border-border pb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard">
-            <Button variant="outline" size="icon" className="rounded-full border-border hover:bg-muted h-9 w-9">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <img src="/LogoPequeno.png" alt="LuminAdd Logo" className="h-10 w-auto" />
+    <div className="min-h-screen bg-[#04060F] text-zinc-100 font-sans selection:bg-[#2BC8FF]/30 relative overflow-hidden">
+      {/* Glow Background Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[#7C3CFF]/20 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-[#2BC8FF]/10 blur-[150px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 relative z-10">
+        <header className="mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard">
+              <Button variant="outline" size="icon" className="rounded-full border-white/10 bg-white/5 hover:bg-white/10 hover:text-white text-zinc-400 transition-all h-10 w-10 backdrop-blur-md">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <img src="/LogoPequeno.png" alt="LuminAdd Logo" className="h-10 w-auto filter drop-shadow-[0_0_10px_rgba(43,200,255,0.3)]" />
+          </div>
+          <div>
+              <h1 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-2">
+                  Configurar <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7C3CFF] to-[#2BC8FF]">Emisión</span>
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[9px] bg-[#7C3CFF]/10 text-[#7C3CFF] font-black px-2.5 py-0.5 rounded border border-[#7C3CFF]/30 uppercase tracking-[0.2em]">
+                      Modo: {profile.planes?.nombre || 'PROGRAMÁTICO'}
+                  </span>
+              </div>
+          </div>
+        </header>
+        
+        <div className="w-full">
+          <CampaignForm 
+            pantallas={pantallas || []} 
+            userPlan={profile.planes?.nombre || 'Programático'} 
+            walletBalance={profile.saldo_billetera || 0}
+          />
         </div>
-        <div>
-            <h1 className="text-2xl font-bold text-foreground italic tracking-tight uppercase group flex items-center gap-2">
-                CONFIGURAR <span className="text-[#7C3CFF] NOT-italic drop-shadow-[0_0_8px_rgba(124,60,255,0.4)]">EMISIÓN</span>
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] bg-[#7C3CFF]/10 text-[#7C3CFF] font-bold px-3 py-1 rounded-full border border-[#7C3CFF]/30 uppercase tracking-widest">
-                    Modo: {profile.planes.nombre}
-                </span>
-            </div>
-        </div>
-      </header>
-      
-      <div className="p-8 border border-border rounded-2xl shadow-2xl bg-card">
-        <CampaignForm pantallas={pantallas || []} userPlan={profile.planes.nombre} />
       </div>
     </div>
   )

@@ -379,35 +379,6 @@ export function PairingForm() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label className="text-muted-foreground text-xs uppercase tracking-widest mb-1">Visibilidad de la Pantalla</Label>
-        <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border">
-            <button
-                type="button"
-                onClick={() => setEsPublica(true)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-lg border transition-all ${
-                    esPublica 
-                        ? 'bg-primary/20 border-primary/50 text-foreground shadow-[0_0_15px_rgba(124,60,255,0.1)]' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-            >
-                <span className="text-[10px] font-black uppercase tracking-tighter">🌐 Pública</span>
-                <span className="text-[8px] opacity-60 uppercase">Monetizar</span>
-            </button>
-            <button
-                type="button"
-                onClick={() => setEsPublica(false)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-lg border transition-all ${
-                    !esPublica 
-                        ? 'bg-muted border-primary/30 text-foreground' 
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-            >
-                <span className="text-[10px] font-black uppercase tracking-tighter">🔒 Privada</span>
-                <span className="text-[8px] opacity-60 uppercase">Uso Interno</span>
-            </button>
-        </div>
-      </div>
 
       <Button
         onClick={handleActivate}
