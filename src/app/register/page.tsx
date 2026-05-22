@@ -80,6 +80,26 @@ export default async function RegisterPage({
                 required 
               />
             </div>
+
+            <div className="space-y-3 mt-2">
+              <Label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">¿Qué deseas hacer en LumiAds?</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="cursor-pointer">
+                  <input type="radio" name="rol_principal" value="anunciante" className="peer sr-only" defaultChecked />
+                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-lumi-blue/50 peer-checked:bg-lumi-blue/10 transition-all text-center h-full flex flex-col justify-center">
+                    <p className="text-[10px] font-bold text-white mb-1 uppercase tracking-widest">Anunciante</p>
+                    <p className="text-[9px] text-zinc-500 leading-tight">Lanzar campañas en pantallas.</p>
+                  </div>
+                </label>
+                <label className="cursor-pointer">
+                  <input type="radio" name="rol_principal" value="host" className="peer sr-only" />
+                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-[#7C3CFF]/50 peer-checked:bg-[#7C3CFF]/10 transition-all text-center h-full flex flex-col justify-center">
+                    <p className="text-[10px] font-bold text-white mb-1 uppercase tracking-widest">Host / Dueño</p>
+                    <p className="text-[9px] text-zinc-500 leading-tight">Monetizar mis pantallas.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
             
             {resolvedSearchParams?.message && (
               <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg">

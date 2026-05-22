@@ -212,9 +212,14 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
     // Pick next campaign
     const next = getNextCampaign(playlist)
     
-    // If it's the same campaign (single item loop), force video restart
+    // If it's the same campaign (single item loop)
     if (next && currentCampaign && next.id === currentCampaign.id) {
-      if (videoRef.current) {
+      // Force React to re-trigger the image timer by doing a shallow clone
+      // or if it's a video, restart the video.
+      const isImg = /\.(jpg|jpeg|png|webp|gif)(?:\?.*)?$/i.test(next.url_video)
+      if (isImg) {
+        setCurrentCampaign({ ...next }) // trigger re-render for image timer
+      } else if (videoRef.current) {
         videoRef.current.currentTime = 0
         videoRef.current.play().catch(e => console.warn('[LuminAdd] Loop play blocked:', e))
       }
@@ -267,13 +272,15 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
     }
   }, [hasHydrated])
 
-  const isImage = currentCampaign?.url_video ? /\.(jpg|jpeg|png|webp|gif)$/i.test(currentCampaign.url_video) : false
+  const isImage = currentCampaign?.url_video ? /\.(jpg|jpeg|png|webp|gif)(?:\?.*)?$/i.test(currentCampaign.url_video) : false
   const activeUrl = currentCampaign ? (cachedUrls[currentCampaign.url_video] || currentCampaign.url_video) : null
 
   // Image Rotation
   useEffect(() => {
     let timer: NodeJS.Timeout
-    if (isImage && currentCampaign && hasHydrated && !document.hidden) {
+    if (isImage && currentCampaign && hasHydrated) {
+      // Removed document.hidden check from timer start to ensure images always rotate
+      // even if tab is in background (less critical than video autoplay)
       timer = setTimeout(handleNext, 10000)
     }
     return () => { if (timer) clearTimeout(timer) }
