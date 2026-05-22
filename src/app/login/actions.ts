@@ -24,8 +24,21 @@ export async function login(formData: FormData) {
     redirect('/login?message=' + encodeURIComponent(errorMessage))
   }
 
+  // Fetch profile to redirect to correct dashboard
+  const { data: userAuth } = await supabase.auth.getUser()
+  const { data: profile } = await supabase.from('perfiles').select('*').eq('id', userAuth?.user?.id).single()
+
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+
+  if (profile?.rol === 'superadmin') {
+    redirect('/admin')
+  } else if (profile?.rol === 'comercial' || profile?.rol === 'gestor_local') {
+    redirect('/agency')
+  } else if (profile?.es_host) {
+    redirect('/host')
+  } else {
+    redirect('/advertiser')
+  }
 }
 
 export async function signup(formData: FormData) {
@@ -34,8 +47,9 @@ export async function signup(formData: FormData) {
   const nombre = formData.get('nombre') as string
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const rolPrincipal = formData.get('rol_principal') as string
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -44,6 +58,14 @@ export async function signup(formData: FormData) {
       }
     }
   })
+
+  if (data?.user && !error) {
+    // Actualizar el perfil recién creado por el trigger
+    await supabase.from('perfiles').update({
+      es_anunciante: rolPrincipal === 'anunciante',
+      es_host: rolPrincipal === 'host'
+    }).eq('id', data.user.id)
+  }
 
   if (error) {
     let errorMessage = error.message
@@ -54,7 +76,12 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  
+  if (rolPrincipal === 'host') {
+     redirect('/host')
+  } else {
+     redirect('/advertiser')
+  }
 }
 
 export async function logout() {

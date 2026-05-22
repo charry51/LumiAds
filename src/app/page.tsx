@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import HeroSection from '@/components/landing/HeroSection'
-import FeaturesSection from '@/components/landing/FeaturesSection'
+import PricingSection from '@/components/landing/PricingSection'
 import ContactSection from '@/components/landing/ContactSection'
 import { Monitor } from 'lucide-react'
 export const dynamic = 'force-dynamic'
@@ -41,10 +41,10 @@ export default async function Home() {
     <div className="dark min-h-screen bg-black flex flex-col selection:bg-lumi-violet selection:text-white">
       {/* Navigation Header */}
       <header className="fixed top-0 left-0 w-full z-[100] border-b border-white/[0.05] bg-black/50 backdrop-blur-md">
-        <div className="container mx-auto px-6 h-32 flex items-center justify-between relative">
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between relative">
           <Link href="/" className="flex items-center gap-2 group">
-             <img src="/LogoPequeno.png" alt="LumiAds Icon" className="h-[60px] md:h-[80px] w-auto group-hover:scale-110 transition-transform" />
-             <img src="/LogoTexto.png" alt="LumiAds Brand" className="h-[80px] md:h-[100px] w-auto hidden sm:block" />
+             <img src="/LogoPequeno.png" alt="LumiAds Icon" className="h-[36px] md:h-[48px] w-auto group-hover:scale-110 transition-transform" />
+             <img src="/LogoTexto.png" alt="LumiAds Brand" className="h-[48px] md:h-[60px] w-auto hidden sm:block" />
           </Link>
           
           {/* Centered Navigation - Absolute positioned relative to the full-width header for perfect screen centering */}
@@ -69,9 +69,8 @@ export default async function Home() {
 
       <main className="flex-grow">
         <HeroSection />
-        <div id="features">
-           <FeaturesSection />
-        </div>
+        
+        <PricingSection />
 
         <ContactSection />
         
@@ -83,9 +82,14 @@ export default async function Home() {
                   ¿Listo para dominar <br />
                   <span className="text-gradient-ui">el OOH Programático?</span>
                </h2>
-               <Link href="/register" className="cyber-button-ui inline-block">
-                  Crear Mi Cuenta Ahora
-               </Link>
+               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Link href="/register?type=advertiser" className="cyber-button-ui inline-block bg-[#2BC8FF] text-black hover:bg-white border-none shadow-[0_0_20px_rgba(43,200,255,0.3)]">
+                     Soy Anunciante
+                  </Link>
+                  <Link href="/register?type=host" className="cyber-button-ui inline-block bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] hover:bg-[#7C3CFF] hover:text-white shadow-[0_0_20px_rgba(124,60,255,0)]">
+                     Soy Host (Dueño de Pantalla)
+                  </Link>
+               </div>
             </div>
         </section>
       </main>
@@ -100,9 +104,9 @@ export default async function Home() {
             </div>
             
             <div className="flex gap-8">
-               <Link href="#" className="hover:text-white transition-colors">Términos</Link>
-               <Link href="#" className="hover:text-white transition-colors">Privacidad</Link>
-               <Link href="#" className="hover:text-white transition-colors">Contacto</Link>
+               <Link href="/terminos" className="hover:text-white transition-colors">Términos</Link>
+               <Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link>
+               <Link href="/#contacto" className="hover:text-white transition-colors">Contacto</Link>
             </div>
          </div>
       </footer>

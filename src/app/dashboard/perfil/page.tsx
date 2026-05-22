@@ -11,52 +11,22 @@ import {
 import { Button } from '@/components/ui/button'
 import { AccessibilitySettings } from '@/components/AccessibilitySettings'
 import { ProfileForm } from './ProfileForm'
-import { PlanManager } from './PlanManager'
-
+import { RoleManager } from './RoleManager'
 
 export default async function PerfilPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const resolvedParams = await searchParams;
-  const success = resolvedParams.success === 'true';
-  const sessionId = resolvedParams.session_id as string;
-
   const supabase = await createClient()
 
   // Recuperar sesión activa
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // --- FALLBACK DE ACTUALIZACIÓN INMEDIATA (Para local/webhooks lentos) ---
-  if (success && sessionId) {
-    try {
-      const { stripe } = await import('@/lib/stripe')
-      if (stripe) {
-        const session = await stripe.checkout.sessions.retrieve(sessionId)
-        
-        if (session.payment_status === 'paid' && session.metadata?.userId === user.id) {
-          // Actualizamos el perfil directamente si el pago fue exitoso
-          await supabase
-            .from('perfiles')
-            .update({
-              plan_id: session.metadata.planId,
-              suscripcion_activa: true,
-              stripe_customer_id: session.customer as string,
-              stripe_subscription_id: session.subscription as string
-            })
-            .eq('id', user.id)
-        }
-      }
-    } catch (error) {
-      console.error("[STRIPE_FALLBACK_UPDATE_ERROR]", error)
-    }
-  }
-
   const { data: profile } = await supabase
     .from('perfiles')
-    .select('*, planes(nombre)')
+    .select('*')
     .eq('id', user.id)
     .single()
 
@@ -97,17 +67,22 @@ export default async function PerfilPage({
                 </div>
                 
                 <div className="pt-4 border-t border-zinc-800">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] text-zinc-500 uppercase font-black uppercase">Plan Actual</span>
-                        <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-bold border border-primary/20 uppercase">
-                            {profile?.planes?.nombre || 'Básico'}
-                        </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-zinc-500 uppercase font-black uppercase">Rol</span>
-                        <div className="flex items-center gap-1 text-[10px] text-zinc-300 font-bold uppercase">
-                            <Shield className="w-3 h-3 text-secondary" />
-                            {profile?.rol || 'Cliente'}
+                    <div className="flex flex-col gap-2">
+                        <span className="text-[10px] text-zinc-500 uppercase font-black uppercase mb-1">Identidades Activas</span>
+                        <div className="flex flex-wrap gap-2">
+                            {profile?.es_anunciante && (
+                                <span className="px-3 py-1 rounded-full bg-[#2BC8FF]/10 text-[#2BC8FF] text-[9px] font-bold border border-[#2BC8FF]/20 uppercase">
+                                    Anunciante
+                                </span>
+                            )}
+                            {profile?.es_host && (
+                                <span className="px-3 py-1 rounded-full bg-[#7C3CFF]/10 text-[#7C3CFF] text-[9px] font-bold border border-[#7C3CFF]/20 uppercase">
+                                    Host / Dueño
+                                </span>
+                            )}
+                            {!profile?.es_anunciante && !profile?.es_host && (
+                                <span className="text-[10px] text-zinc-600 font-mono italic">Sin configurar</span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -124,14 +99,14 @@ export default async function PerfilPage({
           {/* Columna Derecha: Configuración */}
           <div className="md:col-span-2 space-y-8">
             
-            {/* Gestión del Plan */}
+            {/* Gestión del Rol */}
             <div className="cyber-card p-8 border-white/5 relative overflow-hidden transition-all duration-500 shadow-sm">
                 <h3 className="text-xl font-heading font-black tracking-tight uppercase text-white mb-6 flex items-center gap-2">
-                    Gestión de Suscripción
+                    Identidad en LumiAds
                 </h3>
-                <PlanManager 
-                    planName={profile?.planes?.nombre} 
-                    isSubscribed={profile?.suscripcion_activa ?? false} 
+                <RoleManager 
+                    esAnuncianteInitial={profile?.es_anunciante ?? false} 
+                    esHostInitial={profile?.es_host ?? false} 
                 />
             </div>
 

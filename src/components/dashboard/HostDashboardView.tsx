@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor } from 'lucide-react'
 import { PairingForm } from '@/app/admin/pantallas/PairingForm'
+import { SaasControls } from './SaasControls'
 import { 
   getScreenTier, 
   getTierMultiplier, 
@@ -11,7 +12,7 @@ import {
   DensityLevel 
 } from '@/lib/yield/pricing'
 
-export default async function HostDashboardPage({
+export async function HostDashboardView({
   searchParams,
 }: {
   searchParams: Promise<{ screenId?: string; action?: string }>
@@ -25,7 +26,7 @@ export default async function HostDashboardPage({
   // Obtener todos los registros de host vinculados a este perfil
   const { data: hosts } = await supabase
     .from('hosts')
-    .select('*, pantallas(id, nombre, ciudad, estado, precio_emision, ubicacion, tipo_pantalla, densidad_poblacion_nivel)')
+    .select('*, pantallas(id, nombre, ciudad, estado, precio_emision, ubicacion, tipo_pantalla, densidad_poblacion_nivel, precio_base_impacto, suscripcion_saas_activa, tipo_suscripcion_saas, es_publica)')
     .eq('perfil_id', user.id)
 
   const hasScreens = hosts && hosts.length > 0
@@ -104,7 +105,7 @@ export default async function HostDashboardPage({
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <Link 
-            href="/host/dashboard?action=vincular"
+            href="/dashboard?mode=host&action=vincular"
             className="cyber-button-ui w-full sm:w-auto text-center"
           >
             <Plus className="w-4 h-4 mr-2" /> Vincular Nueva TV
@@ -149,7 +150,7 @@ export default async function HostDashboardPage({
                   {hosts.map((h: any) => (
                       <Link 
                         key={h.id} 
-                        href={`/host/dashboard?screenId=${h.id}`}
+                        href={`/dashboard?mode=host&screenId=${h.id}`}
                         className={`px-3 py-1.5 rounded-md border text-[10px] uppercase font-black transition-all tracking-tighter ${
                           h.id === hostData.id 
                             ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105' 
@@ -249,8 +250,18 @@ export default async function HostDashboardPage({
             </div>
           </section>
 
+          {/* SaaS Controls */}
+          {pantalla?.id && (
+            <SaasControls 
+              pantallaId={pantalla.id}
+              esPublicaInitial={pantalla.es_publica ?? true}
+              precioBaseInitial={pantalla.precio_base_impacto ?? 0.05}
+              suscripcionActiva={pantalla.suscripcion_saas_activa ?? false}
+            />
+          )}
+
           {/* Ledger / History Section */}
-          <section>
+          <section className="mt-8">
             <h2 className="text-xs font-heading uppercase tracking-widest mb-4 text-gradient-ui flex items-center gap-2 font-black">
               <History className="w-4 h-4" /> Ledger de Emisiones Verificadas
             </h2>
