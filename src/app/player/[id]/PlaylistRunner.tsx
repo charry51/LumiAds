@@ -42,7 +42,7 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
   const supabase = createClient()
 
   // --- ELASTIC ENGINE: Weighted Selection ---
-  const getNextCampaign = useCallback((pool: CampaignItem[]) => {
+  const getNextCampaign = useCallback((pool: CampaignItem[], currentId?: string) => {
     if (pool.length === 0) return null
     if (pool.length === 1) return pool[0]
 
@@ -51,7 +51,7 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
     const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, ...
     const currentMins = now.getHours() * 60 + now.getMinutes()
     
-    const validPool = pool.filter(c => {
+    let validPool = pool.filter(c => {
         // Check days of week
         if (c.dias_semana && Array.isArray(c.dias_semana) && c.dias_semana.length > 0) {
             if (!c.dias_semana.includes(currentDay)) return false
@@ -64,6 +64,11 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
     })
 
     if (validPool.length === 0) return null
+
+    // 1.5. Prevent back-to-back repeats if possible
+    if (validPool.length > 1 && currentId) {
+       validPool = validPool.filter(c => c.id !== currentId)
+    }
 
     // 2. Weight-based random pick (Share of Voice)
     const totalWeight = validPool.reduce((sum, c) => sum + (c.prioridad || 1), 0)
@@ -210,7 +215,7 @@ export default function PlaylistRunner({ screenId, playlist }: { screenId: strin
     }
     
     // Pick next campaign
-    const next = getNextCampaign(playlist)
+    const next = getNextCampaign(playlist, currentCampaign?.id)
     
     // If it's the same campaign (single item loop)
     if (next && currentCampaign && next.id === currentCampaign.id) {
