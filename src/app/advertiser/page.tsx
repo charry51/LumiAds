@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { logout } from '@/app/login/actions'
 import { DeleteCampaignButton } from '@/app/dashboard/DeleteCampaignButton'
-import { BarChart3, Target, TrendingUp, Zap, Monitor, DollarSign, LifeBuoy, Plus, ArrowUpRight, Wallet } from 'lucide-react'
+import { BarChart3, Target, TrendingUp, Zap, Monitor, DollarSign, Plus, ArrowUpRight, Wallet } from 'lucide-react'
+import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 
 export default async function AdvertiserDashboardPage() {
   const supabase = await createClient()
@@ -84,12 +85,7 @@ export default async function AdvertiserDashboardPage() {
              </Button>
           </Link>
 
-          <Link href="/dashboard/soporte">
-             <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                <LifeBuoy className="w-3 h-3" />
-                Soporte
-             </Button>
-          </Link>
+          <SoporteNotificationBadge label="Soporte" />
 
           <form action={logout}>
             <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Salir</Button>

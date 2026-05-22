@@ -79,6 +79,7 @@ export async function sendContactMessage(formData: FormData) {
     }
 
     const { revalidatePath } = await import('next/cache');
+    revalidatePath('/admin');
     revalidatePath('/admin/mensajes');
     return { success: true };
   } catch (error: unknown) {
@@ -170,6 +171,7 @@ export async function replyToMessage(formData: FormData) {
     }
 
     const { revalidatePath } = await import('next/cache');
+    revalidatePath('/admin');
     revalidatePath('/admin/mensajes');
     return { success: true };
   } catch (error) {
@@ -210,6 +212,7 @@ export async function deleteMessage(messageId: string) {
     }
 
     const { revalidatePath } = await import('next/cache');
+    revalidatePath('/admin');
     revalidatePath('/admin/mensajes');
     return { success: true };
   } catch (error) {

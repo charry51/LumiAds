@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button'
 import { logout } from '@/app/login/actions'
 import { DeleteCampaignButton } from '@/app/dashboard/DeleteCampaignButton'
-import { BarChart3, PieChart, Target, TrendingUp, Zap, ZapOff, Monitor, DollarSign, ShieldAlert, LifeBuoy, Plus } from 'lucide-react'
+import { BarChart3, PieChart, Target, TrendingUp, Zap, ZapOff, Monitor, DollarSign, ShieldAlert, Plus } from 'lucide-react'
+import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 
 export async function AnuncianteDashboardView() {
   const supabase = await createClient()
@@ -113,12 +114,7 @@ export async function AnuncianteDashboardView() {
              </Button>
           </Link>
           {profile?.rol === 'cliente' && (
-            <Link href="/dashboard/soporte">
-               <Button variant="outline" className="border-border hover:bg-muted flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                  <LifeBuoy className="w-3 h-3" />
-                  Soporte Técnico
-               </Button>
-            </Link>
+            <SoporteNotificationBadge buttonClassName="border-border hover:bg-muted flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3" />
           )}
           <form action={logout}>
             <Button variant="outline" type="submit" className="border-border hover:bg-muted text-[11px] sm:text-xs px-3 sm:px-4">Salir</Button>

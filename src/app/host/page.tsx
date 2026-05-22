@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor, ArrowUpCircle, LifeBuoy } from 'lucide-react'
+import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor, ArrowUpCircle } from 'lucide-react'
+import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 import { PairingForm } from '@/app/admin/pantallas/PairingForm'
 import { logout } from '@/app/login/actions'
 import { 
@@ -105,12 +106,7 @@ export default async function HostDashboardPage({
              </DialogContent>
           </Dialog>
 
-          <Link href="/dashboard/soporte">
-             <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                <LifeBuoy className="w-3 h-3" />
-                Soporte
-             </Button>
-          </Link>
+          <SoporteNotificationBadge label="Soporte" />
 
           <form action={logout}>
             <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Salir</Button>

@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
-
-const LAST_READ_KEY = 'soporte_last_read_ts'
+import { markTicketAsRead } from '@/lib/soporte/unread'
 
 export function MarkTicketReadOnMount({ ticketId }: { ticketId: string }) {
   useEffect(() => {
-    localStorage.setItem(`${LAST_READ_KEY}_${ticketId}`, new Date().toISOString())
+    markTicketAsRead(ticketId)
   }, [ticketId])
 
   return null
