@@ -14,11 +14,20 @@ export default async function AdvertiserDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('perfiles')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  if (profileError) {
+    return (
+      <div className="p-8 text-red-500 bg-red-950/20 rounded-lg border border-red-900">
+        <h1 className="text-2xl font-bold mb-4">Error cargando perfil</h1>
+        <p>{profileError.message}</p>
+      </div>
+    )
+  }
 
   // Bloqueo estricto: Si no eres anunciante, te expulsamos a tu panel correspondiente
   if (!profile?.es_anunciante) {
@@ -26,11 +35,20 @@ export default async function AdvertiserDashboardPage() {
   }
 
   // Pantallas donde tiene ANUNCIOS activos
-  const { data: conCampanas } = await supabase
+  const { data: conCampanas, error: pantallasError } = await supabase
     .from('pantallas')
     .select('*, campanas!inner(cliente_id, estado)')
     .eq('campanas.cliente_id', user.id)
     .in('campanas.estado', ['aprobada'])
+
+  if (pantallasError) {
+    return (
+      <div className="p-8 text-red-500 bg-red-950/20 rounded-lg border border-red-900">
+        <h1 className="text-2xl font-bold mb-4">Error cargando pantallas</h1>
+        <p>{pantallasError.message}</p>
+      </div>
+    )
+  }
 
   const pantallasActivas = conCampanas || []
 
@@ -51,9 +69,10 @@ export default async function AdvertiserDashboardPage() {
   }
 
   // Cálculos de Resumen
-  const totalImpactos = misCampanas?.reduce((sum, c) => sum + (c.impactos_reales || 0), 0) || 0
-  const totalPresupuesto = misCampanas?.reduce((sum, c) => sum + (c.presupuesto_total || 0), 0) || 0
-  const campañasActivas = misCampanas?.filter(c => c.estado === 'aprobada').length || 0
+  const totalImpactos = (misCampanas || []).reduce((sum, c) => sum + Number(c?.impactos_reales ?? 0), 0)
+  const totalPresupuesto = (misCampanas || []).reduce((sum, c) => sum + Number(c?.presupuesto_total ?? 0), 0)
+  const campañasActivas = (misCampanas || []).filter(c => c?.estado === 'aprobada').length
+  const saldoBilletera = Number(profile?.saldo_billetera ?? 0)
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-4 sm:p-8 font-sans selection:bg-[#2BC8FF]/30">
@@ -75,6 +94,13 @@ export default async function AdvertiserDashboardPage() {
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 Mi Perfil
+             </Button>
+          </Link>
+
+          <Link href="/vincular">
+             <Button className="bg-emerald-500 hover:bg-emerald-400 text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(16,185,129,0.35)]">
+                <Monitor className="w-4 h-4" />
+                Conectar mi pantalla
              </Button>
           </Link>
           
@@ -135,7 +161,7 @@ export default async function AdvertiserDashboardPage() {
              <p className="text-[10px] uppercase font-bold tracking-widest text-[#2BC8FF]">Saldo Billetera</p>
              <Wallet className="h-4 w-4 text-[#2BC8FF]" />
           </div>
-          <div className="text-4xl font-mono font-black text-white relative z-10">{(profile?.saldo_billetera || 0).toFixed(2)}€</div>
+          <div className="text-4xl font-mono font-black text-white relative z-10">{saldoBilletera.toFixed(2)}€</div>
           <Link href="/dashboard/billetera" className="text-[9px] text-black bg-[#2BC8FF] px-2 py-1 rounded inline-block uppercase font-black tracking-widest hover:bg-white transition-colors mt-3 relative z-10">
             + Recargar Saldo
           </Link>
@@ -165,16 +191,27 @@ export default async function AdvertiserDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-zinc-900">
                     {misCampanas.map((camp: any) => {
-                      const deliveryPercent = Math.min(100, Math.floor(((camp.impactos_reales || 0) / (camp.impactos_estimados || 1)) * 100))
-                      const costPerImpact = (camp.presupuesto_total / (camp.impactos_estimados || 1)).toFixed(3)
+                      const presupuesto = Number(camp?.presupuesto_total ?? 0)
+                      const impactosEstimados = Number(camp?.impactos_estimados ?? 0)
+                      const impactosReales = Number(camp?.impactos_reales ?? 0)
+                      const deliveryPercent = impactosEstimados > 0
+                        ? Math.min(100, Math.floor((impactosReales / impactosEstimados) * 100))
+                        : 0
+                      const costPerImpact = impactosEstimados > 0
+                        ? (presupuesto / impactosEstimados).toFixed(3)
+                        : '0.000'
+                      const campaignName = camp?.nombre_campana || 'Campaña sin nombre'
+                      const campaignIdPreview = typeof camp?.id === 'string' ? camp.id.split('-')[0] : 'N/A'
+                      const pantallaNombre = camp?.pantallas?.nombre || 'Red Global'
+                      const estado = typeof camp?.estado === 'string' ? camp.estado.replace(/_/g, ' ') : 'pendiente'
                       
                       return (
-                        <tr key={camp.id} className="hover:bg-zinc-950 transition-colors">
+                        <tr key={camp.id || campaignName} className="hover:bg-zinc-950 transition-colors">
                           <td className="px-6 py-5">
-                            <p className="font-bold text-white uppercase text-xs">{camp.nombre_campana}</p>
-                            <p className="text-[9px] text-zinc-600 font-mono mt-1">ID: {camp.id.split('-')[0]}</p>
+                            <p className="font-bold text-white uppercase text-xs">{campaignName}</p>
+                            <p className="text-[9px] text-zinc-600 font-mono mt-1">ID: {campaignIdPreview}</p>
                             <p className="text-[9px] text-[#2BC8FF] uppercase mt-1 flex items-center gap-1">
-                               <Monitor className="w-3 h-3" /> {camp.pantallas?.nombre || 'Red Global'}
+                               <Monitor className="w-3 h-3" /> {pantallaNombre}
                             </p>
                           </td>
                           <td className="px-6 py-5">
@@ -188,25 +225,25 @@ export default async function AdvertiserDashboardPage() {
                                <span className="text-[10px] font-mono text-white w-8">{deliveryPercent}%</span>
                             </div>
                             <div className="flex justify-between">
-                               <span className="text-[9px] text-[#2BC8FF] uppercase font-bold">{camp.impactos_reales || 0} IMP</span>
-                               <span className="text-[9px] text-zinc-600 uppercase">/ {camp.impactos_estimados || 0} META</span>
+                               <span className="text-[9px] text-[#2BC8FF] uppercase font-bold">{impactosReales} IMP</span>
+                               <span className="text-[9px] text-zinc-600 uppercase">/ {impactosEstimados} META</span>
                             </div>
                           </td>
                           <td className="px-6 py-5">
-                            <p className="text-sm text-white font-mono font-bold">{camp.presupuesto_total.toFixed(2)}€</p>
+                            <p className="text-sm text-white font-mono font-bold">{presupuesto.toFixed(2)}€</p>
                             <p className="text-[9px] text-zinc-500 uppercase mt-0.5">{costPerImpact}€ / IMP</p>
                           </td>
                           <td className="px-6 py-5">
                             <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
-                              camp.estado === 'aprobada' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                              camp.estado === 'rechazada' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                              camp?.estado === 'aprobada' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                              camp?.estado === 'rechazada' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                               'bg-zinc-800 text-zinc-400'
                             }`}>
-                              {camp.estado.replace(/_/g, ' ')}
+                              {estado}
                             </span>
                           </td>
                           <td className="px-6 py-5 text-right">
-                             <DeleteCampaignButton campaignId={camp.id} />
+                             {typeof camp?.id === 'string' ? <DeleteCampaignButton campaignId={camp.id} /> : null}
                           </td>
                         </tr>
                       )

@@ -51,7 +51,7 @@ export default async function Home() {
           <div className="hidden md:flex absolute inset-x-0 top-0 bottom-0 pointer-events-none items-center justify-center">
              <div className="flex items-center gap-12 text-[11px] uppercase tracking-[0.3em] font-bold text-zinc-400 pointer-events-auto">
                 <Link href="#features" className="hover:text-lumi-violet transition-colors">Funciones</Link>
-                <Link href="#impact" className="hover:text-lumi-violet transition-colors">Impacto</Link>
+                <Link href="#host-pricing" className="hover:text-lumi-violet transition-colors">Planes</Link>
                 <Link href="#contacto" className="hover:text-lumi-violet transition-colors">Contáctanos</Link>
              </div>
           </div>
