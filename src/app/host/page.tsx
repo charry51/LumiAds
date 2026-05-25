@@ -174,20 +174,11 @@ export default async function HostDashboardPage({
             <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[3px] mb-8 max-w-md">
                Convierte tus televisores en una fuente de ingresos conectándolos a nuestra red o utiliza el CMS privado para tu propio contenido.
             </p>
-            <Dialog>
-               <DialogTrigger render={
-                  <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
-                     Vincular mi primer nodo
-                  </Button>
-               } />
-               <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-md p-0 max-h-[90vh] overflow-y-auto">
-                  <div className="p-8">
-                     <h2 className="text-2xl font-black uppercase mb-2 text-violet-500 tracking-tighter">VINCULAR NODO</h2>
-                     <p className="text-[10px] text-zinc-500 font-mono uppercase mb-6 tracking-widest">Añade tu pantalla a la red</p>
-                     <PairingForm />
-                  </div>
-               </DialogContent>
-            </Dialog>
+            <Link href="/vincular">
+              <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
+                Conectar mi pantalla
+              </Button>
+            </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
