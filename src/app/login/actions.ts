@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
@@ -24,7 +24,6 @@ export async function login(formData: FormData) {
     redirect('/login?message=' + encodeURIComponent(errorMessage))
   }
 
-  // Fetch profile to redirect to correct dashboard
   const { data: userAuth } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('perfiles').select('*').eq('id', userAuth?.user?.id).single()
 
@@ -49,6 +48,10 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
   const rolPrincipal = formData.get('rol_principal') as string
 
+  const redirectTarget = rolPrincipal === 'host'
+    ? '/planes/seleccionar?role=host'
+    : '/advertiser'
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -59,14 +62,6 @@ export async function signup(formData: FormData) {
     }
   })
 
-  if (data?.user && !error) {
-    // Actualizar el perfil recién creado por el trigger
-    await supabase.from('perfiles').update({
-      es_anunciante: rolPrincipal === 'anunciante',
-      es_host: rolPrincipal === 'host'
-    }).eq('id', data.user.id)
-  }
-
   if (error) {
     let errorMessage = error.message
     if (error.message.includes('User already registered') || error.message.includes('already exists')) {
@@ -75,13 +70,39 @@ export async function signup(formData: FormData) {
     redirect('/register?message=' + encodeURIComponent(errorMessage))
   }
 
-  revalidatePath('/', 'layout')
-  
-  if (rolPrincipal === 'host') {
-     redirect('/host')
-  } else {
-     redirect('/advertiser')
+  if (!data?.user) {
+    redirect('/register?message=' + encodeURIComponent('No pudimos crear tu cuenta. Inténtalo de nuevo.'))
   }
+
+  const signIn = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (signIn.error) {
+    redirect('/register?message=' + encodeURIComponent('No se pudo iniciar sesión automáticamente. Intenta iniciar sesión.'))
+  }
+
+  const userId = signIn.data.user?.id || data.user.id
+
+  if (!userId) {
+    redirect('/register?message=' + encodeURIComponent('No pudimos completar el registro. Inténtalo de nuevo.'))
+  }
+
+  // Usar admin client para evitar problemas de RLS
+  const admin = await createAdminClient()
+  const { error: profileError } = await admin.from('perfiles').update({
+    es_anunciante: rolPrincipal === 'anunciante',
+    es_host: rolPrincipal === 'host',
+  }).eq('id', userId)
+
+  if (profileError) {
+    redirect('/register?message=' + encodeURIComponent('No pudimos guardar tu rol. Intenta iniciar sesión.'))
+  }
+
+  revalidatePath('/', 'layout')
+
+  redirect(redirectTarget)
 }
 
 export async function logout() {

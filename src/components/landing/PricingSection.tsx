@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { simularPagoSuscripcion } from '@/app/actions/payments'
-import { Check, Loader2, Monitor, Shield, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Check, Monitor, Shield, Zap } from 'lucide-react'
 
 const planes = [
   {
@@ -56,38 +57,30 @@ const planes = [
 ]
 
 export default function PricingSection() {
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  const handleSubscribe = async (planId: string) => {
-    if (planId === 'basic') {
-       // Básicamente solo registramos, no hay pago
-       alert("Redirigiendo a registro básico...")
-       return
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.user))
+    })
+  }, [])
+
+  const handleActivate = () => {
+    if (isAuthenticated) {
+      router.push('/planes/seleccionar?role=host')
+      return
     }
 
-    setLoadingPlan(planId)
-    setSuccessMsg(null)
-    
-    // Mock pantalla ID para la demo
-    const mockPantallaId = '00000000-0000-0000-0000-000000000000'
-    const planType = planId as 'basic' | 'premium' | 'gold'
-
-    const res = await simularPagoSuscripcion(mockPantallaId, planType)
-    
-    setLoadingPlan(null)
-    
-    if (res.success) {
-      setSuccessMsg(res.message || 'Pago completado')
-    } else {
-      alert("Error: " + res.error)
-    }
+    router.push('/register?type=host&returnTo=%2Fplanes%2Fseleccionar%3Frole%3Dhost')
   }
 
   return (
     <section id="host-pricing" className="py-24 bg-black relative">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[#7C3CFF]/5 rounded-full blur-[120px] pointer-events-none" />
-      
+
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-heading text-white tracking-tighter mb-4">
@@ -98,17 +91,11 @@ export default function PricingSection() {
           </p>
         </div>
 
-        {successMsg && (
-          <div className="mb-8 p-4 rounded-xl bg-[#2BC8FF]/10 border border-[#2BC8FF]/30 text-[#2BC8FF] text-center font-bold">
-            {successMsg}
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {planes.map((plan) => {
             const Icon = plan.icon
             return (
-              <div 
+              <div
                 key={plan.id}
                 className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 landing-glass-ui
                   ${plan.popular ? 'border-[#7C3CFF]/50 shadow-[0_0_30px_rgba(124,60,255,0.15)] scale-105 z-10' : 'border-white/10 hover:border-white/30'}`}
@@ -118,7 +105,7 @@ export default function PricingSection() {
                     Más Popular
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                     <Icon className="w-6 h-6" style={{ color: plan.color }} />
@@ -145,23 +132,15 @@ export default function PricingSection() {
                 </ul>
 
                 <button
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={loadingPlan === plan.id}
+                  onClick={handleActivate}
                   className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 group"
-                  style={{ 
+                  style={{
                     backgroundColor: plan.popular ? '#7C3CFF' : 'rgba(255,255,255,0.05)',
                     color: plan.popular ? '#fff' : plan.color,
                     border: plan.popular ? 'none' : `1px solid ${plan.color}30`
                   }}
                 >
-                  {loadingPlan === plan.id ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Procesando...
-                    </>
-                  ) : (
-                    plan.buttonText
-                  )}
+                  {plan.buttonText}
                 </button>
               </div>
             )

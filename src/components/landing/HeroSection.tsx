@@ -1,14 +1,30 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Monitor, Megaphone, MoveRight } from 'lucide-react'
 
 export default function HeroSection() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.user))
+    })
+  }, [])
+
   const scrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     const el = document.getElementById('host-pricing')
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
+
+  const hostHref = isAuthenticated
+    ? '/host'
+    : '/register?type=host&returnTo=%2Fplanes%2Fseleccionar%3Frole%3Dhost'
 
   return (
     <section className="relative min-h-screen flex flex-col md:flex-row overflow-hidden bg-black pt-32 md:pt-0">
@@ -35,7 +51,7 @@ export default function HeroSection() {
           </p>
           
           <Link href="/register?type=advertiser" className="group/btn flex items-center gap-3 px-8 py-4 rounded-full bg-[#2BC8FF] text-black font-bold uppercase tracking-widest text-[11px] hover:bg-white transition-all shadow-[0_0_20px_rgba(43,200,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] w-full sm:w-auto justify-center">
-            Explorar Mapa Público
+            Ver mapa público
             <MoveRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform" />
           </Link>
         </div>
@@ -65,10 +81,10 @@ export default function HeroSection() {
             Conecta los televisores de tu local a LumiAds. Decide tu precio, muestra publicidad y genera ingresos extra cada mes.
           </p>
           
-          <a href="#host-pricing" onClick={scrollToPricing} className="group/btn flex items-center gap-3 px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)] w-full sm:w-auto justify-center">
-            Ver Planes de Host
+          <Link href={hostHref} className="group/btn flex items-center gap-3 px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)] w-full sm:w-auto justify-center">
+            Conectar pantalla
             <MoveRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform" />
-          </a>
+          </Link>
         </div>
 
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none translate-x-10 -translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0">

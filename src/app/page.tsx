@@ -8,6 +8,10 @@ export const dynamic = 'force-dynamic'
 
 export default async function Home() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const hostCtaHref = user
+    ? '/host'
+    : '/register?type=host&returnTo=%2Fplanes%2Fseleccionar%3Frole%3Dhost'
   
   /*
   // 1. Estadísticas Globales para el Hero
@@ -56,12 +60,12 @@ export default async function Home() {
              </div>
           </div>
 
-          <div className="relative z-10">
+          <div className="relative z-10 flex items-center gap-3">
              <Link 
                href="/login" 
                className="px-6 py-2.5 rounded-full border border-white/10 text-white hover:bg-white/10 transition-all text-[10px] uppercase tracking-widest font-bold bg-white/5 backdrop-blur-sm"
              >
-               Iniciar Sesión
+               Entrar
              </Link>
           </div>
         </div>
@@ -84,10 +88,10 @@ export default async function Home() {
                </h2>
                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link href="/register?type=advertiser" className="inline-block px-8 py-4 rounded-full bg-[#2BC8FF] text-black font-bold uppercase tracking-widest text-[11px] hover:bg-white transition-all shadow-[0_0_20px_rgba(43,200,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]">
-                     Soy Anunciante
+                     Quiero anunciar
                   </Link>
-                  <Link href="/register?type=host" className="inline-block px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)]">
-                     Soy Host (Dueño de Pantalla)
+                  <Link href={hostCtaHref} className="inline-block px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)]">
+                     Quiero monetizar pantallas
                   </Link>
                </div>
             </div>
