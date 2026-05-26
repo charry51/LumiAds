@@ -93,28 +93,21 @@ export default async function AdvertiserDashboardPage() {
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                Mi Perfil
+                Perfil
              </Button>
           </Link>
 
-          <Link href="/vincular">
-             <Button className="bg-emerald-500 hover:bg-emerald-400 text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(16,185,129,0.35)]">
-                <Monitor className="w-4 h-4" />
-                Conectar mi pantalla
-             </Button>
-          </Link>
-          
           <Link href="/dashboard/nueva">
              <Button className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(43,200,255,0.4)]">
                 <Plus className="w-4 h-4" />
-                Nueva Campaña
+                Crear campaña
              </Button>
           </Link>
 
           <SoporteNotificationBadge label="Soporte" />
 
           <form action={logout}>
-            <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Salir</Button>
+            <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Cerrar sesión</Button>
           </form>
         </div>
       </header>
@@ -258,7 +251,7 @@ export default async function AdvertiserDashboardPage() {
                 </div>
                 <p className="text-zinc-500 font-mono uppercase tracking-[3px] text-[10px] mb-6">No tienes ninguna campaña activa.</p>
                 <Link href="/dashboard/nueva">
-                  <Button className="bg-[#2BC8FF] text-black font-black uppercase text-[10px] tracking-widest shadow-[0_0_15px_rgba(43,200,255,0.3)] hover:bg-white">Lanzar Campaña</Button>
+                  <Button className="bg-[#2BC8FF] text-black font-black uppercase text-[10px] tracking-widest shadow-[0_0_15px_rgba(43,200,255,0.3)] hover:bg-white">Crear campaña</Button>
                 </Link>
               </div>
             )}
@@ -292,7 +285,7 @@ export default async function AdvertiserDashboardPage() {
                          variant="outline" 
                          className="h-8 text-[9px] uppercase font-bold border-zinc-800 bg-black text-zinc-300 hover:text-white hover:bg-zinc-900"
                        >
-                         Visualizar TV <ArrowUpRight className="w-3 h-3 ml-1" />
+                         Ver pantalla <ArrowUpRight className="w-3 h-3 ml-1" />
                        </Button>
                      </Link>
                    </div>

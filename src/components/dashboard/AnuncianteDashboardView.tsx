@@ -96,28 +96,28 @@ export async function AnuncianteDashboardView() {
 
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-border hover:bg-muted flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                Mi Perfil
+                Perfil
              </Button>
           </Link>
 
           <Link href="/dashboard?mode=host">
              <Button variant="outline" className="border-border hover:bg-muted flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-4">
                 <Monitor className="w-4 h-4" />
-                Panel de Host
+                Ir a Host
              </Button>
           </Link>
           
           <Link href="/dashboard/nueva">
              <Button className="cyber-button-ui flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6">
                 <Plus className="w-4 h-4" />
-                Nueva Emisión
+                Crear campaña
              </Button>
           </Link>
           {profile?.rol === 'cliente' && (
             <SoporteNotificationBadge buttonClassName="border-border hover:bg-muted flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3" />
           )}
           <form action={logout}>
-            <Button variant="outline" type="submit" className="border-border hover:bg-muted text-[11px] sm:text-xs px-3 sm:px-4">Salir</Button>
+            <Button variant="outline" type="submit" className="border-border hover:bg-muted text-[11px] sm:text-xs px-3 sm:px-4">Cerrar sesión</Button>
           </form>
         </div>
       </header>

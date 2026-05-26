@@ -1,23 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { revalidatePath } from 'next/cache'
 import { Button } from '@/components/ui/button'
 import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor, ArrowUpCircle } from 'lucide-react'
 import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
-import { PairingForm } from '@/app/admin/pantallas/PairingForm'
 import { logout } from '@/app/login/actions'
-import { 
-  getScreenTier, 
-  getTierMultiplier, 
-  ScreenType, 
-  DensityLevel 
-} from '@/lib/yield/pricing'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 export default async function HostDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ screenId?: string }>
+  searchParams: Promise<{ screenId?: string; activate?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -31,7 +24,18 @@ export default async function HostDashboardPage({
     .eq('id', user.id)
     .single()
 
-  if (!profile?.es_host) {
+  let isHost = profile?.es_host
+  if (!isHost && params.activate === 'true') {
+    await supabase
+      .from('perfiles')
+      .update({ es_host: true })
+      .eq('id', user.id)
+    isHost = true
+    revalidatePath('/host')
+    revalidatePath('/dashboard')
+  }
+
+  if (!isHost) {
     redirect('/dashboard')
   }
 
@@ -86,30 +90,21 @@ export default async function HostDashboardPage({
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                Mi Perfil
+                Perfil
              </Button>
           </Link>
-          
-          <Dialog>
-             <DialogTrigger render={
-                <Button className="bg-violet-600 hover:bg-violet-500 text-white flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(124,60,255,0.4)]">
-                   <Plus className="w-4 h-4" />
-                   Añadir Nodo
-                </Button>
-             } />
-             <DialogContent className="bg-zinc-950 border-zinc-900 text-white sm:max-w-md p-0 max-h-[90vh] overflow-y-auto">
-                <div className="p-8">
-                   <h2 className="text-2xl font-black uppercase mb-2 text-violet-500 tracking-tighter">VINCULAR NODO</h2>
-                   <p className="text-[10px] text-zinc-500 font-mono uppercase mb-6 tracking-widest">Añade tu pantalla a la red</p>
-                   <PairingForm />
-                </div>
-             </DialogContent>
-          </Dialog>
+
+          <Link href="/vincular">
+             <Button className="bg-violet-600 hover:bg-violet-500 text-white flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(124,60,255,0.4)]">
+                <Monitor className="w-4 h-4" />
+                Conectar otra pantalla
+             </Button>
+          </Link>
 
           <SoporteNotificationBadge label="Soporte" />
 
           <form action={logout}>
-            <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Salir</Button>
+            <Button variant="outline" type="submit" className="border-red-900/50 bg-zinc-950 text-red-500 hover:text-red-400 hover:bg-red-950/20 text-[10px] uppercase font-bold tracking-widest px-4">Cerrar sesión</Button>
           </form>
         </div>
       </header>
@@ -159,7 +154,7 @@ export default async function HostDashboardPage({
           <div className="text-4xl font-mono font-black text-white relative z-10">{totalPendiente.toFixed(2)}€</div>
           {totalPendiente >= 50 && (
              <Button className="w-full mt-3 h-8 bg-violet-600 hover:bg-white text-black text-[9px] uppercase font-black tracking-widest transition-colors relative z-10">
-               Solicitar Retiro
+               Retirar saldo
              </Button>
           )}
         </div>
@@ -176,7 +171,7 @@ export default async function HostDashboardPage({
             </p>
             <Link href="/vincular">
               <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
-                Conectar mi pantalla
+                Conectar pantalla
               </Button>
             </Link>
         </div>

@@ -108,12 +108,12 @@ export async function HostDashboardView({
             href="/dashboard?mode=host&action=vincular"
             className="cyber-button-ui w-full sm:w-auto text-center"
           >
-            <Plus className="w-4 h-4 mr-2" /> Vincular Nueva TV
+            <Plus className="w-4 h-4 mr-2" /> Conectar otra pantalla
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/dashboard/perfil">
                <Button variant="outline" className="h-9 border-border text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] uppercase font-bold tracking-widest px-3">
-                  Mi Perfil
+                  Perfil
                </Button>
             </Link>
             <div className="text-right hidden lg:block">

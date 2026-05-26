@@ -37,13 +37,20 @@ export default async function LoginPage({
           {/* Subtle Grid Overlay */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
           
-          <header className="mb-8 relative z-10">
+          <header className="mb-6 relative z-10">
             <h2 className="text-3xl font-heading font-light text-white tracking-tighter leading-tight">
               Bienvenido a <br />
               <span className="text-gradient-ui font-medium">LumiAds</span>
             </h2>
             <p className="text-[11px] text-zinc-400 font-sans tracking-wide mt-2">Gestiona tu red de pantallas con inteligencia.</p>
           </header>
+
+          <div className="mb-6 rounded-xl border border-lumi-blue/20 bg-lumi-blue/5 px-4 py-3 relative z-10">
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-lumi-blue">Flujo rápido</p>
+            <p className="mt-2 text-[11px] leading-relaxed text-zinc-200">
+              Si eres host, conecta tu pantalla y empieza a generar ingresos. Si eres anunciante, entra y crea tu primera campaña desde el panel.
+            </p>
+          </div>
 
           <form className="flex flex-col gap-5 relative z-10" action={login}>
             <div className="space-y-1.5">
@@ -80,7 +87,7 @@ export default async function LoginPage({
             )}
 
             <button className="cyber-button-ui mt-4 py-4 text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(124,60,255,0.2)] hover:shadow-[0_0_60px_rgba(124,60,255,0.4)] transform hover:-translate-y-0.5 transition-all">
-              Iniciar Sesión
+              Entrar
             </button>
           </form>
 

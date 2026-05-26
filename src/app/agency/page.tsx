@@ -62,12 +62,12 @@ export default async function AgencyDashboardPage() {
 
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-slate-800 bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-4 h-9 rounded">
-                Mi Perfil
+                Perfil
              </Button>
           </Link>
           
           <form action={logout}>
-            <Button variant="outline" type="submit" className="border-slate-800 bg-slate-900 text-slate-500 hover:text-red-400 hover:bg-slate-800 text-[10px] uppercase font-bold tracking-widest px-4 h-9 rounded">Salir</Button>
+            <Button variant="outline" type="submit" className="border-slate-800 bg-slate-900 text-slate-500 hover:text-red-400 hover:bg-slate-800 text-[10px] uppercase font-bold tracking-widest px-4 h-9 rounded">Cerrar sesión</Button>
           </form>
         </div>
       </header>
