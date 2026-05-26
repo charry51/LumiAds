@@ -42,7 +42,7 @@ export default async function RegisterPage({
               <span className="text-gradient-ui font-medium">Cuenta</span>
             </h2>
             <p className="text-[11px] text-zinc-400 font-sans tracking-wide mt-2">
-              Selecciona tu rol y continúa. Elige el plan después de crear la cuenta.
+              Elige el plan que quieres usar. Si eliges Host, te llevaremos al selector de planes después del registro.
             </p>
           </header>
 
@@ -86,20 +86,22 @@ export default async function RegisterPage({
             </div>
 
             <div className="space-y-3 mt-2">
-              <Label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">¿Qué deseas hacer en LumiAds?</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <Label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Selecciona tu plan</Label>
+              <div className="grid grid-cols-1 gap-3">
                 <label className="cursor-pointer">
-                  <input type="radio" name="rol_principal" value="anunciante" className="peer sr-only" defaultChecked={defaultRole === 'anunciante'} />
-                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-lumi-blue/50 peer-checked:bg-lumi-blue/10 transition-all text-center h-full flex flex-col justify-center">
-                    <p className="text-[10px] font-bold text-white mb-1 uppercase tracking-widest">Anunciante</p>
-                    <p className="text-[9px] text-zinc-500 leading-tight">Lanzar campañas en pantallas.</p>
+                  <input type="radio" name="plan_principal" value="anunciante" className="peer sr-only" defaultChecked={defaultRole === 'anunciante'} />
+                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-lumi-blue/50 peer-checked:bg-lumi-blue/10 transition-all text-left h-full flex flex-col justify-center gap-1">
+                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">Plan Básico</p>
+                    <p className="text-[11px] text-white font-medium">Anunciante</p>
+                    <p className="text-[9px] text-zinc-500 leading-tight">Crea campañas publicitarias y usa el plan básico para anunciar.</p>
                   </div>
                 </label>
                 <label className="cursor-pointer">
-                  <input type="radio" name="rol_principal" value="host" className="peer sr-only" defaultChecked={defaultRole === 'host'} />
-                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-[#7C3CFF]/50 peer-checked:bg-[#7C3CFF]/10 transition-all text-center h-full flex flex-col justify-center">
-                    <p className="text-[10px] font-bold text-white mb-1 uppercase tracking-widest">Host / Dueño</p>
-                    <p className="text-[9px] text-zinc-500 leading-tight">Monetizar mis pantallas.</p>
+                  <input type="radio" name="plan_principal" value="host" className="peer sr-only" defaultChecked={defaultRole === 'host'} />
+                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-[#7C3CFF]/50 peer-checked:bg-[#7C3CFF]/10 transition-all text-left h-full flex flex-col justify-center gap-1">
+                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">Host Premium / Gold</p>
+                    <p className="text-[11px] text-white font-medium">Monetiza mis pantallas</p>
+                    <p className="text-[9px] text-zinc-500 leading-tight">Selecciona host para llegar al selector de planes y activar Premium o Gold.</p>
                   </div>
                 </label>
               </div>

@@ -46,7 +46,8 @@ export async function signup(formData: FormData) {
   const nombre = formData.get('nombre') as string
   const email = formData.get('email') as string
   const password = formData.get('password') as string
-  const rolPrincipal = formData.get('rol_principal') as string
+  const planPrincipal = (formData.get('plan_principal') as string) || (formData.get('rol_principal') as string) || 'anunciante'
+  const rolPrincipal = planPrincipal === 'host' ? 'host' : 'anunciante'
 
   const redirectTarget = rolPrincipal === 'host'
     ? '/planes/seleccionar?role=host'
