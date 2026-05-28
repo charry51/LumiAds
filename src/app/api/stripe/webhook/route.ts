@@ -44,9 +44,16 @@ export async function POST(req: Request) {
        
        if (amount > 0) {
           const { data: profile } = await supabase.from('perfiles').select('saldo_billetera').eq('id', session.metadata.userId).single()
-          await supabase.from('perfiles').update({
+          
+          const updates: any = {
              saldo_billetera: (profile?.saldo_billetera || 0) + amount
-          }).eq('id', session.metadata.userId)
+          }
+          
+          if (session.customer) {
+             updates.stripe_customer_id = session.customer as string
+          }
+
+          await supabase.from('perfiles').update(updates).eq('id', session.metadata.userId)
        }
     } else {
        // Retrieve the subscription details from Stripe

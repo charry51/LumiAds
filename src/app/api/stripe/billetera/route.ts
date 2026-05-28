@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { getOrCreateStripeCustomer } from '@/lib/stripe-customers'
 
 export async function POST(req: Request) {
   try {
@@ -44,15 +45,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: `${appUrl}/advertiser` })
     }
 
-    const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email)
 
     const stripeSession = await stripe.checkout.sessions.create({
       success_url: `${appUrl}/advertiser?payment=success`,
       cancel_url: `${appUrl}/dashboard/billetera?payment=canceled`,
       payment_method_types: ['card'],
       mode: 'payment',
-      customer_email: isValidCustomer ? undefined : user.email,
-      customer: isValidCustomer ? profile.stripe_customer_id : undefined,
+      customer: customerId || undefined,
       line_items: [
         {
           price_data: {

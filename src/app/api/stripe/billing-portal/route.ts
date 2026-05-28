@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { getOrCreateStripeCustomer } from '@/lib/stripe-customers'
 
 export async function POST(req: Request) {
   try {
@@ -27,22 +28,10 @@ export async function POST(req: Request) {
       })
     }
 
-    // Determinar el customer ID válido
-    let customerId = profile?.stripe_customer_id
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email!)
 
-    // Si no tiene customer ID o es de sandbox, crear uno nuevo en Stripe
-    if (!customerId || customerId.includes('sandbox')) {
-      const customer = await stripe.customers.create({
-        email: user.email!,
-        metadata: { supabaseUserId: user.id },
-      })
-      customerId = customer.id
-
-      // Guardar el nuevo customer ID real en Supabase
-      await supabase
-        .from('perfiles')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', user.id)
+    if (!customerId) {
+      return new NextResponse("Error al resolver cliente de Stripe", { status: 500 })
     }
 
     // Intentar abrir el portal de facturación con el customer ID
@@ -53,22 +42,21 @@ export async function POST(req: Request) {
       })
       return NextResponse.json({ url: stripeSession.url })
     } catch (portalError: any) {
-      // Si el customer no existe en Stripe (fue borrado), crear uno nuevo
+      // Si por alguna razón el customer no existe en Stripe (fue borrado), forzar nueva creación
       if (portalError?.message?.includes('No such customer')) {
-        const customer = await stripe.customers.create({
-          email: user.email!,
-          metadata: { supabaseUserId: user.id },
-        })
-        customerId = customer.id
-
         await supabase
           .from('perfiles')
-          .update({ stripe_customer_id: customerId })
+          .update({ stripe_customer_id: null })
           .eq('id', user.id)
+          
+        const newCustomerId = await getOrCreateStripeCustomer(user.id, user.email!)
+        if (!newCustomerId) {
+          throw new Error("No se pudo recrear el cliente de Stripe")
+        }
 
         // Reintentar con el nuevo customer
         const stripeSession = await stripe.billingPortal.sessions.create({
-          customer: customerId,
+          customer: newCustomerId,
           return_url: `${appUrl}/dashboard/perfil`,
         })
         return NextResponse.json({ url: stripeSession.url })

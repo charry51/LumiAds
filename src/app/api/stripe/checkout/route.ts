@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 import { subscriptionPlans } from '@/config/subscriptions'
+import { getOrCreateStripeCustomer } from '@/lib/stripe-customers'
 
 export async function POST(req: Request) {
   try {
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: `${appUrl}${userHomePath}` })
     }
 
-    const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email)
 
     const stripeSession = await stripe.checkout.sessions.create({
       success_url: `${appUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -100,8 +101,7 @@ export async function POST(req: Request) {
       payment_method_types: ['card'],
       mode: 'subscription',
       billing_address_collection: 'auto',
-      customer_email: isValidCustomer ? undefined : user.email,
-      customer: isValidCustomer ? profile.stripe_customer_id : undefined,
+      customer: customerId || undefined,
       line_items: [
         {
           price: priceId,
