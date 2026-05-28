@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { login } from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -5,7 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
-import type { Metadata } from 'next'
+import { ForgotPasswordLink } from '@/components/auth/ForgotPasswordLink'
+import { Suspense } from 'react'
+import { LoginErrorToast } from '@/components/auth/LoginErrorToast'
 
 export const metadata: Metadata = {
   title: 'Iniciar Sesión | LumiAds',
@@ -68,7 +71,7 @@ export default async function LoginPage({
             <div className="space-y-1.5">
               <div className="flex justify-between items-center px-1">
                 <Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Contraseña</Label>
-                <Link href="#" className="text-[9px] uppercase tracking-widest text-zinc-600 hover:text-lumi-blue transition-colors">¿Olvidaste tu contraseña?</Link>
+                <ForgotPasswordLink />
               </div>
               <Input 
                 id="password" 
@@ -79,12 +82,6 @@ export default async function LoginPage({
                 required 
               />
             </div>
-            
-            {resolvedSearchParams?.message && (
-              <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg animate-shake">
-                Alerta del Sistema: {resolvedSearchParams.message}
-              </div>
-            )}
 
             <button className="cyber-button-ui mt-4 py-4 text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(124,60,255,0.2)] hover:shadow-[0_0_60px_rgba(124,60,255,0.4)] transform hover:-translate-y-0.5 transition-all">
               Entrar
@@ -108,6 +105,10 @@ export default async function LoginPage({
            <span className="text-[8px] text-zinc-700 uppercase tracking-widest">v2.0 Stable Build</span>
            <span className="text-[8px] text-zinc-700 uppercase tracking-widest">© 2026 LumiAds Platform</span>
         </div>
+        
+        <Suspense fallback={null}>
+          <LoginErrorToast />
+        </Suspense>
       </div>
     </div>
   )

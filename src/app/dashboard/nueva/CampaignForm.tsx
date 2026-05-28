@@ -24,6 +24,8 @@ type Pantalla = {
   precio_base: number
   tipo_pantalla?: ScreenType
   densidad_poblacion_nivel?: DensityLevel
+  precio_base_impacto?: number
+  comision_markup_porcentaje?: number
 }
 
 export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', walletBalance = 0 }: { pantallas: Pantalla[], userPlan?: string, walletBalance?: number }) {
@@ -54,6 +56,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   
   const effType = selectedScreensFull.length > 0 ? (selectedScreensFull[0].tipo_pantalla || 'gimnasio') : targetType
   const effDensity = selectedScreensFull.length > 0 ? (selectedScreensFull[0].densidad_poblacion_nivel || 'medio') : targetDensity
+  const effBasePrice = selectedScreensFull.length > 0 ? selectedScreensFull[0].precio_base_impacto : undefined
+  const effMarkup = selectedScreensFull.length > 0 ? selectedScreensFull[0].comision_markup_porcentaje : undefined
 
   const impactosEstimados = calculateEstimatedImpacts({
     presupuestoTotal,
@@ -62,7 +66,9 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
     zona: 'standard', // Por simplicidad
     tipoPantalla: effType,
     densidadNivel: effDensity,
-    frecuenciaRelativa: planFrequency
+    frecuenciaRelativa: planFrequency,
+    precioBaseImpacto: effBasePrice,
+    comisionMarkupPorcentaje: effMarkup
   })
 
   const isPremium = userPlan.toLowerCase().includes('expansión') || userPlan.toLowerCase().includes('dominio')

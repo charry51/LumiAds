@@ -8,23 +8,18 @@ export interface SubscriptionPlan {
 
 export const subscriptionPlans: SubscriptionPlan[] = [
   {
-    id: 'presencia',
-    name: 'Presencia',
-    stripePriceId: process.env.STRIPE_PRICE_ID_PRESENCIA || '', // Reemplazar con el ID real de Stripe
+    id: 'basic',
+    name: 'Básico',
+    stripePriceId: '',
   },
   {
-    id: 'presencia_pro',
-    name: 'Presencia Pro',
-    stripePriceId: process.env.STRIPE_PRICE_ID_PRESENCIA_PRO || '',
+    id: 'premium',
+    name: 'Premium',
+    stripePriceId: process.env.STRIPE_PRICE_ID_PREMIUM || '',
   },
   {
-    id: 'impacto_senior',
-    name: 'Impacto Senior',
-    stripePriceId: process.env.STRIPE_PRICE_ID_IMPACTO_SENIOR || '',
-  },
-  {
-    id: 'dominio',
-    name: 'Dominio de Red',
-    stripePriceId: process.env.STRIPE_PRICE_ID_DOMINIO || '',
+    id: 'gold',
+    name: 'Gold',
+    stripePriceId: process.env.STRIPE_PRICE_ID_GOLD || '',
   },
 ]

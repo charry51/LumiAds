@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor, ArrowUpCircle } from 'lucide-react'
 import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 import { logout } from '@/app/login/actions'
+import { WithdrawButton } from './WithdrawButton'
+import { ConectarPantallaModal } from './ConectarPantallaModal'
 
 export default async function HostDashboardPage({
   searchParams,
@@ -24,7 +26,29 @@ export default async function HostDashboardPage({
     .eq('id', user.id)
     .single()
 
-  let isHost = profile?.es_host
+  let currentProfile = profile
+  if (profile && !profile.organizacion_id) {
+    const adminClient = await createAdminClient()
+    const { data: org } = await adminClient
+      .from('organizaciones')
+      .insert({ nombre: `Organización de ${user.email || user.id}` })
+      .select('id')
+      .single()
+
+    if (org) {
+      const { data: updatedProfile } = await adminClient
+        .from('perfiles')
+        .update({ organizacion_id: org.id })
+        .eq('id', user.id)
+        .select('*')
+        .single()
+      if (updatedProfile) {
+        currentProfile = updatedProfile
+      }
+    }
+  }
+
+  let isHost = currentProfile?.es_host
   if (!isHost && params.activate === 'true') {
     await supabase
       .from('perfiles')
@@ -94,12 +118,14 @@ export default async function HostDashboardPage({
              </Button>
           </Link>
 
-          <Link href="/vincular">
-             <Button className="bg-violet-600 hover:bg-violet-500 text-white flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(124,60,255,0.4)]">
-                <Monitor className="w-4 h-4" />
-                Conectar otra pantalla
-             </Button>
-          </Link>
+          <ConectarPantallaModal
+            trigger={
+              <Button className="bg-violet-600 hover:bg-violet-500 text-white flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(124,60,255,0.4)]">
+                 <Monitor className="w-4 h-4" />
+                 Conectar otra pantalla
+              </Button>
+            }
+          />
 
           <SoporteNotificationBadge label="Soporte" />
 
@@ -153,9 +179,7 @@ export default async function HostDashboardPage({
           </div>
           <div className="text-4xl font-mono font-black text-white relative z-10">{totalPendiente.toFixed(2)}€</div>
           {totalPendiente >= 50 && (
-             <Button className="w-full mt-3 h-8 bg-violet-600 hover:bg-white text-black text-[9px] uppercase font-black tracking-widest transition-colors relative z-10">
-               Retirar saldo
-             </Button>
+             <WithdrawButton isConfigured={!!currentProfile?.stripe_account_id} />
           )}
         </div>
       </div>
@@ -169,11 +193,13 @@ export default async function HostDashboardPage({
             <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[3px] mb-8 max-w-md">
                Convierte tus televisores en una fuente de ingresos conectándolos a nuestra red o utiliza el CMS privado para tu propio contenido.
             </p>
-            <Link href="/vincular">
-              <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
-                Conectar pantalla
-              </Button>
-            </Link>
+            <ConectarPantallaModal
+              trigger={
+                <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
+                  Conectar pantalla
+                </Button>
+              }
+            />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

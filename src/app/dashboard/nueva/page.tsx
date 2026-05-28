@@ -23,7 +23,7 @@ export default async function NuevaCampanaPage() {
   // Fetch only active, public screens with Yield data.
   const { data: pantallas, error } = await supabase
     .from('pantallas')
-    .select('id, nombre, ubicacion, ciudad, latitud, longitud, precio_emision, precio_base')
+    .select('id, nombre, ubicacion, ciudad, latitud, longitud, precio_emision, precio_base, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel')
     .eq('estado', 'activa')
     .eq('es_publica', true)
 

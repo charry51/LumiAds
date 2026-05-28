@@ -56,10 +56,9 @@ export async function POST(req: Request) {
             })
           }
 
-          const planPriceAmount = plan.id === 'presencia' ? 7900
-            : plan.id === 'presencia_pro' ? 14900
-              : plan.id === 'impacto_senior' ? 29900
-                : 49900
+          const planPriceAmount = plan.id === 'premium' ? 2000
+            : plan.id === 'gold' ? 5000
+              : 0
 
           const price = await stripe.prices.create({
             product: product.id,
@@ -114,7 +113,7 @@ export async function POST(req: Request) {
         planId: plan.id,
       },
       subscription_data: {
-        trial_period_days: plan.id === 'presencia' ? 30 : undefined,
+        trial_period_days: undefined,
         metadata: {
           userId: user.id,
           planId: plan.id,

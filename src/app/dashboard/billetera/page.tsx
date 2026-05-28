@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { simularRecarga } from './actions'
 import { Button } from '@/components/ui/button'
 import { Wallet, Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -16,14 +15,24 @@ export default function BilleteraPage() {
     if (isNaN(value) || value <= 0) return alert('Importe inválido')
 
     setLoading(true)
-    const res = await simularRecarga(value)
-    if (res.success) {
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-    } else {
-      alert('Error: ' + res.error)
+    try {
+      const res = await fetch('/api/stripe/billetera', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: value })
+      })
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(errorText)
+      }
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error: any) {
+      alert('Error: ' + error.message)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -55,7 +64,7 @@ export default function BilleteraPage() {
             disabled={loading}
             className="w-full bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest h-12 text-xs transition-all shadow-[0_0_15px_rgba(43,200,255,0.3)]"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Simular Pago Test'}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Recargar con Tarjeta'}
           </Button>
 
           {success && (
