@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function actualizarSaasScreen(
@@ -33,7 +33,8 @@ export async function actualizarSaasScreen(
     updates.tipo_suscripcion_saas = esPublica ? 'hibrida_reducida' : 'privada_pura'
   }
 
-  const { error } = await supabase
+  const adminClient = await createAdminClient()
+  const { error } = await adminClient
     .from('pantallas')
     .update(updates)
     .eq('id', pantallaId)

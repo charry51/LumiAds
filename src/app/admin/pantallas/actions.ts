@@ -49,8 +49,10 @@ export async function createPantalla(formData: FormData) {
 
   const esPublica = formData.get('es_publica') !== 'false' // Si no viene o es 'on', es pública
 
+  const adminClient = await createAdminClient()
+
   // 5. Inserción con Vínculo de Organización y Privacidad
-  const { error } = await supabase.from('pantallas').insert({
+  const { error } = await adminClient.from('pantallas').insert({
     nombre,
     ubicacion,
     ciudad,

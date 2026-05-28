@@ -65,6 +65,7 @@ export default function VincularPage() {
     const result = await generatePairingCode(deviceId, lat, lng, resolucion, esTactil, inches)
     if ('code' in result) {
       setCode(result.code)
+      localStorage.setItem('LuminAdd_latest_pairing_code', result.code)
       setTimeLeft(600)
       setStatus('esperando')
     }

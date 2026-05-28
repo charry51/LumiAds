@@ -34,28 +34,40 @@ export async function POST(req: Request) {
   const supabase = await createAdminClient()
 
   if (event.type === 'checkout.session.completed') {
-    // Retrieve the subscription details from Stripe
-    const stripeSubscription = (await stripe.subscriptions.retrieve(
-      session.subscription as string
-    )) as any;
-
     if (!session?.metadata?.userId) {
       return new NextResponse('User id is required in metadata', { status: 400 })
     }
 
-    await supabase
-      .from('perfiles')
-      .update({
-        stripe_subscription_id: stripeSubscription.id,
-        stripe_customer_id: (stripeSubscription as any).customer as string,
-        stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
-        stripe_current_period_end: new Date(
-          (stripeSubscription as any).current_period_end * 1000
-        ).toISOString(),
-        plan_id: session.metadata.planId,
-        suscripcion_activa: true,
-      })
-      .eq('id', session.metadata.userId)
+    if (session.metadata.type === 'billetera_recharge') {
+       const amountStr = session.metadata.amount
+       const amount = parseFloat(amountStr || '0')
+       
+       if (amount > 0) {
+          const { data: profile } = await supabase.from('perfiles').select('saldo_billetera').eq('id', session.metadata.userId).single()
+          await supabase.from('perfiles').update({
+             saldo_billetera: (profile?.saldo_billetera || 0) + amount
+          }).eq('id', session.metadata.userId)
+       }
+    } else {
+       // Retrieve the subscription details from Stripe
+       const stripeSubscription = (await stripe.subscriptions.retrieve(
+         session.subscription as string
+       )) as any;
+
+       await supabase
+         .from('perfiles')
+         .update({
+           stripe_subscription_id: stripeSubscription.id,
+           stripe_customer_id: (stripeSubscription as any).customer as string,
+           stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
+           stripe_current_period_end: new Date(
+             (stripeSubscription as any).current_period_end * 1000
+           ).toISOString(),
+           plan_id: session.metadata.planId,
+           suscripcion_activa: true,
+         })
+         .eq('id', session.metadata.userId)
+    }
   }
 
   if (event.type === 'invoice.payment_succeeded') {

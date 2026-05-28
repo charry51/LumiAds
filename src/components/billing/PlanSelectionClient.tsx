@@ -38,7 +38,7 @@ const plans = [
     accent: '#7C3CFF',
     icon: Zap,
     action: 'checkout',
-    stripePlanId: 'presencia_pro',
+    stripePlanId: 'premium',
   },
   {
     id: 'gold',
@@ -56,7 +56,7 @@ const plans = [
     accent: '#D4AF37',
     icon: Shield,
     action: 'checkout',
-    stripePlanId: 'impacto_senior',
+    stripePlanId: 'gold',
   },
 ]
 

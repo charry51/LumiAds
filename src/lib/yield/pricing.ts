@@ -93,6 +93,8 @@ export interface PricingParams {
   prioridad: number
   presupuestoTotal: number
   frecuenciaRelativa?: number // 1x, 2x, 3x, 4x según plan
+  precioBaseImpacto?: number
+  comisionMarkupPorcentaje?: number
 }
 
 /**
@@ -107,6 +109,8 @@ export function calculateEstimatedImpacts({
   duracionSegundos,
   prioridad,
   presupuestoTotal,
+  precioBaseImpacto,
+  comisionMarkupPorcentaje,
 }: PricingParams): number {
   if (presupuestoTotal <= 0 || duracionSegundos <= 0) return 0
 
@@ -123,7 +127,13 @@ export function calculateEstimatedImpacts({
   // Promedio ponderado del multiplicador de tiempo (asumiendo reparto uniforme día/noche)
   const avgTimeMultiplier = 0.93
 
-  const costPerImpact = BASE_COST_PER_IMPACT * 
+  let baseCost = BASE_COST_PER_IMPACT
+  if (precioBaseImpacto !== undefined && precioBaseImpacto !== null) {
+    const markup = comisionMarkupPorcentaje !== undefined && comisionMarkupPorcentaje !== null ? comisionMarkupPorcentaje : 30.00
+    baseCost = precioBaseImpacto * (1 + markup / 100)
+  }
+
+  const costPerImpact = baseCost * 
                         zonaMultiplier * 
                         typeMultiplier * 
                         densityMultiplier * 

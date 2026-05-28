@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { calculateHostCommission, type ScreenType, type DensityLevel } from '@/lib/yield/pricing'
 
@@ -101,8 +101,10 @@ export async function activatePairingCode(
     return { success: false, error: `Límite de pantallas alcanzado (${maxPantallas}). Mejora tu plan.` }
   }
 
+  const adminClient = await createAdminClient()
+
   // 3. Crear la pantalla en la BD
-  const { data: pantalla, error: insertError } = await supabase
+  const { data: pantalla, error: insertError } = await adminClient
     .from('pantallas')
     .insert({
       nombre,
@@ -132,7 +134,7 @@ export async function activatePairingCode(
   if (perfil?.rol !== 'superadmin') {
     const porcentaje = calculateHostCommission(tipoPantalla as ScreenType, densidadNivel as DensityLevel)
 
-    await supabase.from('hosts').insert({
+    await adminClient.from('hosts').insert({
       perfil_id: user.id,
       pantalla_id: pantalla.id,
       nombre_local: nombre,
@@ -143,7 +145,7 @@ export async function activatePairingCode(
   }
 
   // 5. Marcar el código como vinculado para que la TV lo detecte
-  await supabase
+  await adminClient
     .from('pairing_codes')
     .update({
       estado: 'vinculado',
@@ -220,3 +222,91 @@ export async function getPairingMetadata(code: string): Promise<{
     capturado_at: data.capturado_at
   }
 }
+
+/**
+ * Registra una pantalla manualmente por parte de un Host (sin código de emparejamiento).
+ */
+export async function createHostPantallaManually(
+  nombre: string,
+  ciudad: string,
+  ubicacion: string,
+  esPublica: boolean = true,
+  latitud?: number,
+  longitud?: number,
+  tipoPantalla: string = 'gimnasio',
+  densidadNivel: string = 'medio'
+): Promise<{ success: boolean; pantallaId?: string; error?: string }> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'No autenticado' }
+
+  // 1. Obtener Perfil, Plan y Organización
+  const { data: perfil } = await supabase
+    .from('perfiles')
+    .select('*, planes(*)')
+    .eq('id', user.id)
+    .single()
+
+  if (!perfil) return { success: false, error: 'Perfil no encontrado' }
+
+  // 2. Verificar límites del plan
+  const { count } = await supabase
+    .from('pantallas')
+    .select('*', { count: 'exact', head: true })
+    .eq('organizacion_id', perfil?.organizacion_id)
+
+  const maxPantallas = perfil?.planes?.max_pantallas || 1
+  if ((count || 0) >= maxPantallas) {
+    return { success: false, error: `Límite de pantallas alcanzado (${maxPantallas}). Mejora tu plan.` }
+  }
+
+  const adminClient = await createAdminClient()
+
+  // 3. Crear la pantalla en la BD
+  const { data: pantalla, error: insertError } = await adminClient
+    .from('pantallas')
+    .insert({
+      nombre,
+      ciudad,
+      ubicacion,
+      latitud,
+      longitud,
+      estado: 'activa',
+      es_publica: esPublica,
+      tipo_pantalla: tipoPantalla,
+      densidad_poblacion_nivel: densidadNivel,
+      organizacion_id: perfil?.organizacion_id,
+      creado_por: user.id
+    })
+    .select('id')
+    .single()
+
+  if (insertError || !pantalla) {
+    return { success: false, error: insertError?.message || 'Error creando pantalla' }
+  }
+
+  // 4. Vincular como host
+  const porcentaje = calculateHostCommission(tipoPantalla as ScreenType, densidadNivel as DensityLevel)
+
+  const { error: hostError } = await adminClient.from('hosts').insert({
+    perfil_id: user.id,
+    pantalla_id: pantalla.id,
+    nombre_local: nombre,
+    porcentaje,
+    saldo_pendiente: 0,
+    saldo_pagado: 0
+  })
+
+  if (hostError) {
+    // Si falla vincular host, borramos la pantalla
+    await adminClient.from('pantallas').delete().eq('id', pantalla.id)
+    return { success: false, error: 'Error vinculando host: ' + hostError.message }
+  }
+
+  revalidatePath('/host')
+  revalidatePath('/dashboard')
+
+  return { success: true, pantallaId: pantalla.id }
+}
+

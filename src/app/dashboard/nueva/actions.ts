@@ -89,7 +89,7 @@ export async function createCampaign(data: CampaignData) {
     // 4. Obtener datos de las pantallas (para precio y organización)
     const { data: screensData } = await supabase
       .from('pantallas')
-      .select('id, precio_emision, organizacion_id')
+      .select('id, precio_emision, organizacion_id, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel')
       .in('id', pantallaIds)
 
     const screensMap = new Map(screensData?.map(s => [s.id, s]) || [])
@@ -97,6 +97,23 @@ export async function createCampaign(data: CampaignData) {
     // 5. Insert into Database (Loop over IDs)
     const inserts = pantallaIds.map(id => {
       const screen = screensMap.get(id)
+      
+      // Calculate dynamic price per impact matching UI logic
+      let calculatedPrice = 0.05
+      if (screen?.precio_base_impacto !== undefined && screen?.precio_base_impacto !== null) {
+        const markup = screen.comision_markup_porcentaje !== undefined && screen.comision_markup_porcentaje !== null ? screen.comision_markup_porcentaje : 30.00
+        calculatedPrice = screen.precio_base_impacto * (1 + markup / 100)
+      }
+      
+      // Multipliers
+      const typeMult = screen?.tipo_pantalla ? (screen.tipo_pantalla === 'calle_principal' ? 2.5 : screen.tipo_pantalla === 'centro_comercial' ? 2.0 : screen.tipo_pantalla === 'calle' ? 1.5 : screen.tipo_pantalla === 'restaurante' ? 1.2 : screen.tipo_pantalla === 'gimnasio' ? 1.0 : 0.5) : 1.0
+      const densMult = screen?.densidad_poblacion_nivel ? (screen.densidad_poblacion_nivel === 'muy_alto' ? 1.5 : screen.densidad_poblacion_nivel === 'alto' ? 1.2 : screen.densidad_poblacion_nivel === 'medio' ? 1.0 : 0.8) : 1.0
+      const priorityPenalty = 1 + ((data.prioridad || 1) * 0.1)
+      const durationMultiplier = duracion / 10
+      const avgTimeMultiplier = 0.93
+
+      const finalCostPerImpact = calculatedPrice * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier
+
       return {
         cliente_id: user.id,
         pantalla_id: id !== "default" ? id : null,
@@ -109,7 +126,7 @@ export async function createCampaign(data: CampaignData) {
         hora_fin: horaFin,
         estado: finalEstado,
         ia_metadata: iaResult,
-        precio_pactado: screen?.precio_emision || 50.00, // Legacy fallback
+        precio_pactado: finalCostPerImpact,
         // LuminAdd v2: Programmatic fields
         presupuesto_total: data.presupuesto_total || 0,
         prioridad: data.prioridad || 1,
