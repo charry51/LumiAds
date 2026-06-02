@@ -7,14 +7,22 @@ import { Loader2 } from 'lucide-react'
 
 export function UserPlanToggle({ userId, currentPlanId }: { userId: string, currentPlanId: string }) {
   const [loading, setLoading] = useState(false)
-  const [planId, setPlanId] = useState(currentPlanId)
+  // Normalizar planes antiguos para mapearlos a los nuevos (Básico, Premium, Gold)
+  const normalizePlanId = (id: string) => {
+    const val = (id || '').toLowerCase();
+    if (val === 'presencia' || val === 'basico' || val === 'basic') return 'basic';
+    if (val === 'impacto' || val === 'premium') return 'premium';
+    if (val === 'expansion' || val === 'dominio' || val === 'gold') return 'gold';
+    return val || 'basic';
+  }
 
-  // Opciones actualizadas según la nueva jerarquía de planes
+  const [planId, setPlanId] = useState(normalizePlanId(currentPlanId))
+
+  // Opciones de planes comerciales (Básico, Premium, Gold)
   const planes = [
-    { value: 'presencia', label: 'Presencia (1 ptlla)' },
-    { value: 'presencia_pro', label: 'Presencia Pro (5 ptllas)' },
-    { value: 'impacto_senior', label: 'Impacto Senior (15 ptllas)' },
-    { value: 'dominio', label: 'Dominio (Ilimitado)' }
+    { value: 'basic', label: 'Plan Básico (0€)' },
+    { value: 'premium', label: 'Plan Premium (20€/mes)' },
+    { value: 'gold', label: 'Plan Gold (50€/mes)' }
   ]
 
   async function handleChange(newPlanId: string) {

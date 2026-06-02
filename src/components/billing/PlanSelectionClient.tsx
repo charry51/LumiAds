@@ -2,61 +2,70 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Loader2, Monitor, Shield, Zap } from 'lucide-react'
+import { Check, Loader2, Monitor, Shield, Zap, Sparkles } from 'lucide-react'
 
 const plans = [
   {
     id: 'basic',
-    label: 'Básico',
+    label: 'Plan Básico',
     price: '0€',
     period: '',
-    description: 'Perfecto para empezar y monetizar de forma sencilla.',
+    badge: null,
+    description: 'Perfecto para empezar. Tu pantalla es 100% pública.',
     features: [
-      'Visibilidad en el Marketplace',
-      'Gestiona tu catálogo básico',
-      'Sin coste mensual',
-      'Ideal para validar tu primer nodo',
+      'Sin cuota mensual',
+      'Visibilidad global en el Marketplace',
+      'Tú decides el precio base',
+      'LumiAds gestiona los anunciantes',
     ],
-    buttonText: 'Continuar con Básico',
+    buttonText: 'Empezar Gratis',
     accent: '#2BC8FF',
+    accentRgb: '43, 200, 255',
     icon: Monitor,
     action: 'free',
+    popular: false,
   },
   {
     id: 'premium',
-    label: 'Premium',
+    label: 'Plan Premium',
     price: '20€',
     period: '/mes',
-    description: 'Para hosts que quieren controlar sus anuncios propios.',
+    badge: 'Más Popular',
+    description: 'Para hosts que quieren gestionar sus propios anuncios.',
     features: [
       'Gestión de anuncios propios',
-      'Pantalla pública con mayor visibilidad',
+      'Pantalla 100% Pública',
       'Inyección de publicidad externa',
       'Comisión residual de ventas',
     ],
     buttonText: 'Activar Premium',
     accent: '#7C3CFF',
+    accentRgb: '124, 60, 255',
     icon: Zap,
     action: 'checkout',
     stripePlanId: 'premium',
+    popular: true,
   },
   {
     id: 'gold',
-    label: 'Gold',
+    label: 'Plan Gold',
     price: '50€',
     period: '/mes',
-    description: 'Control absoluto para hosts con CMS privado y máxima exclusividad.',
+    badge: null,
+    description: 'Control absoluto. CMS privado exclusivo para ti.',
     features: [
-      'Pantalla oculta del Marketplace',
-      'CMS 100% privado',
+      'Pantalla Oculta del Marketplace',
+      'CMS 100% Privado',
       'Sin anuncios externos',
       'Sube todo lo que quieras sin límites',
     ],
     buttonText: 'Activar Gold',
     accent: '#D4AF37',
+    accentRgb: '212, 175, 55',
     icon: Shield,
     action: 'checkout',
     stripePlanId: 'gold',
+    popular: false,
   },
 ]
 
@@ -64,6 +73,7 @@ export function PlanSelectionClient() {
   const router = useRouter()
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [hoveredPlan, setHoveredPlan] = useState<string | null>(null)
 
   const handleAction = async (plan: (typeof plans)[number]) => {
     setErrorMessage(null)
@@ -78,9 +88,7 @@ export function PlanSelectionClient() {
     try {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: plan.stripePlanId }),
       })
 
@@ -105,81 +113,172 @@ export function PlanSelectionClient() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      {/* Header */}
       <div className="space-y-3">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-lumi-violet font-bold">Paso 2 de 2</p>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-[#7C3CFF]" />
+          <p className="text-[10px] uppercase tracking-[0.4em] text-[#7C3CFF] font-bold">Paso 2 de 2</p>
+        </div>
         <h1 className="text-3xl md:text-4xl font-heading text-white tracking-tighter">
-          Elige el plan <span className="text-gradient-ui">ideal</span>
+          Elige el nivel de{' '}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7C3CFF] to-[#2BC8FF]">
+            control y visibilidad
+          </span>{' '}
+          que mejor se adapte a tu negocio físico.
         </h1>
-        <p className="text-sm text-zinc-300 max-w-2xl">
-          Ya tienes tu cuenta creada. Ahora selecciona el plan que mejor encaja con tu operación y, cuando estés listo, activa el pago para empezar.
-        </p>
       </div>
 
       {errorMessage && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
           {errorMessage}
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      {/* Plan Cards */}
+      <div className="grid gap-5 xl:grid-cols-3">
         {plans.map((plan) => {
           const Icon = plan.icon
           const isLoading = loadingPlan === plan.id
+          const isHovered = hoveredPlan === plan.id
 
           return (
             <div
               key={plan.id}
-              className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 shadow-[0_0_40px_rgba(0,0,0,0.35)]"
+              onMouseEnter={() => setHoveredPlan(plan.id)}
+              onMouseLeave={() => setHoveredPlan(null)}
+              className="relative group rounded-2xl transition-all duration-300 cursor-default"
+              style={{
+                background: isHovered
+                  ? `radial-gradient(ellipse at top left, rgba(${plan.accentRgb}, 0.07) 0%, rgba(9,9,11,0.8) 70%)`
+                  : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${isHovered ? `rgba(${plan.accentRgb}, 0.35)` : 'rgba(255,255,255,0.08)'}`,
+                boxShadow: isHovered
+                  ? `0 0 40px rgba(${plan.accentRgb}, 0.12), 0 0 1px rgba(${plan.accentRgb}, 0.5) inset`
+                  : '0 0 40px rgba(0,0,0,0.35)',
+              }}
             >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                    <Icon className="h-5 w-5" style={{ color: plan.accent }} />
+              {/* Popular Badge */}
+              {plan.badge && (
+                <div
+                  className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white"
+                  style={{
+                    background: `linear-gradient(135deg, rgba(${plan.accentRgb}, 0.9), rgba(${plan.accentRgb}, 0.6))`,
+                    border: `1px solid rgba(${plan.accentRgb}, 0.4)`,
+                    boxShadow: `0 0 20px rgba(${plan.accentRgb}, 0.4)`,
+                  }}
+                >
+                  {plan.badge}
+                </div>
+              )}
+
+              <div className="p-6">
+                {/* Icon + Label */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div
+                    className="rounded-xl p-3 transition-all duration-300"
+                    style={{
+                      background: isHovered
+                        ? `rgba(${plan.accentRgb}, 0.15)`
+                        : 'rgba(255,255,255,0.05)',
+                      border: `1px solid rgba(${plan.accentRgb}, ${isHovered ? '0.4' : '0.15'})`,
+                      transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+                    }}
+                  >
+                    <Icon
+                      className="h-5 w-5 transition-all duration-300"
+                      style={{ color: plan.accent }}
+                    />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-white">{plan.label}</p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">{plan.id === 'basic' ? 'Sin pago' : 'Pago mensual'}</p>
+                    <p className="text-base font-bold text-white">{plan.label}</p>
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-0.5">
+                      {plan.id === 'basic' ? 'Sin pago' : 'Pago mensual'}
+                    </p>
                   </div>
                 </div>
+
+                {/* Price */}
+                <div className="flex items-end gap-1.5 mb-3">
+                  <span
+                    className="text-5xl font-black tracking-tighter transition-all duration-300"
+                    style={{ color: isHovered ? plan.accent : '#ffffff' }}
+                  >
+                    {plan.price}
+                  </span>
+                  {plan.period && (
+                    <span className="pb-1.5 text-sm text-zinc-500 font-medium">{plan.period}</span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-zinc-400 leading-relaxed mb-6">{plan.description}</p>
+
+                {/* Separator */}
+                <div
+                  className="h-px mb-5 transition-all duration-300"
+                  style={{
+                    background: isHovered
+                      ? `linear-gradient(to right, rgba(${plan.accentRgb}, 0.4), transparent)`
+                      : 'rgba(255,255,255,0.06)',
+                  }}
+                />
+
+                {/* Features */}
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm text-zinc-300">
+                      <div
+                        className="mt-0.5 h-4 w-4 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
+                        style={{
+                          background: `rgba(${plan.accentRgb}, ${isHovered ? '0.2' : '0.1'})`,
+                        }}
+                      >
+                        <Check
+                          className="h-2.5 w-2.5"
+                          style={{ color: plan.accent }}
+                        />
+                      </div>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA Button */}
+                <button
+                  type="button"
+                  onClick={() => handleAction(plan)}
+                  disabled={isLoading}
+                  className="w-full py-3.5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={
+                    plan.id === 'basic'
+                      ? {
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: isHovered ? plan.accent : '#ffffff',
+                          borderColor: isHovered ? `rgba(${plan.accentRgb}, 0.4)` : 'rgba(255,255,255,0.1)',
+                        }
+                      : {
+                          background: isHovered
+                            ? `linear-gradient(135deg, ${plan.accent}, rgba(${plan.accentRgb}, 0.8))`
+                            : `rgba(${plan.accentRgb}, 0.15)`,
+                          border: `1px solid rgba(${plan.accentRgb}, ${isHovered ? '0.8' : '0.3'})`,
+                          color: isHovered ? '#09090B' : plan.accent,
+                          boxShadow: isHovered ? `0 0 24px rgba(${plan.accentRgb}, 0.4)` : 'none',
+                        }
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    plan.buttonText
+                  )}
+                </button>
               </div>
-
-              <div className="mt-6 flex items-end gap-2">
-                <span className="text-4xl font-heading text-white">{plan.price}</span>
-                {plan.period && <span className="pb-1 text-sm text-zinc-400">{plan.period}</span>}
-              </div>
-
-              <p className="mt-4 text-sm text-zinc-300">{plan.description}</p>
-
-              <ul className="mt-6 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm text-zinc-200">
-                    <Check className="mt-0.5 h-4 w-4" style={{ color: plan.accent }} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={() => handleAction(plan)}
-                disabled={isLoading}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.3em] transition-all"
-                style={{
-                  backgroundColor: plan.id === 'basic' ? 'rgba(255,255,255,0.05)' : plan.accent,
-                  color: plan.id === 'basic' ? '#fff' : '#09090B',
-                  border: plan.id === 'basic' ? '1px solid rgba(255,255,255,0.08)' : 'none',
-                }}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Procesando...
-                  </>
-                ) : (
-                  plan.buttonText
-                )}
-              </button>
             </div>
           )
         })}

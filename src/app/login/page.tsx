@@ -27,6 +27,29 @@ export default async function LoginPage({
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-lumi-blue/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
       
       <div className="w-full max-w-[440px] relative z-10">
+        {/* Back Arrow */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors mb-6 group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="group-hover:-translate-x-1 transition-transform"
+          >
+            <path d="M19 12H5" />
+            <path d="m12 5-7 7 7 7" />
+          </svg>
+          Volver al inicio
+        </Link>
+
         {/* Branding Logo */}
         <div className="mb-10 flex flex-col items-center text-center animate-fade-in">
           <Link href="/">

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '1gb',
     },
     proxyClientMaxBodySize: '1gb',
+    workerThreads: true,
   },
   env: {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',

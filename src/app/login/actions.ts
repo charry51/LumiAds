@@ -31,9 +31,7 @@ export async function login(formData: FormData) {
 
   if (profile?.rol === 'superadmin') {
     redirect('/admin')
-  } else if (profile?.rol === 'comercial' || profile?.rol === 'gestor_local') {
-    redirect('/agency')
-  } else if (profile?.es_host) {
+  } else if (profile?.rol === 'gestor_local' || profile?.es_host) {
     redirect('/host')
   } else {
     redirect('/advertiser')
@@ -93,6 +91,7 @@ export async function signup(formData: FormData) {
   // Usar admin client para evitar problemas de RLS
   const admin = await createAdminClient()
   const { error: profileError } = await admin.from('perfiles').update({
+    rol: rolPrincipal === 'host' ? 'gestor_local' : 'cliente',
     es_anunciante: rolPrincipal === 'anunciante',
     es_host: rolPrincipal === 'host',
   }).eq('id', userId)
