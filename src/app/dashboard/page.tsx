@@ -33,9 +33,7 @@ export default async function DashboardMainPage() {
 
   if (finalProfile?.rol === 'superadmin') {
     redirect('/admin')
-  } else if (finalProfile?.rol === 'comercial' || finalProfile?.rol === 'gestor_local') {
-    redirect('/agency')
-  } else if (finalProfile?.es_host) {
+  } else if (finalProfile?.rol === 'gestor_local' || finalProfile?.es_host) {
     redirect('/host')
   } else {
     redirect('/advertiser')

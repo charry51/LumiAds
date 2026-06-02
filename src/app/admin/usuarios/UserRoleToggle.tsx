@@ -1,32 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateUserRole } from './actions'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
 export function UserRoleToggle({ userId, currentRole }: { userId: string, currentRole: string }) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [role, setRole] = useState(currentRole)
 
+  useEffect(() => {
+    setRole(currentRole)
+  }, [currentRole])
+
   const roles = [
-    { value: 'cliente', label: 'Cliente' },
-    { value: 'superadmin', label: 'Superadmin' },
-    { value: 'comercial', label: 'Comercial' },
-    { value: 'gestor_local', label: 'Gestor Local' },
+    { value: 'cliente', label: 'Anunciante' },
+    { value: 'gestor_local', label: 'Gestor de Pantallas' },
+    { value: 'superadmin', label: 'Admin' },
   ]
 
   async function handleChange(newRole: string) {
     if (newRole === role) return
+    const previousRole = role
     
     setLoading(true)
     const res = await updateUserRole(userId, newRole)
     setLoading(false)
 
-    if (res.success) {
-      setRole(newRole)
+    if (res.success && res.profile) {
+      setRole(res.profile.rol)
+      router.refresh()
       toast.success('Rol actualizado con éxito')
     } else {
+      setRole(previousRole)
       toast.error(res.message || 'Error al actualizar')
     }
   }

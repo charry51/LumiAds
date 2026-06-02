@@ -211,8 +211,8 @@ export default async function HostDashboardPage({
               </h2>
               <div className="space-y-2">
                  {hosts.map((h: any) => (
-                    <Link key={h.id} href={`/host?screenId=${h.id}`} className="block">
-                       <div className={`p-4 rounded-lg border transition-all ${h.id === hostData.id ? 'bg-violet-500/10 border-violet-500/50 shadow-[0_0_15px_rgba(124,60,255,0.1)]' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-700'}`}>
+                    <Link key={h.id} href={`/host/pantallas/${h.id}`} className="block group">
+                       <div className="p-4 rounded-lg border border-zinc-900 bg-zinc-950 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all">
                           <div className="flex justify-between items-start mb-2">
                              <h3 className="text-xs font-black uppercase text-white truncate pr-2">{h.pantallas?.nombre}</h3>
                              <span className={`w-2 h-2 rounded-full mt-1 ${h.pantallas?.estado === 'activa' ? 'bg-emerald-500 shadow-[0_0_5px_#10B981]' : 'bg-zinc-600'}`} />
@@ -226,7 +226,7 @@ export default async function HostDashboardPage({
                              }`}>
                                 {h.pantallas?.plan_host}
                              </span>
-                             <span className="text-[9px] font-mono text-zinc-400 font-bold">{h.porcentaje}% Share</span>
+                             <span className="text-[9px] font-mono text-zinc-400 font-bold group-hover:text-violet-400 transition-colors">{h.porcentaje}% →</span>
                           </div>
                        </div>
                     </Link>

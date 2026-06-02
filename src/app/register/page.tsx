@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
+import { RegisterPlanSelector } from '@/components/auth/RegisterPlanSelector'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -26,6 +27,29 @@ export default async function RegisterPage({
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-lumi-blue/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
 
       <div className="w-full max-w-[460px] relative z-10">
+        {/* Back Arrow */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors mb-6 group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="group-hover:-translate-x-1 transition-transform"
+          >
+            <path d="M19 12H5" />
+            <path d="m12 5-7 7 7 7" />
+          </svg>
+          Volver al inicio
+        </Link>
+
         <div className="mb-10 flex flex-col items-center text-center animate-fade-in">
           <Link href="/">
             <img src="/LogoTexto.png" alt="LumiAds" className="h-[100px] w-auto mb-2 drop-shadow-[0_0_30px_rgba(124,60,255,0.3)]" />
@@ -42,7 +66,7 @@ export default async function RegisterPage({
               <span className="text-gradient-ui font-medium">Cuenta</span>
             </h2>
             <p className="text-[11px] text-zinc-400 font-sans tracking-wide mt-2">
-              Elige el plan que quieres usar. Si eliges Host, te llevaremos al selector de planes después del registro.
+              Crea tu cuenta para empezar a usar LumiAds.
             </p>
           </header>
 
@@ -85,27 +109,7 @@ export default async function RegisterPage({
               />
             </div>
 
-            <div className="space-y-3 mt-2">
-              <Label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Selecciona tu plan</Label>
-              <div className="grid grid-cols-1 gap-3">
-                <label className="cursor-pointer">
-                  <input type="radio" name="plan_principal" value="anunciante" className="peer sr-only" defaultChecked={defaultRole === 'anunciante'} />
-                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-lumi-blue/50 peer-checked:bg-lumi-blue/10 transition-all text-left h-full flex flex-col justify-center gap-1">
-                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">Plan Básico</p>
-                    <p className="text-[11px] text-white font-medium">Anunciante</p>
-                    <p className="text-[9px] text-zinc-500 leading-tight">Crea campañas publicitarias y usa el plan básico para anunciar.</p>
-                  </div>
-                </label>
-                <label className="cursor-pointer">
-                  <input type="radio" name="plan_principal" value="host" className="peer sr-only" defaultChecked={defaultRole === 'host'} />
-                  <div className="rounded-xl border border-white/5 bg-black/40 p-4 hover:bg-white/5 peer-checked:border-[#7C3CFF]/50 peer-checked:bg-[#7C3CFF]/10 transition-all text-left h-full flex flex-col justify-center gap-1">
-                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">Host Premium / Gold</p>
-                    <p className="text-[11px] text-white font-medium">Monetiza mis pantallas</p>
-                    <p className="text-[9px] text-zinc-500 leading-tight">Selecciona host para llegar al selector de planes y activar Premium o Gold.</p>
-                  </div>
-                </label>
-              </div>
-            </div>
+            <RegisterPlanSelector defaultRole={defaultRole} />
 
             {resolvedSearchParams?.message && (
               <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg">
