@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Check, Monitor, Shield, Zap } from 'lucide-react'
 
 const planes = [
@@ -58,22 +56,8 @@ const planes = [
 
 export default function PricingSection() {
   const router = useRouter()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    supabase.auth.getUser().then(({ data }) => {
-      setIsAuthenticated(Boolean(data.user))
-    })
-  }, [])
 
   const handleActivate = () => {
-    if (isAuthenticated) {
-      router.push('/planes/seleccionar?role=host')
-      return
-    }
-
     router.push('/register?type=host&returnTo=%2Fplanes%2Fseleccionar%3Frole%3Dhost')
   }
 

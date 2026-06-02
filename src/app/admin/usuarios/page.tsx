@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { UserRoleToggle } from './UserRoleToggle'
 import { UserPlanToggle } from './UserPlanToggle'
+import { DeleteUserButton } from './DeleteUserButton'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Users, Search, Filter } from 'lucide-react'
 
@@ -13,6 +14,8 @@ export default async function UserManagementPage({
   const adminClient = await createAdminClient()
   const resolvedSearchParams = await searchParams;
   const searchQuery = resolvedSearchParams?.q || ''
+
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
 
   // Construir query para buscar usuarios usando el cliente admin para saltar RLS
   let query = adminClient
@@ -68,7 +71,8 @@ export default async function UserManagementPage({
                   <th className="px-6 py-4">Usuario / Empresa</th>
                   <th className="px-6 py-4">Rol Actual</th>
                   <th className="px-6 py-4">Cambiar Plan</th>
-                  <th className="px-6 py-4 text-right">Asignar Permisos</th>
+                  <th className="px-6 py-4">Asignar Permisos</th>
+                  <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
@@ -85,23 +89,31 @@ export default async function UserManagementPage({
                     <td className="px-6 py-4">
                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                          user.rol === 'superadmin' ? 'bg-[#7C3CFF]/10 text-[#7C3CFF]' : 
-                         user.rol === 'comercial' ? 'bg-blue-500/10 text-blue-400' :
                          user.rol === 'gestor_local' ? 'bg-purple-500/10 text-purple-400' :
                          'bg-zinc-500/10 text-zinc-400'
                        }`}>
-                         {user.rol.replace('_', ' ')}
+                         {user.rol === 'superadmin' ? 'Admin' :
+                          user.rol === 'gestor_local' ? 'Gestor de Pantallas' :
+                          user.rol === 'cliente' ? 'Anunciante' : user.rol}
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || 'presencia'} />
+                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || 'basic'} />
+                    </td>
+                    <td className="px-6 py-4">
+                       <UserRoleToggle userId={user.id} currentRole={user.rol} />
                     </td>
                     <td className="px-6 py-4 text-right">
-                       <UserRoleToggle userId={user.id} currentRole={user.rol} />
+                       <DeleteUserButton 
+                         userId={user.id} 
+                         userName={user.nombre || user.nombre_empresa || user.email || 'Usuario'} 
+                         isCurrentUser={currentUser?.id === user.id} 
+                       />
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">No se encontraron usuarios</td>
+                    <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No se encontraron usuarios</td>
                   </tr>
                 )}
               </tbody>
