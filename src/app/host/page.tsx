@@ -112,23 +112,12 @@ export default async function HostDashboardPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
-          {hasScreens ? (
-            <Link href="#gestionar-pantallas">
-               <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                  <Tv className="w-4 h-4" />
-                  Gestionar pantallas
-               </Button>
-            </Link>
-          ) : (
-            <ConectarPantallaModal
-              trigger={
-                <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
-                  <Tv className="w-4 h-4" />
-                  Gestionar pantallas
-                </Button>
-              }
-            />
-          )}
+          <Link href="/host/estadisticas">
+             <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                <TrendingUp className="w-4 h-4 text-violet-500" />
+                Estadísticas
+             </Button>
+          </Link>
 
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
@@ -152,55 +141,6 @@ export default async function HostDashboardPage({
           </form>
         </div>
       </header>
-
-      {/* STATS BANNER */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden mb-12">
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Total Generado</p>
-             <TrendingUp className="h-4 w-4 text-violet-500" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white">{totalGenerado.toFixed(2)}€</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 flex items-center gap-1 font-bold">
-            Histórico en la red
-          </p>
-        </div>
-
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Nodos Activos</p>
-             <Tv className="h-4 w-4 text-emerald-500" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white">{activos} / {hosts?.length || 0}</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 font-bold">
-            Pantallas emitiendo
-          </p>
-        </div>
-
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Uptime Global</p>
-             <Zap className="h-4 w-4 text-violet-500" />
-          </div>
-          <div className="text-4xl font-mono font-black text-emerald-400">{hasScreens ? '99.9%' : '0%'}</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 font-bold">
-            Tiempo de conexión
-          </p>
-        </div>
-
-        <div className="p-6 border border-violet-500/30 bg-violet-500/5 rounded-lg relative overflow-hidden group shadow-[0_0_30px_rgba(124,60,255,0.05)]">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent" />
-          <div className="flex justify-between items-start mb-4 relative z-10">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-violet-400">Saldo Retirable</p>
-             <Wallet className="h-4 w-4 text-violet-500" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white relative z-10">{totalPendiente.toFixed(2)}€</div>
-          {totalPendiente >= 50 && (
-             <WithdrawButton isConfigured={!!currentProfile?.stripe_account_id} />
-          )}
-        </div>
-      </div>
 
       {!hasScreens ? (
         <div id="gestionar-pantallas" className="p-16 border border-zinc-900 bg-zinc-950/50 rounded-xl flex flex-col items-center justify-center text-center scroll-mt-8">
