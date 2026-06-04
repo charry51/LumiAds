@@ -1,24 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Check, Monitor, Shield, Zap } from 'lucide-react'
+import { Check, Shield, Zap } from 'lucide-react'
 
 const planes = [
-  {
-    id: 'basic',
-    name: 'Plan Básico',
-    price: '0€',
-    description: 'Perfecto para empezar. Tu pantalla es 100% pública.',
-    features: [
-      'Sin cuota mensual',
-      'Visibilidad global en el Marketplace',
-      'Tú decides el precio base',
-      'LumiAds gestiona los anunciantes'
-    ],
-    buttonText: 'Crear cuenta gratis',
-    icon: Monitor,
-    color: '#2BC8FF'
-  },
   {
     id: 'premium',
     name: 'Plan Premium',
@@ -71,11 +56,11 @@ export default function PricingSection() {
             Monetiza tus <span className="text-gradient-ui">Pantallas</span>
           </h2>
           <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
-            Primero crea tu cuenta como gestor. Después eliges el plan y entras al panel de pantallas.
+            Primero crea tu cuenta como gestor. Después eliges Premium o Gold y entras al panel de pantallas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {planes.map((plan) => {
             const Icon = plan.icon
             return (

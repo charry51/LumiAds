@@ -8,11 +8,6 @@ export interface SubscriptionPlan {
 
 export const subscriptionPlans: SubscriptionPlan[] = [
   {
-    id: 'basic',
-    name: 'Básico',
-    stripePriceId: '',
-  },
-  {
     id: 'premium',
     name: 'Premium',
     stripePriceId: process.env.STRIPE_PRICE_ID_PREMIUM || '',

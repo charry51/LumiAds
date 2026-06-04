@@ -2,29 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Loader2, Monitor, Shield, Zap, Sparkles } from 'lucide-react'
+import { Check, Loader2, Shield, Zap, Sparkles } from 'lucide-react'
 
 const plans = [
-  {
-    id: 'basic',
-    label: 'Plan Básico',
-    price: '0€',
-    period: '',
-    badge: null,
-    description: 'Perfecto para empezar. Tu pantalla es 100% pública.',
-    features: [
-      'Sin cuota mensual',
-      'Visibilidad global en el Marketplace',
-      'Tú decides el precio base',
-      'LumiAds gestiona los anunciantes',
-    ],
-    buttonText: 'Empezar Gratis',
-    accent: '#2BC8FF',
-    accentRgb: '43, 200, 255',
-    icon: Monitor,
-    action: 'free',
-    popular: false,
-  },
   {
     id: 'premium',
     label: 'Plan Premium',
@@ -77,11 +57,6 @@ export function PlanSelectionClient() {
 
   const handleAction = async (plan: (typeof plans)[number]) => {
     setErrorMessage(null)
-
-    if (plan.action === 'free') {
-      router.push('/host')
-      return
-    }
 
     setLoadingPlan(plan.id)
 
@@ -137,7 +112,7 @@ export function PlanSelectionClient() {
       )}
 
       {/* Plan Cards */}
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-2">
         {plans.map((plan) => {
           const Icon = plan.icon
           const isLoading = loadingPlan === plan.id
@@ -194,7 +169,7 @@ export function PlanSelectionClient() {
                   <div>
                     <p className="text-base font-bold text-white">{plan.label}</p>
                     <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-0.5">
-                      {plan.id === 'basic' ? 'Sin pago' : 'Pago mensual'}
+                      Pago mensual
                     </p>
                   </div>
                 </div>
@@ -251,23 +226,14 @@ export function PlanSelectionClient() {
                   onClick={() => handleAction(plan)}
                   disabled={isLoading}
                   className="w-full py-3.5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  style={
-                    plan.id === 'basic'
-                      ? {
-                          background: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          color: isHovered ? plan.accent : '#ffffff',
-                          borderColor: isHovered ? `rgba(${plan.accentRgb}, 0.4)` : 'rgba(255,255,255,0.1)',
-                        }
-                      : {
-                          background: isHovered
-                            ? `linear-gradient(135deg, ${plan.accent}, rgba(${plan.accentRgb}, 0.8))`
-                            : `rgba(${plan.accentRgb}, 0.15)`,
-                          border: `1px solid rgba(${plan.accentRgb}, ${isHovered ? '0.8' : '0.3'})`,
-                          color: isHovered ? '#09090B' : plan.accent,
-                          boxShadow: isHovered ? `0 0 24px rgba(${plan.accentRgb}, 0.4)` : 'none',
-                        }
-                  }
+                  style={{
+                    background: isHovered
+                      ? `linear-gradient(135deg, ${plan.accent}, rgba(${plan.accentRgb}, 0.8))`
+                      : `rgba(${plan.accentRgb}, 0.15)`,
+                    border: `1px solid rgba(${plan.accentRgb}, ${isHovered ? '0.8' : '0.3'})`,
+                    color: isHovered ? '#09090B' : plan.accent,
+                    boxShadow: isHovered ? `0 0 24px rgba(${plan.accentRgb}, 0.4)` : 'none',
+                  }}
                 >
                   {isLoading ? (
                     <>
