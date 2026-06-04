@@ -112,6 +112,24 @@ export default async function HostDashboardPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
+          {hasScreens ? (
+            <Link href="#gestionar-pantallas">
+               <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                  <Tv className="w-4 h-4" />
+                  Gestionar pantallas
+               </Button>
+            </Link>
+          ) : (
+            <ConectarPantallaModal
+              trigger={
+                <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                  <Tv className="w-4 h-4" />
+                  Gestionar pantallas
+                </Button>
+              }
+            />
+          )}
+
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 Perfil
@@ -122,7 +140,7 @@ export default async function HostDashboardPage({
             trigger={
               <Button className="bg-violet-600 hover:bg-violet-500 text-white flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-6 shadow-[0_0_15px_rgba(124,60,255,0.4)]">
                  <Monitor className="w-4 h-4" />
-                 Conectar otra pantalla
+                 Vincular nueva pantalla
               </Button>
             }
           />
@@ -185,7 +203,7 @@ export default async function HostDashboardPage({
       </div>
 
       {!hasScreens ? (
-        <div className="p-16 border border-zinc-900 bg-zinc-950/50 rounded-xl flex flex-col items-center justify-center text-center">
+        <div id="gestionar-pantallas" className="p-16 border border-zinc-900 bg-zinc-950/50 rounded-xl flex flex-col items-center justify-center text-center scroll-mt-8">
             <div className="w-20 h-20 bg-zinc-900 border-2 border-zinc-800 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(124,60,255,0.15)]">
                <Monitor className="w-8 h-8 text-zinc-500" />
             </div>
@@ -196,7 +214,7 @@ export default async function HostDashboardPage({
             <ConectarPantallaModal
               trigger={
                 <Button className="bg-violet-600 hover:bg-violet-500 text-white font-black uppercase text-xs tracking-widest px-8 py-6 rounded-lg shadow-[0_0_20px_rgba(124,60,255,0.4)]">
-                  Conectar pantalla
+                  Vincular pantalla
                 </Button>
               }
             />
@@ -205,14 +223,14 @@ export default async function HostDashboardPage({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
            
            {/* SIDEBAR TUS NODOS */}
-           <div className="lg:col-span-1 space-y-4">
+           <div id="gestionar-pantallas" className="lg:col-span-1 space-y-4 scroll-mt-8">
               <h2 className="text-[11px] uppercase tracking-[3px] text-zinc-400 flex items-center gap-2 font-black mb-6">
                  <Tv className="w-4 h-4 text-violet-500" /> Tus Nodos
               </h2>
               <div className="space-y-2">
                  {hosts.map((h: any) => (
                     <Link key={h.id} href={`/host/pantallas/${h.id}`} className="block group">
-                       <div className="p-4 rounded-lg border border-zinc-900 bg-zinc-950 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all">
+                       <div className="p-4 rounded-lg border border-zinc-900 bg-zinc-950 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all cursor-pointer">
                           <div className="flex justify-between items-start mb-2">
                              <h3 className="text-xs font-black uppercase text-white truncate pr-2">{h.pantallas?.nombre}</h3>
                              <span className={`w-2 h-2 rounded-full mt-1 ${h.pantallas?.estado === 'activa' ? 'bg-emerald-500 shadow-[0_0_5px_#10B981]' : 'bg-zinc-600'}`} />
@@ -227,8 +245,11 @@ export default async function HostDashboardPage({
                                 {h.pantallas?.plan_host}
                              </span>
                              <span className="text-[9px] font-mono text-zinc-400 font-bold group-hover:text-violet-400 transition-colors">{h.porcentaje}% →</span>
+                           </div>
+                          <div className="mt-3 border-t border-zinc-900 pt-3 text-[9px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-violet-400 transition-colors">
+                             Ver estadísticas y directo
                           </div>
-                       </div>
+                        </div>
                     </Link>
                  ))}
               </div>
@@ -346,7 +367,7 @@ export default async function HostDashboardPage({
                           <Monitor className="w-8 h-8 text-zinc-600 mb-4" />
                           <p className="text-[10px] uppercase font-bold text-white mb-2">Control de Emisión</p>
                           <p className="text-[9px] font-mono text-zinc-500 tracking-[1px] mb-4">Modo Híbrido Avanzado activo. Recibiendo pautas prioritarias de alto valor.</p>
-                          <Button variant="outline" className="text-[9px] uppercase font-bold border-zinc-800 bg-black">Ver Playlogs</Button>
+                          <Button variant="outline" className="text-[9px] uppercase font-bold border-zinc-800 bg-black">Ver historial</Button>
                        </div>
                     </div>
                  </div>
@@ -379,7 +400,7 @@ export default async function HostDashboardPage({
                           <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                              <Plus className="w-6 h-6 text-amber-500" />
                           </div>
-                          <h3 className="text-xs font-black uppercase text-white mb-2">Subir Media</h3>
+                          <h3 className="text-xs font-black uppercase text-white mb-2">Subir contenido</h3>
                           <p className="text-[9px] font-mono text-zinc-500 tracking-[1px]">Sube videos o imágenes</p>
                        </div>
                        
@@ -388,7 +409,7 @@ export default async function HostDashboardPage({
                              <History className="w-6 h-6 text-amber-500" />
                           </div>
                           <h3 className="text-xs font-black uppercase text-white mb-2">Librería CMS</h3>
-                          <p className="text-[9px] font-mono text-zinc-500 tracking-[1px]">Gestiona tus playlists</p>
+                          <p className="text-[9px] font-mono text-zinc-500 tracking-[1px]">Organiza tus contenidos</p>
                        </div>
 
                        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-xl flex flex-col items-center justify-center text-center">

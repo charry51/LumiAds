@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Send, Mail, User, MessageSquare } from 'lucide-react';
+import { Loader2, Send, Mail, User, MessageSquare } from 'lucide-react';
 
 export default function ContactSection() {
   const [isPending, setIsPending] = useState(false);
@@ -46,10 +46,10 @@ export default function ContactSection() {
           <div className="lg:w-2/5">
             <h2 className="text-4xl md:text-5xl font-heading text-white tracking-tighter mb-6" style={{ color: '#ffffff' }}>
               Hablemos de <br />
-              <span className="text-gradient-ui">tu Visión</span>
+              <span className="text-gradient-ui">tu proyecto</span>
             </h2>
             <p className="text-zinc-400 font-sans leading-relaxed mb-10 max-w-sm" style={{ color: '#a0a0b8' }}>
-              ¿Tienes dudas sobre cómo escalar tu red de pantallas o quieres una demo personalizada? Nuestro equipo de especialistas está listo.
+              Cuéntanos qué necesitas y te responderemos con el siguiente paso: demo, soporte o ayuda para configurar pantallas.
             </p>
 
             <div className="space-y-6">
@@ -81,30 +81,35 @@ export default function ContactSection() {
               <form id="contact-form" onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold" style={{ color: '#a1a1aa' }}>Nombre Completo</Label>
+                    <Label htmlFor="name" className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold" style={{ color: '#a1a1aa' }}>Nombre</Label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                       <Input 
                         id="name" 
                         name="name" 
-                        placeholder="Juan Pérez" 
+                        autoComplete="name"
+                        placeholder="Tu nombre"
                         className="bg-black/40 border-white/10 pl-11 py-6 focus:border-primary transition-all rounded-xl text-white placeholder:text-zinc-600"
                         style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.1)' }}
+                        disabled={isPending}
                         required 
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold" style={{ color: '#a1a1aa' }}>Email Corporativo</Label>
+                    <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold" style={{ color: '#a1a1aa' }}>Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                       <Input 
                         id="email" 
                         name="email" 
                         type="email" 
-                        placeholder="juan@empresa.com" 
+                        autoComplete="email"
+                        inputMode="email"
+                        placeholder="tu@email.com"
                         className="bg-black/40 border-white/10 pl-11 py-6 focus:border-primary transition-all rounded-xl text-white placeholder:text-zinc-600"
                         style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.1)' }}
+                        disabled={isPending}
                         required 
                       />
                     </div>
@@ -116,9 +121,10 @@ export default function ContactSection() {
                   <Input 
                     id="subject" 
                     name="subject" 
-                    placeholder="Consulta sobre red de pantallas..." 
+                    placeholder="Quiero anunciar / Tengo pantallas / Necesito soporte"
                     className="bg-black/40 border-white/10 py-6 focus:border-primary transition-all rounded-xl text-white placeholder:text-zinc-600"
                     style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.1)' }}
+                    disabled={isPending}
                     required 
                   />
                 </div>
@@ -128,9 +134,10 @@ export default function ContactSection() {
                   <Textarea 
                     id="message" 
                     name="message" 
-                    placeholder="Cuéntanos más sobre tu proyecto..." 
+                    placeholder="Cuéntanos qué quieres conseguir y en qué ciudad trabajas..."
                     className="bg-black/40 border-white/10 min-h-[150px] focus:border-primary transition-all rounded-xl resize-none text-white placeholder:text-zinc-600"
                     style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: '#ffffff', borderColor: 'rgba(255,255,255,0.1)' }}
+                    disabled={isPending}
                     required 
                   />
                 </div>
@@ -141,7 +148,7 @@ export default function ContactSection() {
                   className="w-full cyber-button-ui py-8 text-xs font-black tracking-[4px]"
                 >
                   {isPending ? 'ENVIANDO...' : 'ENVIAR MENSAJE'}
-                  <Send className="ml-2 w-4 h-4" />
+                  {isPending ? <Loader2 className="ml-2 w-4 h-4 animate-spin" /> : <Send className="ml-2 w-4 h-4" />}
                 </Button>
               </form>
             </div>

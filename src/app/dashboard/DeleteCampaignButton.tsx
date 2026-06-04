@@ -36,7 +36,13 @@ export function DeleteCampaignButton({ campaignId }: { campaignId: string }) {
     <AlertDialog>
       <AlertDialogTrigger 
         render={
-          <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            title="Eliminar campana"
+            aria-label="Eliminar campana"
+          >
             <Trash2 className="w-4 h-4" />
           </Button>
         } 

@@ -67,7 +67,8 @@ export function ActionButtons({ campanaId, estado }: { campanaId: string, estado
         className="text-zinc-500 hover:text-red-500 hover:bg-red-500/5 transition-colors p-2 h-8 w-8"
         onClick={handleDelete}
         disabled={loading}
-        title="Eliminar permanentemente"
+        title="Eliminar campana"
+        aria-label="Eliminar campana"
       >
         <Trash2 className="w-4 h-4" />
       </Button>

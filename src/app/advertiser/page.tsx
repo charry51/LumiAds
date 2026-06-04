@@ -179,7 +179,7 @@ export default async function AdvertiserDashboardPage() {
                       <th className="px-6 py-4 text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Delivery</th>
                       <th className="px-6 py-4 text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Economía</th>
                       <th className="px-6 py-4 text-[10px] uppercase font-bold text-zinc-600 tracking-widest">Estado</th>
-                      <th className="px-6 py-4 text-[10px] uppercase font-bold text-zinc-600 tracking-widest text-right">Delete</th>
+                      <th className="px-6 py-4 text-[10px] uppercase font-bold text-zinc-600 tracking-widest text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-900">
@@ -285,7 +285,7 @@ export default async function AdvertiserDashboardPage() {
                          variant="outline" 
                          className="h-8 text-[9px] uppercase font-bold border-zinc-800 bg-black text-zinc-300 hover:text-white hover:bg-zinc-900"
                        >
-                         Ver pantalla <ArrowUpRight className="w-3 h-3 ml-1" />
+                         Abrir emisión <ArrowUpRight className="w-3 h-3 ml-1" />
                        </Button>
                      </Link>
                    </div>

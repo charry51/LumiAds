@@ -207,7 +207,7 @@ export async function AnuncianteDashboardView() {
                             color: accentColor 
                          }}
                        >
-                         Ver en Vivo
+                         Abrir emisión
                        </Button>
                      </Link>
                    </div>
@@ -218,7 +218,7 @@ export async function AnuncianteDashboardView() {
             <div className="col-span-full py-16 flex flex-col items-center justify-center text-center cyber-card border-dashed bg-lumi-blue/5 border-lumi-blue/20">
               <p className="text-lumi-blue dark:text-[#2BC8FF] font-heading uppercase text-sm mb-2">Sin pantallas activas</p>
               <Link href="/vincular" className="flex justify-center">
-                <Button size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black mt-4 shadow-lg shadow-[#2BC8FF]/10 text-xs font-bold uppercase tracking-widest px-6 py-2">Vincular mi TV ahora</Button>
+                <Button size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black mt-4 shadow-lg shadow-[#2BC8FF]/10 text-xs font-bold uppercase tracking-widest px-6 py-2">Vincular pantalla</Button>
               </Link>
             </div>
           )}

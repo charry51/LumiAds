@@ -33,7 +33,9 @@ export function SocialAuthButtons() {
 
       <div className="flex flex-col">
         <button 
+          type="button"
           disabled={!!isLoading}
+          aria-busy={isLoading === 'google'}
           onClick={() => handleSignIn('google')}
           className="flex items-center justify-center gap-3 bg-white/[0.03] border border-white/5 hover:border-lumi-blue/30 hover:bg-white/5 h-14 rounded-xl text-[10px] uppercase font-bold tracking-widest transition-all group w-full"
         >

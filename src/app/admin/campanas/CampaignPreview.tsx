@@ -8,7 +8,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Eye } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export function CampaignPreview({ url, nombre }: { url: string, nombre: string }) {
   const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(url)
@@ -16,7 +15,7 @@ export function CampaignPreview({ url, nombre }: { url: string, nombre: string }
   return (
     <Dialog>
       <DialogTrigger className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-zinc-800 bg-background shadow-sm hover:bg-zinc-800 hover:text-accent-foreground h-9 px-3 gap-2">
-        <Eye className="w-4 h-4" /> Ver Anuncio
+        <Eye className="w-4 h-4" /> Previsualizar anuncio
       </DialogTrigger>
       <DialogContent className="max-w-4xl bg-zinc-950 border-zinc-800">
         <DialogHeader>

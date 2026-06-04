@@ -104,11 +104,16 @@ export async function HostDashboardView({
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
+          <Link href="#gestionar-pantallas">
+            <Button variant="outline" className="h-9 border-border text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] uppercase font-bold tracking-widest px-3">
+              <Tv className="w-4 h-4 mr-2" /> Gestionar pantallas
+            </Button>
+          </Link>
           <Link 
             href="/dashboard?mode=host&action=vincular"
             className="cyber-button-ui w-full sm:w-auto text-center"
           >
-            <Plus className="w-4 h-4 mr-2" /> Conectar otra pantalla
+            <Plus className="w-4 h-4 mr-2" /> Vincular nueva pantalla
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/dashboard/perfil">
@@ -124,7 +129,7 @@ export async function HostDashboardView({
         </div>
       </header>
 
-      <section className="mb-10 cyber-glass-ui border-[#7C3CFF]/10 overflow-hidden relative transition-all duration-500">
+      <section id="gestionar-pantallas" className="mb-10 cyber-glass-ui border-[#7C3CFF]/10 overflow-hidden relative transition-all duration-500 scroll-mt-8">
           <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30" />
           <div className="p-6 flex flex-col sm:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-6">
@@ -150,7 +155,7 @@ export async function HostDashboardView({
                   {hosts.map((h: any) => (
                       <Link 
                         key={h.id} 
-                        href={`/dashboard?mode=host&screenId=${h.id}`}
+                        href={`/host/pantallas/${h.id}`}
                         className={`px-3 py-1.5 rounded-md border text-[10px] uppercase font-black transition-all tracking-tighter ${
                           h.id === hostData.id 
                             ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105' 
@@ -158,6 +163,7 @@ export async function HostDashboardView({
                         }`}
                       >
                         {h.pantallas?.nombre}
+                        <span className="ml-2 text-[8px] opacity-70">Estadísticas + directo</span>
                       </Link>
                   ))}
               </div>
@@ -202,11 +208,18 @@ export async function HostDashboardView({
                     {pantalla?.estado || 'Inactiva'}
                     </span>
                     {pantalla?.id && (
-                      <Link href={`/player/${pantalla.id}`} target="_blank">
-                        <Button variant="outline" size="sm" className="h-7 text-[9px] uppercase font-bold border-[#7C3CFF]/20 text-[#7C3CFF] hover:bg-[#7C3CFF] hover:text-black transition-all">
-                          <Monitor className="w-3 h-3 mr-1" /> Ver en Vivo
-                        </Button>
-                      </Link>
+                      <>
+                        <Link href={`/host/pantallas/${hostData.id}`}>
+                          <Button variant="outline" size="sm" className="h-7 text-[9px] uppercase font-bold border-[#7C3CFF]/20 text-[#7C3CFF] hover:bg-[#7C3CFF] hover:text-black transition-all">
+                            <TrendingUp className="w-3 h-3 mr-1" /> Ver estadísticas
+                          </Button>
+                        </Link>
+                        <Link href={`/player/${pantalla.id}`} target="_blank">
+                          <Button variant="outline" size="sm" className="h-7 text-[9px] uppercase font-bold border-[#7C3CFF]/20 text-[#7C3CFF] hover:bg-[#7C3CFF] hover:text-black transition-all">
+                            <Monitor className="w-3 h-3 mr-1" /> Abrir emisión
+                          </Button>
+                        </Link>
+                      </>
                     )}
                 </div>
             </div>
@@ -339,7 +352,7 @@ export async function HostDashboardView({
                         <p className={`text-4xl font-mono font-black tracking-tighter ${item.color}`}>{item.value}</p>
                         
                         {item.label === 'Saldo Disponible' && (hostData.saldo_pendiente || 0) >= 50 && (
-                            <Button className="w-full mt-6 bg-[#7C3CFF] hover:bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-none h-10 shadow-lg shadow-[#7C3CFF]/20 transition-all">Solicitar Cobro Now</Button>
+                            <Button className="w-full mt-6 bg-[#7C3CFF] hover:bg-white text-black font-black uppercase text-[10px] tracking-widest rounded-none h-10 shadow-lg shadow-[#7C3CFF]/20 transition-all">Solicitar cobro</Button>
                         )}
                     </div>
                 ))}
@@ -354,7 +367,7 @@ export async function HostDashboardView({
             </div>
             
             <button className="w-full py-4 border border-border text-muted-foreground text-[10px] uppercase font-black tracking-[3px] hover:border-primary/50 hover:text-primary transition-all rounded-xl">
-               Descargar Facturas PDF
+               Descargar facturas
             </button>
         </div>
       </div>
