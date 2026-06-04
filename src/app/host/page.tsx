@@ -137,6 +137,7 @@ export default async function HostDashboardPage({
             />
           )}
 
+
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 Perfil
