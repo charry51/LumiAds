@@ -18,7 +18,7 @@ const planOptions = [
     value: 'host' as const,
     label: 'Gestor de Pantallas',
     badge: 'Monetizar pantallas',
-    description: 'Después del registro eliges Básico, Premium o Gold y conectas tus pantallas.',
+    description: 'Después del registro eliges Premium o Gold y conectas tus pantallas.',
     accent: 'border-[#7C3CFF]/50 bg-[#7C3CFF]/10',
     icon: Monitor,
   },

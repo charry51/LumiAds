@@ -16,12 +16,6 @@ export default function HeroSection() {
     })
   }, [])
 
-  const scrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    const el = document.getElementById('host-pricing')
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }
-
   const hostHref = isAuthenticated
     ? '/host'
     : '/register?type=host&returnTo=%2Fplanes%2Fseleccionar%3Frole%3Dhost'
@@ -88,7 +82,7 @@ export default function HeroSection() {
           </h2>
           
           <p className="text-zinc-400 text-lg mb-10 max-w-md">
-            Crea tu cuenta como gestor, elige Básico, Premium o Gold, y empieza a conectar tus pantallas al panel.
+            Crea tu cuenta como gestor, elige Premium o Gold, y empieza a conectar tus pantallas al panel.
           </p>
           
           <Link href={hostHref} className="group/btn flex items-center gap-3 px-8 py-4 rounded-full bg-transparent border border-[#7C3CFF]/50 text-[#7C3CFF] font-bold uppercase tracking-widest text-[11px] hover:bg-[#7C3CFF] hover:text-white transition-all shadow-[0_0_20px_rgba(124,60,255,0)] hover:shadow-[0_0_30px_rgba(124,60,255,0.3)] w-full sm:w-auto justify-center">

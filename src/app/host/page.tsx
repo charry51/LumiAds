@@ -119,6 +119,25 @@ export default async function HostDashboardPage({
              </Button>
           </Link>
 
+          {hasScreens ? (
+            <Link href="#gestionar-pantallas">
+               <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                  <Tv className="w-4 h-4" />
+                  Gestionar pantallas
+               </Button>
+            </Link>
+          ) : (
+            <ConectarPantallaModal
+              trigger={
+                <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                  <Tv className="w-4 h-4" />
+                  Gestionar pantallas
+                </Button>
+              }
+            />
+          )}
+
+
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 Perfil
