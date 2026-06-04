@@ -147,9 +147,11 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
                   <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-zinc-400 hover:text-[#7C3CFF] hover:bg-zinc-800"
+                      className="text-zinc-400 hover:text-[#7C3CFF] hover:bg-zinc-800 gap-1.5 px-3"
+                      title="Abrir emisión"
                   >
                     <ExternalLink className="w-4 h-4" />
+                    <span className="text-[10px] uppercase font-bold">Abrir emisión</span>
                   </Button>
                 </Link>
                 <Button 
@@ -158,6 +160,8 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
                     className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
                     disabled={loading === p.id}
                     onClick={() => handleDelete(p.id)}
+                    title="Eliminar pantalla"
+                    aria-label={`Eliminar pantalla ${p.nombre}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

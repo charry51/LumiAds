@@ -154,7 +154,7 @@ export default async function PantallaDetailPage({
               className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              Pantalla completa
+              Abrir emisión
             </Link>
           </div>
 

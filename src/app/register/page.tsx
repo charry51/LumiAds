@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 import { RegisterPlanSelector } from '@/components/auth/RegisterPlanSelector'
 import type { Metadata } from 'next'
+import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Crear Cuenta | LumiAds',
@@ -32,21 +33,7 @@ export default async function RegisterPage({
           href="/"
           className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors mb-6 group"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="group-hover:-translate-x-1 transition-transform"
-          >
-            <path d="M19 12H5" />
-            <path d="m12 5-7 7 7 7" />
-          </svg>
+          <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform" />
           Volver al inicio
         </Link>
 
@@ -63,10 +50,10 @@ export default async function RegisterPage({
           <header className="mb-8 relative z-10">
             <h2 className="text-3xl font-heading font-light text-white tracking-tighter leading-tight">
               Crea tu <br />
-              <span className="text-gradient-ui font-medium">Cuenta</span>
+              <span className="text-gradient-ui font-medium">cuenta</span>
             </h2>
-            <p className="text-[11px] text-zinc-400 font-sans tracking-wide mt-2">
-              Crea tu cuenta para empezar a usar LumiAds.
+            <p className="text-sm text-zinc-400 font-sans mt-2">
+              Elige si quieres anunciar o gestionar pantallas. El panel se ajustará a tu elección.
             </p>
           </header>
 
@@ -74,24 +61,26 @@ export default async function RegisterPage({
             <input type="hidden" name="return_to" value={returnTo} />
 
             <div className="space-y-1.5">
-              <Label htmlFor="nombre" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Empresa / Nombre Completo</Label>
+              <Label htmlFor="nombre" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Empresa o nombre</Label>
               <Input
                 id="nombre"
                 name="nombre"
                 type="text"
-                placeholder="Ej: Media Solutions S.L."
+                autoComplete="organization"
+                placeholder="Ej. Media Solutions S.L."
                 className="bg-black/40 border-white/5 focus:border-lumi-blue/50 focus:ring-1 focus:ring-lumi-blue/20 transition-all rounded-xl font-sans text-sm py-6 px-5 placeholder:text-zinc-700 text-white"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Correo Electrónico</Label>
+              <Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 ml-1">Correo electrónico</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="ceo@tuempresa.com"
+                autoComplete="email"
+                placeholder="tu@email.com"
                 className="bg-black/40 border-white/5 focus:border-lumi-blue/50 focus:ring-1 focus:ring-lumi-blue/20 transition-all rounded-xl font-sans text-sm py-6 px-5 placeholder:text-zinc-700 text-white"
                 required
               />
@@ -103,6 +92,7 @@ export default async function RegisterPage({
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="••••••••••••"
                 className="bg-black/40 border-white/5 focus:border-lumi-violet/50 focus:ring-1 focus:ring-lumi-violet/20 transition-all rounded-xl font-sans text-sm py-6 px-5 placeholder:text-zinc-700 text-white"
                 required
@@ -113,19 +103,19 @@ export default async function RegisterPage({
 
             {resolvedSearchParams?.message && (
               <div className="p-4 bg-red-500/5 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-tighter rounded-lg">
-                Alerta del Sistema: {resolvedSearchParams.message}
+                {resolvedSearchParams.message}
               </div>
             )}
 
             <button className="cyber-button-ui mt-4 py-4 text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(124,60,255,0.2)] hover:shadow-[0_0_60px_rgba(124,60,255,0.4)] transform hover:-translate-y-0.5 transition-all">
-              Crear Cuenta
+              Crear cuenta
             </button>
           </form>
 
           <SocialAuthButtons />
 
           <footer className="mt-10 pt-8 border-t border-white/5 flex flex-col items-center gap-4 relative z-10">
-            <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest">
               <span className="text-zinc-600">¿Ya eres parte?</span>
               <Link href="/login" className="text-lumi-violet hover:text-white transition-colors underline underline-offset-4 decoration-lumi-violet/30">
                 Inicia sesión

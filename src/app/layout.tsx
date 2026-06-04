@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "LumiAds | Inteligencia Digital Signage",
-  description: "Plataforma SaaS avanzada para la gestión dinámica de pantallas publicitarias con LumiAds.",
+  description: "Plataforma SaaS para gestionar pantallas publicitarias, campañas y monetización con LumiAds.",
   icons: {
     icon: "/LogoPequeno.png",
   },
@@ -13,8 +13,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  userScalable: true,
 };
 
 import { Toaster } from "@/components/ui/sonner";

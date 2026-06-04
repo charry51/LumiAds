@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Monitor, X, Play, Info } from 'lucide-react'
+import { Monitor, X, Info } from 'lucide-react'
 
 interface ScreenPreviewButtonProps {
   screenId: string
@@ -26,7 +26,7 @@ export function ScreenPreviewButton({ screenId, screenName, accentColor }: Scree
         onClick={() => setIsOpen(true)}
       >
         <Monitor className="w-3.5 h-3.5 mr-1" />
-        Vista Previa
+        Previsualizar pantalla
       </Button>
 
       {isOpen && (
@@ -49,6 +49,7 @@ export function ScreenPreviewButton({ screenId, screenName, accentColor }: Scree
               <button 
                 onClick={() => setIsOpen(false)}
                 className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+                aria-label="Cerrar previsualización"
               >
                 <X className="w-4 h-4" />
               </button>

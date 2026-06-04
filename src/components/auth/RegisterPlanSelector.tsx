@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Megaphone, Monitor } from 'lucide-react'
 
 type PlanRole = 'anunciante' | 'host'
 
@@ -8,16 +9,18 @@ const planOptions = [
   {
     value: 'anunciante' as const,
     label: 'Anunciante',
-    badge: 'Crear campanas',
-    description: 'Registrate para crear anuncios. No necesitas elegir un plan de pantallas.',
+    badge: 'Crear campañas',
+    description: 'Entras directo al panel de anunciante. No necesitas elegir un plan.',
     accent: 'border-lumi-blue/50 bg-lumi-blue/10',
+    icon: Megaphone,
   },
   {
     value: 'host' as const,
     label: 'Gestor de Pantallas',
     badge: 'Monetizar pantallas',
-    description: 'Registrate como gestor y despues elige Basico, Premium o Gold.',
+    description: 'Después del registro eliges Básico, Premium o Gold y conectas tus pantallas.',
     accent: 'border-[#7C3CFF]/50 bg-[#7C3CFF]/10',
+    icon: Monitor,
   },
 ]
 
@@ -39,6 +42,7 @@ export function RegisterPlanSelector({ defaultRole }: { defaultRole: PlanRole })
       <div className="grid grid-cols-1 gap-3">
         {planOptions.map((plan) => {
           const isSelected = selectedPlan === plan.value
+          const Icon = plan.icon
 
           return (
             <button
@@ -52,12 +56,22 @@ export function RegisterPlanSelector({ defaultRole }: { defaultRole: PlanRole })
                   : 'border-white/5 bg-black/40 hover:bg-white/5'
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] font-bold text-white uppercase tracking-widest">
-                  {plan.label}
-                </p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${
+                    isSelected ? 'border-white/20 bg-black/20 text-white' : 'border-white/10 bg-white/5 text-zinc-400'
+                  }`}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-[10px] font-bold text-white uppercase tracking-widest">
+                      {plan.label}
+                    </p>
+                    <p className="mt-2 text-[12px] text-white font-medium">{plan.badge}</p>
+                  </div>
+                </div>
                 <span
-                  className={`rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-[0.2em] ${
+                  className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-[0.18em] ${
                     isSelected
                       ? 'bg-black/30 text-white'
                       : 'bg-white/5 text-zinc-300'
@@ -66,8 +80,7 @@ export function RegisterPlanSelector({ defaultRole }: { defaultRole: PlanRole })
                   {isSelected ? 'Seleccionado' : 'Disponible'}
                 </span>
               </div>
-              <p className="mt-2 text-[11px] text-white font-medium">{plan.badge}</p>
-              <p className="mt-1 text-[9px] text-zinc-500 leading-tight">
+              <p className="mt-3 text-[11px] text-zinc-400 leading-relaxed">
                 {plan.description}
               </p>
             </button>

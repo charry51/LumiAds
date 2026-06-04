@@ -15,7 +15,7 @@ const planes = [
       'Tú decides el precio base',
       'LumiAds gestiona los anunciantes'
     ],
-    buttonText: 'Empezar Gratis',
+    buttonText: 'Crear cuenta gratis',
     icon: Monitor,
     color: '#2BC8FF'
   },
@@ -31,7 +31,7 @@ const planes = [
       'Inyección de publicidad externa',
       'Comisión residual de ventas'
     ],
-    buttonText: 'Activar Premium',
+    buttonText: 'Crear cuenta y elegir Premium',
     icon: Zap,
     color: '#7C3CFF',
     popular: true
@@ -48,7 +48,7 @@ const planes = [
       'Sin anuncios externos',
       'Sube todo lo que quieras sin límites'
     ],
-    buttonText: 'Activar Gold',
+    buttonText: 'Crear cuenta y elegir Gold',
     icon: Shield,
     color: '#D4AF37'
   }
@@ -71,22 +71,22 @@ export default function PricingSection() {
             Monetiza tus <span className="text-gradient-ui">Pantallas</span>
           </h2>
           <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
-            Elige el nivel de control y visibilidad que mejor se adapte a tu negocio físico.
+            Primero crea tu cuenta como gestor. Después eliges el plan y entras al panel de pantallas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {planes.map((plan) => {
             const Icon = plan.icon
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 landing-glass-ui
-                  ${plan.popular ? 'border-[#7C3CFF]/50 shadow-[0_0_30px_rgba(124,60,255,0.15)] scale-105 z-10' : 'border-white/10 hover:border-white/30'}`}
+                className={`relative flex flex-col p-6 sm:p-8 rounded-3xl border transition-all duration-300 landing-glass-ui
+                  ${plan.popular ? 'border-[#7C3CFF]/50 shadow-[0_0_30px_rgba(124,60,255,0.15)] md:scale-[1.03] z-10' : 'border-white/10 hover:border-white/30'}`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#7C3CFF] text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
-                    Más Popular
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-1 bg-[#7C3CFF] text-white text-[10px] font-bold uppercase tracking-widest rounded-full">
+                    Más elegido
                   </div>
                 )}
 
@@ -117,7 +117,7 @@ export default function PricingSection() {
 
                 <button
                   onClick={handleActivate}
-                  className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 group"
+                  className="w-full min-h-12 px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group text-center leading-snug"
                   style={{
                     backgroundColor: plan.popular ? '#7C3CFF' : 'rgba(255,255,255,0.05)',
                     color: plan.popular ? '#fff' : plan.color,
