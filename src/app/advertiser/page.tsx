@@ -91,6 +91,20 @@ export default async function AdvertiserDashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
+          <Link href="/advertiser/estadisticas">
+             <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-[#2BC8FF] hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
+                <TrendingUp className="w-4 h-4" />
+                Estadísticas
+             </Button>
+          </Link>
+
+          <Link href="/dashboard/billetera">
+             <Button variant="outline" className="border-[#2BC8FF]/30 bg-[#2BC8FF]/5 text-[#2BC8FF] hover:bg-[#2BC8FF] hover:text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-4 transition-all shadow-[0_0_10px_rgba(43,200,255,0.15)]">
+                <Wallet className="w-4 h-4" />
+                Recargar Monedero
+             </Button>
+          </Link>
+
           <Link href="/dashboard/perfil">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 Perfil
@@ -111,55 +125,6 @@ export default async function AdvertiserDashboardPage() {
           </form>
         </div>
       </header>
-
-      {/* STATS BANNER */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden mb-12">
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2BC8FF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Impactos Generados</p>
-             <Zap className="h-4 w-4 text-[#2BC8FF]" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white">{totalImpactos.toLocaleString()}</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 flex items-center gap-1 font-bold">
-            Impresiones Reales
-          </p>
-        </div>
-
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Presupuesto Activo</p>
-             <DollarSign className="h-4 w-4 text-emerald-500" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white">{totalPresupuesto.toFixed(2)}€</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 font-bold">
-            En campañas vivas
-          </p>
-        </div>
-
-        <div className="p-6 border border-zinc-900 bg-zinc-950/80 rounded-lg relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-4">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Campañas Vivas</p>
-             <Target className="h-4 w-4 text-[#2BC8FF]" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white">{campañasActivas}</div>
-          <p className="text-[9px] uppercase text-zinc-600 mt-2 font-bold">
-            Emitiendo actualmente
-          </p>
-        </div>
-
-        <div className="p-6 border border-[#2BC8FF]/30 bg-[#2BC8FF]/5 rounded-lg relative overflow-hidden group shadow-[0_0_30px_rgba(43,200,255,0.05)]">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2BC8FF]/10 to-transparent" />
-          <div className="flex justify-between items-start mb-4 relative z-10">
-             <p className="text-[10px] uppercase font-bold tracking-widest text-[#2BC8FF]">Saldo Billetera</p>
-             <Wallet className="h-4 w-4 text-[#2BC8FF]" />
-          </div>
-          <div className="text-4xl font-mono font-black text-white relative z-10">{saldoBilletera.toFixed(2)}€</div>
-          <Link href="/dashboard/billetera" className="text-[9px] text-black bg-[#2BC8FF] px-2 py-1 rounded inline-block uppercase font-black tracking-widest hover:bg-white transition-colors mt-3 relative z-10">
-            + Recargar Saldo
-          </Link>
-        </div>
-      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
