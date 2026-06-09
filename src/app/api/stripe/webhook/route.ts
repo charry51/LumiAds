@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/server'
 import { creditWalletRechargeSession } from '@/lib/wallet-recharge'
+import { syncPlanToScreens } from '@/app/actions/profile'
 import Stripe from 'stripe'
 
 type InvoiceWithSubscription = Stripe.Invoice & {
@@ -98,6 +99,8 @@ export async function POST(req: Request) {
           suscripcion_activa: true,
         })
         .eq('id', session.metadata.userId)
+
+      await syncPlanToScreens(session.metadata.userId, session.metadata.planId, true)
     }
   }
 
@@ -121,14 +124,23 @@ export async function POST(req: Request) {
 
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription
-
-    await supabase
+    const { data: profile } = await supabase
       .from('perfiles')
-      .update({
-        suscripcion_activa: false,
-        plan_id: null,
-      })
+      .select('id')
       .eq('stripe_subscription_id', subscription.id)
+      .single()
+
+    if (profile) {
+      await supabase
+        .from('perfiles')
+        .update({
+          suscripcion_activa: false,
+          plan_id: null,
+        })
+        .eq('id', profile.id)
+
+      await syncPlanToScreens(profile.id, null, false)
+    }
   }
 
   return new NextResponse(null, { status: 200 })

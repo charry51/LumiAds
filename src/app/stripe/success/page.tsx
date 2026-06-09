@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { creditWalletRechargeSession } from '@/lib/wallet-recharge'
+import { syncPlanToScreens } from '@/app/actions/profile'
 
 export default async function SuccessPage({
   searchParams,
@@ -67,9 +68,10 @@ export default async function SuccessPage({
         .update({
           plan_id: planId,
           suscripcion_activa: true,
-          plan_host: homePath === '/host' ? planId : null,
         })
         .eq('id', user.id)
+
+      await syncPlanToScreens(user.id, planId, true)
     }
   } catch (error) {
     console.error('[STRIPE_SUCCESS]', error)
