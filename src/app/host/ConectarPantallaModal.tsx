@@ -46,6 +46,7 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
   const [resolucion, setResolucion] = useState('')
   const [esTactil, setEsTactil] = useState(false)
   const [sospechoso, setSospechoso] = useState(false)
+  const [precioBaseVincular, setPrecioBaseVincular] = useState('0.05')
 
   const currentTierVincular = getScreenTier(tipoPantallaVincular, densidadNivelVincular)
   const multiplierVincular = getTierMultiplier(tipoPantallaVincular, densidadNivelVincular)
@@ -225,7 +226,8 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
       resolucion,
       esTactil,
       tamanoPulgadas,
-      sospechoso
+      sospechoso,
+      parseFloat(precioBaseVincular) || 0.05
     )
 
     if (result.success) {
@@ -237,6 +239,7 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
       setCiudadVincular('')
       setUbicacionVincular('')
       setCoordsVincular(null)
+      setPrecioBaseVincular('0.05')
       if (typeof window !== 'undefined') {
         localStorage.removeItem('LuminAdd_latest_pairing_code')
       }
@@ -378,6 +381,21 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
               <span className="text-[8px] text-zinc-500 uppercase block font-bold">Multiplicador</span>
               <span className="text-base font-mono font-black text-white">x{multiplierVincular.toFixed(1)}</span>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label className="text-zinc-400 text-[10px] uppercase tracking-widest font-mono">Precio Base por Impacto (€)</Label>
+            <Input
+              type="number"
+              step="0.001"
+              min="0.001"
+              value={precioBaseVincular}
+              onChange={e => setPrecioBaseVincular(e.target.value)}
+              placeholder="0.05"
+              className="bg-zinc-900 border-zinc-800 text-white h-10 text-xs font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              disabled={loading}
+            />
+            <p className="text-[9px] text-zinc-500 font-mono uppercase">Este es el precio neto que recibirás por cada reproducción completa en tu pantalla.</p>
           </div>
 
           <div className="flex flex-col gap-2">

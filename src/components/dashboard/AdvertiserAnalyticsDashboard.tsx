@@ -32,6 +32,8 @@ import {
   Tooltip
 } from 'recharts'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+
 
 // Interfaces
 interface FormattedCampaign {
@@ -298,37 +300,113 @@ export function AdvertiserAnalyticsDashboard({
       }))
   }, [analyticsData.campaignList])
 
-  // Export report to CSV
-  const handleExportCSV = () => {
+  // Export report to PDF
+  const handleExportPDF = () => {
     if (analyticsData.campaignList.length === 0) return
 
-    const headers = ['ID Campaña', 'Nombre Campaña', 'Pantalla', 'Ciudad', 'Presupuesto Total (€)', 'Presupuesto Invertido Rango (€)', 'Impactos Meta', 'Impactos Reales Rango', 'Estado']
-    const rows = analyticsData.campaignList.map(c => [
-      c.campana_id,
-      c.campana_nombre,
-      c.pantalla_nombre,
-      c.ciudad,
-      c.presupuesto_total.toFixed(2),
-      c.range_spent.toFixed(2),
-      c.impactos_estimados,
-      c.range_impressions,
-      c.estado
-    ])
+    const loadScript = (src: string): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          resolve()
+          return
+        }
+        const script = document.createElement('script')
+        script.src = src
+        script.onload = () => resolve()
+        script.onerror = () => reject(new Error(`Failed to load ${src}`))
+        document.body.appendChild(script)
+      })
+    }
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n')
+    toast.promise(
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+        .then(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'))
+        .then(() => {
+          const { jsPDF } = (window as any).jspdf
+          const doc = new jsPDF()
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `Reporte_Publicidad_LumiAds_${dateFilter}_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+        // Estilos e imagen de cabecera
+        doc.setFillColor(9, 9, 11) // color oscuro
+        doc.rect(0, 0, 210, 40, 'F')
+
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(22)
+        doc.setFont('helvetica', 'bold')
+        doc.text('LumiAds', 15, 20)
+        
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(156, 163, 175)
+        doc.text('REPORTE DE RENDIMIENTO PUBLICITARIO', 15, 28)
+
+        // Metadatos a la derecha
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(9)
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 15)
+        doc.text(`Usuario: ${userEmail}`, 140, 22)
+        doc.text(`Período: ${dateFilter.toUpperCase()}`, 140, 29)
+
+        // Resumen KPIs
+        doc.setTextColor(9, 9, 11)
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Resumen de Rendimiento', 15, 55)
+
+        // Dibujar cajas KPI
+        doc.setFillColor(244, 244, 245)
+        doc.rect(15, 60, 56, 25, 'F')
+        doc.rect(77, 60, 56, 25, 'F')
+        doc.rect(139, 60, 56, 25, 'F')
+
+        doc.setFontSize(8)
+        doc.setTextColor(113, 113, 122)
+        doc.text('IMPACTOS TOTALES', 20, 67)
+        doc.text('PRESUPUESTO CONSUMIDO', 82, 67)
+        doc.text('CAMPAÑAS ACTIVAS', 144, 67)
+
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(9, 9, 11)
+        doc.text(analyticsData.kpiImpressions.toLocaleString(), 20, 78)
+        doc.text(`${analyticsData.kpiBudgetSpent.toFixed(2)}€`, 82, 78)
+        doc.text(analyticsData.kpiActiveCount.toString(), 144, 78)
+
+        // Tabla detallada
+        doc.setFontSize(12)
+        doc.text('Detalle de Campañas', 15, 100)
+
+        const tableHeaders = [['Campaña', 'Pantalla / Ciudad', 'Consumo', 'Impactos Rango', 'Meta', 'Estado']]
+        const tableRows = analyticsData.campaignList.map(c => [
+          c.campana_nombre,
+          `${c.pantalla_nombre} (${c.ciudad})`,
+          `${c.range_spent.toFixed(2)}€`,
+          c.range_impressions.toLocaleString(),
+          c.impactos_estimados.toLocaleString(),
+          c.estado.toUpperCase()
+        ])
+
+        ;(doc as any).autoTable({
+          startY: 105,
+          head: tableHeaders,
+          body: tableRows,
+          theme: 'striped',
+          headStyles: { fillColor: [43, 200, 255] }, // Color LumiAds Cyan/Blue
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { fontStyle: 'bold' }
+          }
+        })
+
+        doc.save(`Reporte_Publicidad_LumiAds_${dateFilter}_${new Date().toISOString().split('T')[0]}.pdf`)
+      }),
+      {
+        loading: 'Generando PDF...',
+        success: 'PDF descargado con éxito',
+        error: 'Error al generar el PDF'
+      }
+    )
   }
+
 
   const COLORS = ['#2BC8FF', '#7C3CFF', '#F59E0B', '#10B981', '#EF4444', '#EC4899']
 
@@ -356,12 +434,12 @@ export function AdvertiserAnalyticsDashboard({
 
         <div className="flex items-center gap-3">
           <Button 
-            onClick={handleExportCSV} 
+            onClick={handleExportPDF} 
             disabled={analyticsData.campaignList.length === 0}
             className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black text-[10px] uppercase font-black tracking-widest px-4 py-2 h-9 flex items-center gap-2 rounded shadow-[0_0_15px_rgba(43,200,255,0.3)] transition-all"
           >
             <Download className="w-3.5 h-3.5" />
-            Exportar CSV
+            Exportar PDF
           </Button>
           <div className="text-right hidden sm:block">
             <p className="text-[9px] text-zinc-600 font-mono uppercase tracking-tighter">Cuenta Publicitaria</p>

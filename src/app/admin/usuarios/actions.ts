@@ -2,6 +2,8 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { syncPlanToScreens } from '@/app/actions/profile'
+
 
 type UserRole = 'cliente' | 'gestor_local' | 'superadmin'
 
@@ -97,6 +99,9 @@ export async function updateUserPlan(userId: string, newPlanId: string) {
       .eq('id', userId)
 
     if (error) throw error
+
+    // Sync screens immediately
+    await syncPlanToScreens(userId, newPlanId, true)
 
     revalidatePath('/admin/usuarios')
     return { success: true }

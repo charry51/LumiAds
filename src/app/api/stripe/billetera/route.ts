@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
 
     const stripeSession = await stripe.checkout.sessions.create({
-      success_url: `${appUrl}/advertiser?payment=success`,
+      success_url: `${appUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/dashboard/billetera?payment=canceled`,
       payment_method_types: ['card'],
       mode: 'payment',

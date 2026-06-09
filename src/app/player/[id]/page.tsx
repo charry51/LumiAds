@@ -14,14 +14,23 @@ export default async function PlayerPage({
   const { id } = await params
   const supabase = await createClient()
 
+  // 1. Fetch screen info to check if it's public
+  const { data: pantalla } = await supabase
+    .from('pantallas')
+    .select('es_publica')
+    .eq('id', id)
+    .single()
+
+  const esPublica = pantalla?.es_publica !== false // default to true if screen not found
+
   const today = new Date().toISOString().split('T')[0]
 
   // Fetch campaigns that are:
   // 1. Approved
   // 2. Scheduled for today
-  // 3. For this screen (or global)
+  // 3. For this screen (or global if the screen is public)
   // 4. STILL HAVE BUDGET (impactos_reales < impactos_estimados)
-  const { data: campanasData, error } = await supabase
+  let query = supabase
     .from('campanas')
     .select(`
         id, 
@@ -34,7 +43,14 @@ export default async function PlayerPage({
         impactos_reales,
         dias_semana
     `)
-    .or(`pantalla_id.eq.${id},pantalla_id.is.null`)
+
+  if (esPublica) {
+    query = query.or(`pantalla_id.eq.${id},pantalla_id.is.null`)
+  } else {
+    query = query.eq('pantalla_id', id)
+  }
+
+  const { data: campanasData, error } = await query
     .in('estado', ['aprobada', 'pre_aprobada'])
     .lte('fecha_inicio', today)
     .gte('fecha_fin', today)

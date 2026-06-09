@@ -20,6 +20,14 @@ export default async function HostEstadisticasPage() {
     redirect('/dashboard')
   }
 
+  const isSuperAdmin = profile?.rol === 'superadmin'
+  const activePlan = profile?.plan_id?.toLowerCase()
+  const hasSubscription = profile?.suscripcion_activa && (activePlan === 'premium' || activePlan === 'gold')
+
+  if (!isSuperAdmin && !hasSubscription) {
+    redirect('/planes/seleccionar')
+  }
+
   // Fetch all hosts and screens owned by the user
   const { data: hosts } = await supabase
     .from('hosts')

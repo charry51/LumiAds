@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
+import { syncPlanToScreens } from '@/app/actions/profile'
+
 
 export async function POST(req: Request) {
   if (!stripe) {
@@ -67,6 +69,9 @@ export async function POST(req: Request) {
            suscripcion_activa: true,
          })
          .eq('id', session.metadata.userId)
+
+       // Sync screens immediately
+       await syncPlanToScreens(session.metadata.userId, session.metadata.planId, true)
     }
   }
 
@@ -89,13 +94,23 @@ export async function POST(req: Request) {
   }
   
   if (event.type === 'customer.subscription.deleted') {
-    await supabase
+    const { data: profile } = await supabase
       .from('perfiles')
-      .update({
-        suscripcion_activa: false,
-        plan_id: null,
-      })
+      .select('id')
       .eq('stripe_subscription_id', subscription.id)
+      .single()
+
+    if (profile) {
+      await supabase
+        .from('perfiles')
+        .update({
+          suscripcion_activa: false,
+          plan_id: null,
+        })
+        .eq('id', profile.id)
+
+      await syncPlanToScreens(profile.id, null, false)
+    }
   }
 
   return new NextResponse(null, { status: 200 })

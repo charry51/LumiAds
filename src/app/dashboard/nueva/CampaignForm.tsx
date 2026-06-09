@@ -460,10 +460,10 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                              
                              <div className="flex items-end justify-between relative z-10 mt-6">
                                 <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">
-                                   Coste Base
+                                   Precio por Impacto
                                 </div>
                                 <div className="text-lg font-black font-mono text-white tracking-tighter flex items-center gap-1">
-                                   {pantalla.precio_emision} <span className="text-[#2BC8FF] text-xs">€/H</span>
+                                   {((pantalla.precio_base_impacto ?? 0.05) * (1 + (pantalla.comision_markup_porcentaje ?? 30) / 100)).toFixed(3)} <span className="text-[#2BC8FF] text-xs">€/Impacto</span>
                                 </div>
                              </div>
                           </div>

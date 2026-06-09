@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { AccessibilitySettings } from '@/components/AccessibilitySettings'
 import { ProfileForm } from './ProfileForm'
 import { RoleManager } from './RoleManager'
+import { PlanManager } from './PlanManager'
 
 export default async function PerfilPage({
   searchParams,
@@ -109,6 +110,13 @@ export default async function PerfilPage({
                     esHostInitial={profile?.es_host ?? false} 
                 />
             </div>
+
+            {/* Gestión del Plan */}
+            <PlanManager 
+                currentPlanId={profile?.plan_id ?? null}
+                suscripcionActiva={profile?.suscripcion_activa ?? false}
+                esHost={profile?.es_host ?? false}
+            />
 
             {/* Información del Perfil */}
             <div className="cyber-card p-8 border-white/5 relative overflow-hidden transition-all duration-500 shadow-sm">

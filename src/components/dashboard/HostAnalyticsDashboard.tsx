@@ -33,6 +33,7 @@ import {
   Legend
 } from 'recharts'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 // Interfaces
 interface ScreenData {
@@ -357,38 +358,115 @@ export function HostAnalyticsDashboard({
       }))
   }, [analyticsData.screenAnalytics])
 
-  // Workflow: Export Filtered Data to CSV
-  const handleExportCSV = () => {
+  // Export report to PDF
+  const handleExportPDF = () => {
     if (analyticsData.screenAnalytics.length === 0) return
 
-    // Build CSV Content
-    const headers = ['ID Pantalla', 'Nombre Pantalla', 'Ciudad', 'Ubicación', 'Plan', 'Ingresos (€)', 'Uptime (%)', 'Reproducciones', 'Estado']
-    const rows = analyticsData.screenAnalytics.map(s => [
-      s.screen_id,
-      s.screen_name,
-      s.city,
-      s.location.replace(/,/g, ' '),
-      s.plan_host,
-      s.revenue.toFixed(2),
-      s.uptime_percentage.toFixed(1),
-      s.total_loops,
-      s.status
-    ])
+    const loadScript = (src: string): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          resolve()
+          return
+        }
+        const script = document.createElement('script')
+        script.src = src
+        script.onload = () => resolve()
+        script.onerror = () => reject(new Error(`Failed to load ${src}`))
+        document.body.appendChild(script)
+      })
+    }
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n')
+    toast.promise(
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+        .then(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'))
+        .then(() => {
+          const { jsPDF } = (window as any).jspdf
+          const doc = new jsPDF()
 
-    // Trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `Reporte_Estadisticas_LumiAds_${dateFilter}_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+        // Estilos e imagen de cabecera
+        doc.setFillColor(9, 9, 11) // color oscuro
+        doc.rect(0, 0, 210, 40, 'F')
+
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(22)
+        doc.setFont('helvetica', 'bold')
+        doc.text('LumiAds', 15, 20)
+        
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(156, 163, 175)
+        doc.text('REPORTE DE RENDIMIENTO DE PANTALLAS (HOST)', 15, 28)
+
+        // Metadatos a la derecha
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(9)
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 15)
+        doc.text(`Usuario: ${userEmail}`, 140, 22)
+        doc.text(`Período: ${dateFilter.toUpperCase()}`, 140, 29)
+
+        // Resumen KPIs
+        doc.setTextColor(9, 9, 11)
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Resumen de Rendimiento', 15, 55)
+
+        // Dibujar cajas KPI
+        doc.setFillColor(244, 244, 245)
+        doc.rect(15, 60, 42, 25, 'F')
+        doc.rect(61, 60, 42, 25, 'F')
+        doc.rect(107, 60, 42, 25, 'F')
+        doc.rect(153, 60, 42, 25, 'F')
+
+        doc.setFontSize(7)
+        doc.setTextColor(113, 113, 122)
+        doc.text('INGRESOS TOTALES', 18, 67)
+        doc.text('UPTIME PROMEDIO', 64, 67)
+        doc.text('PANTALLAS ACTIVAS', 110, 67)
+        doc.text('REPRODUCCIONES', 156, 67)
+
+        doc.setFontSize(11)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(9, 9, 11)
+        doc.text(`${analyticsData.kpiTotalRevenue.toFixed(2)}€`, 18, 78)
+        doc.text(`${analyticsData.kpiUptime.toFixed(1)}%`, 64, 78)
+        doc.text(`${analyticsData.kpiActiveCount}/${analyticsData.screenAnalytics.length}`, 110, 78)
+        doc.text(analyticsData.kpiTotalLoops.toLocaleString(), 156, 78)
+
+        // Tabla detallada
+        doc.setFontSize(12)
+        doc.text('Detalle de Pantallas', 15, 100)
+
+        const tableHeaders = [['Pantalla', 'Ubicación / Ciudad', 'Plan', 'Ingresos', 'Uptime', 'Reproducciones', 'Estado']]
+        const tableRows = analyticsData.screenAnalytics.map(s => [
+          s.screen_name,
+          `${s.location} (${s.city})`,
+          s.plan_host ? s.plan_host.toUpperCase() : 'BÁSICO',
+          `${s.revenue.toFixed(2)}€`,
+          `${s.uptime_percentage.toFixed(1)}%`,
+          s.total_loops.toLocaleString(),
+          s.status.toUpperCase()
+        ])
+
+        ;(doc as any).autoTable({
+          startY: 105,
+          head: tableHeaders,
+          body: tableRows,
+          theme: 'striped',
+          headStyles: { fillColor: [124, 60, 255] }, // Color LumiAds Violet/Purple
+          styles: { fontSize: 8, cellPadding: 3 },
+          columnStyles: {
+            0: { fontStyle: 'bold' }
+          }
+        })
+
+        doc.save(`Reporte_Pantallas_LumiAds_${dateFilter}_${new Date().toISOString().split('T')[0]}.pdf`)
+      }),
+      {
+        loading: 'Generando PDF...',
+        success: 'PDF descargado con éxito',
+        error: 'Error al generar el PDF'
+      }
+    )
   }
 
   // Color Palette Constants for Charts
@@ -418,12 +496,12 @@ export function HostAnalyticsDashboard({
 
         <div className="flex items-center gap-3">
           <Button 
-            onClick={handleExportCSV} 
+            onClick={handleExportPDF} 
             disabled={analyticsData.screenAnalytics.length === 0}
             className="bg-violet-600 hover:bg-violet-500 text-white text-[10px] uppercase font-black tracking-widest px-4 py-2 h-9 flex items-center gap-2 rounded shadow-[0_0_15px_rgba(124,60,255,0.3)] transition-all"
           >
             <Download className="w-3.5 h-3.5" />
-            Exportar Reporte
+            Exportar PDF
           </Button>
           <div className="text-right hidden sm:block">
             <p className="text-[9px] text-zinc-600 font-mono uppercase tracking-tighter">Nodo de Identidad</p>
