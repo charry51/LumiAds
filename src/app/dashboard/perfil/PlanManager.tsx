@@ -19,7 +19,39 @@ export function PlanManager({
   const [loading, setLoading] = useState<string | null>(null)
 
   if (!esHost) {
-    return null
+    return (
+      <div className="cyber-card p-8 border-white/5 relative overflow-hidden transition-all duration-500 shadow-sm">
+        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+          <CreditCard className="w-40 h-40" />
+        </div>
+
+        <h3 className="text-xl font-heading font-black tracking-tight uppercase text-white mb-6 flex items-center gap-2">
+          <CreditCard className="w-5 h-5 text-[#2BC8FF]" />
+          Gestión de Plan de Anunciante
+        </h3>
+
+        <div className="p-5 rounded-xl bg-zinc-900/80 border border-zinc-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <p className="text-[10px] text-zinc-500 uppercase font-black tracking-widest">Tu Plan de Anunciante Activo</p>
+            <p className="text-lg font-heading font-bold text-white uppercase mt-1 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-[#2BC8FF]" />
+              <span>Plan Único</span>
+            </p>
+            <p className="text-[11px] text-zinc-400 mt-1">
+              Acceso al Marketplace • Compra programática de impactos • Panel de analíticas en tiempo real
+            </p>
+          </div>
+          <div className="text-right flex flex-col items-end gap-1 shrink-0">
+            <span className="text-xl font-mono font-bold text-[#2BC8FF]">
+              Único
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 uppercase">
+              Activo
+            </span>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Normalizar el plan actual
