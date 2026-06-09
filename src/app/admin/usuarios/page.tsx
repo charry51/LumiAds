@@ -98,7 +98,7 @@ export default async function UserManagementPage({
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || 'basic'} />
+                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || 'basic'} userRole={user.rol} />
                     </td>
                     <td className="px-6 py-4">
                        <UserRoleToggle userId={user.id} currentRole={user.rol} />
