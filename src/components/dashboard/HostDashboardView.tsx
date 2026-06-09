@@ -104,11 +104,6 @@ export async function HostDashboardView({
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <Link href="#gestionar-pantallas">
-            <Button variant="outline" className="h-9 border-border text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] uppercase font-bold tracking-widest px-3">
-              <Tv className="w-4 h-4 mr-2" /> Gestionar pantallas
-            </Button>
-          </Link>
           <Link 
             href="/dashboard?mode=host&action=vincular"
             className="cyber-button-ui w-full sm:w-auto text-center"
