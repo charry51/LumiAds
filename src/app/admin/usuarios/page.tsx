@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { UserRoleToggle } from './UserRoleToggle'
 import { UserPlanToggle } from './UserPlanToggle'
 import { DeleteUserButton } from './DeleteUserButton'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Users, Search, Filter } from 'lucide-react'
 
 export default async function UserManagementPage({
@@ -98,7 +98,7 @@ export default async function UserManagementPage({
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || 'basic'} />
+                       <UserPlanToggle userId={user.id} currentPlanId={user.plan_id || ''} />
                     </td>
                     <td className="px-6 py-4">
                        <UserRoleToggle userId={user.id} currentRole={user.rol} />

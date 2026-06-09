@@ -27,6 +27,10 @@ function isUserRole(role: string): role is UserRole {
   return role in roleUpdates
 }
 
+function getErrorMessage(err: unknown) {
+  return err instanceof Error ? err.message : 'Error inesperado'
+}
+
 export async function updateUserRole(userId: string, newRole: string) {
   try {
     const supabase = await createClient()
@@ -66,14 +70,18 @@ export async function updateUserRole(userId: string, newRole: string) {
     revalidatePath('/advertiser')
     revalidatePath('/host')
     return { success: true, profile: updatedProfile }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error updating role:', err)
-    return { success: false, message: err.message }
+    return { success: false, message: getErrorMessage(err) }
   }
 }
 
 export async function updateUserPlan(userId: string, newPlanId: string) {
   try {
+    if (!['premium', 'gold'].includes(newPlanId)) {
+      return { success: false, message: 'Solo se pueden asignar planes Premium o Gold' }
+    }
+
     const supabase = await createClient()
 
     // 1. Verificar que el que llama sea superadmin
@@ -100,9 +108,9 @@ export async function updateUserPlan(userId: string, newPlanId: string) {
 
     revalidatePath('/admin/usuarios')
     return { success: true }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error updating plan:', err)
-    return { success: false, message: err.message }
+    return { success: false, message: getErrorMessage(err) }
   }
 }
 
@@ -192,8 +200,8 @@ export async function deleteUser(userId: string) {
 
     revalidatePath('/admin/usuarios')
     return { success: true }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error deleting user:', err)
-    return { success: false, message: err.message }
+    return { success: false, message: getErrorMessage(err) }
   }
 }

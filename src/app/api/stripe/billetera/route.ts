@@ -41,13 +41,13 @@ export async function POST(req: Request) {
         })
         .eq('id', user.id)
 
-      return NextResponse.json({ url: `${appUrl}/advertiser` })
+      return NextResponse.json({ url: `${appUrl}/dashboard/billetera?payment=success` })
     }
 
     const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
 
     const stripeSession = await stripe.checkout.sessions.create({
-      success_url: `${appUrl}/advertiser?payment=success`,
+      success_url: `${appUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/dashboard/billetera?payment=canceled`,
       payment_method_types: ['card'],
       mode: 'payment',
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ url: stripeSession.url })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[STRIPE_BILLETERA]", error)
     return new NextResponse("Error interno al procesar el pago", { status: 500 })
   }

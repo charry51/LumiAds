@@ -1,94 +1,127 @@
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/server'
+import { creditWalletRechargeSession } from '@/lib/wallet-recharge'
 import Stripe from 'stripe'
+
+type InvoiceWithSubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription | null
+}
+
+type SubscriptionWithPeriodEnd = Stripe.Subscription & {
+  current_period_end?: number
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Error desconocido'
+}
+
+function getSubscriptionId(subscription: string | Stripe.Subscription | null | undefined) {
+  if (!subscription) return null
+  return typeof subscription === 'string' ? subscription : subscription.id
+}
+
+function getCustomerId(subscription: Stripe.Subscription) {
+  return typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer.id
+}
+
+function getSubscriptionPriceId(subscription: Stripe.Subscription) {
+  return subscription.items.data[0]?.price.id ?? null
+}
+
+function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
+  const currentPeriodEnd = (subscription as SubscriptionWithPeriodEnd).current_period_end
+  return currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null
+}
 
 export async function POST(req: Request) {
   if (!stripe) {
     return new NextResponse('Stripe not initialized', { status: 503 })
   }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    return new NextResponse('Stripe webhook secret is not configured', { status: 500 })
+  }
+
   const body = await req.text()
-  const signature = req.headers.get('Stripe-Signature') as string
+  const signature = req.headers.get('Stripe-Signature')
+
+  if (!signature) {
+    return new NextResponse('Stripe signature is required', { status: 400 })
+  }
 
   let event: Stripe.Event
-  
-  if (!stripe) {
-    return new NextResponse("Stripe is not configured", { status: 500 })
-  }
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
-  } catch (error: any) {
-    console.error(`[WEBHOOK_ERROR] ${error.message}`)
-    return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 })
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+  } catch (error: unknown) {
+    const message = getErrorMessage(error)
+    console.error(`[WEBHOOK_ERROR] ${message}`)
+    return new NextResponse(`Webhook Error: ${message}`, { status: 400 })
   }
 
-  const session = event.data.object as Stripe.Checkout.Session
-  const subscription = event.data.object as Stripe.Subscription
-
-  // Admin client needed to bypass RLS since webhook comes from outside
   const supabase = await createAdminClient()
 
   if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session
+
     if (!session?.metadata?.userId) {
       return new NextResponse('User id is required in metadata', { status: 400 })
     }
 
     if (session.metadata.type === 'billetera_recharge') {
-       const amountStr = session.metadata.amount
-       const amount = parseFloat(amountStr || '0')
-       
-       if (amount > 0) {
-          const { data: profile } = await supabase.from('perfiles').select('saldo_billetera').eq('id', session.metadata.userId).single()
-          await supabase.from('perfiles').update({
-             saldo_billetera: (profile?.saldo_billetera || 0) + amount
-          }).eq('id', session.metadata.userId)
-       }
+      const latestSession = await stripe.checkout.sessions.retrieve(session.id)
+      await creditWalletRechargeSession({
+        session: latestSession,
+        stripe,
+        supabase,
+      })
     } else {
-       // Retrieve the subscription details from Stripe
-       const stripeSubscription = (await stripe.subscriptions.retrieve(
-         session.subscription as string
-       )) as any;
+      const subscriptionId = getSubscriptionId(session.subscription)
+      if (!subscriptionId) {
+        return new NextResponse('Subscription id is required', { status: 400 })
+      }
 
-       await supabase
-         .from('perfiles')
-         .update({
-           stripe_subscription_id: stripeSubscription.id,
-           stripe_customer_id: (stripeSubscription as any).customer as string,
-           stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
-           stripe_current_period_end: new Date(
-             (stripeSubscription as any).current_period_end * 1000
-           ).toISOString(),
-           plan_id: session.metadata.planId,
-           suscripcion_activa: true,
-         })
-         .eq('id', session.metadata.userId)
+      const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+      await supabase
+        .from('perfiles')
+        .update({
+          stripe_subscription_id: stripeSubscription.id,
+          stripe_customer_id: getCustomerId(stripeSubscription),
+          stripe_price_id: getSubscriptionPriceId(stripeSubscription),
+          stripe_current_period_end: getCurrentPeriodEnd(stripeSubscription),
+          plan_id: session.metadata.planId,
+          suscripcion_activa: true,
+        })
+        .eq('id', session.metadata.userId)
     }
   }
 
   if (event.type === 'invoice.payment_succeeded') {
-    // Retrieve the subscription details from Stripe
-    const stripeSubscription = (await stripe.subscriptions.retrieve(
-      session.subscription as string
-    )) as any;
+    const invoice = event.data.object as InvoiceWithSubscription
+    const subscriptionId = getSubscriptionId(invoice.subscription)
 
-    await supabase
-      .from('perfiles')
-      .update({
-        stripe_price_id: (stripeSubscription as any).items.data[0].price.id,
-        stripe_current_period_end: new Date(
-          (stripeSubscription as any).current_period_end * 1000
-        ).toISOString(),
-        suscripcion_activa: true,
-      })
-      .eq('stripe_subscription_id', (stripeSubscription as any).id)
+    if (subscriptionId) {
+      const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+      await supabase
+        .from('perfiles')
+        .update({
+          stripe_price_id: getSubscriptionPriceId(stripeSubscription),
+          stripe_current_period_end: getCurrentPeriodEnd(stripeSubscription),
+          suscripcion_activa: true,
+        })
+        .eq('stripe_subscription_id', stripeSubscription.id)
+    }
   }
-  
+
   if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as Stripe.Subscription
+
     await supabase
       .from('perfiles')
       .update({
