@@ -53,14 +53,36 @@ export async function updateUserRole(userId: string, newRole: string) {
 
     // 2. Actualizar el rol real y las identidades que usa la navegación.
     const adminClient = await createAdminClient()
+    const updateData: any = { ...roleUpdates[newRole] }
+
+    if (newRole === 'cliente') {
+      updateData.plan_id = 'basic'
+      updateData.suscripcion_activa = false
+    } else if (newRole === 'gestor_local') {
+      const { data: currentProfile } = await adminClient
+        .from('perfiles')
+        .select('plan_id')
+        .eq('id', userId)
+        .single()
+      
+      const currentPlan = (currentProfile?.plan_id || '').toLowerCase()
+      if (!currentPlan || currentPlan === 'basic' || currentPlan === 'free' || currentPlan === 'presencia') {
+        updateData.plan_id = 'premium'
+      }
+    }
+
     const { data: updatedProfile, error } = await adminClient
       .from('perfiles')
-      .update(roleUpdates[newRole])
+      .update(updateData)
       .eq('id', userId)
       .select('rol, es_anunciante, es_host')
       .single()
 
     if (error) throw error
+
+    if (updateData.plan_id) {
+      await syncPlanToScreens(userId, updateData.plan_id, newRole === 'gestor_local')
+    }
 
     revalidatePath('/admin/usuarios')
     revalidatePath('/admin')
