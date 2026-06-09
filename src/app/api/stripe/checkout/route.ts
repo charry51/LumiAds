@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 import { subscriptionPlans } from '@/config/subscriptions'
+import { syncPlanToScreens } from '@/app/actions/profile'
+
 
 export async function POST(req: Request) {
   try {
@@ -89,7 +91,11 @@ export async function POST(req: Request) {
         })
         .eq('id', user.id)
 
+      // Sync screens immediately in sandbox mode
+      await syncPlanToScreens(user.id, plan.id, true)
+
       return NextResponse.json({ url: `${appUrl}${userHomePath}` })
+
     }
 
     const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')

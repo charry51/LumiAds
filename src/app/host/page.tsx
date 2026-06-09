@@ -63,6 +63,15 @@ export default async function HostDashboardPage({
     redirect('/dashboard')
   }
 
+  const isSuperAdmin = currentProfile?.rol === 'superadmin'
+  const activePlan = currentProfile?.plan_id?.toLowerCase()
+  const hasSubscription = currentProfile?.suscripcion_activa && (activePlan === 'premium' || activePlan === 'gold')
+
+  if (!isSuperAdmin && !hasSubscription) {
+    redirect('/planes/seleccionar')
+  }
+
+
   const { data: hosts } = await supabase
     .from('hosts')
     .select('*, pantallas(id, nombre, ciudad, estado, precio_emision, ubicacion, tipo_pantalla, densidad_poblacion_nivel, precio_base_impacto, plan_host, es_publica)')

@@ -14,6 +14,20 @@ export default async function PantallaDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { data: profile } = await supabase
+    .from('perfiles')
+    .select('rol, plan_id, suscripcion_activa')
+    .eq('id', user.id)
+    .single()
+
+  const isSuperAdmin = profile?.rol === 'superadmin'
+  const activePlan = profile?.plan_id?.toLowerCase()
+  const hasSubscription = profile?.suscripcion_activa && (activePlan === 'premium' || activePlan === 'gold')
+
+  if (!isSuperAdmin && !hasSubscription) {
+    redirect('/planes/seleccionar')
+  }
+
   // Fetch the host record (id param is the host record ID)
   const { data: hostData } = await supabase
     .from('hosts')

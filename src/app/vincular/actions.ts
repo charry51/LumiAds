@@ -64,7 +64,8 @@ export async function activatePairingCode(
   resolucion?: string,
   esTactil?: boolean,
   tamanoPulgadas?: number,
-  sospechoso?: boolean
+  sospechoso?: boolean,
+  precioBaseImpacto: number = 0.05
 ): Promise<{ success: boolean; pantallaId?: string; error?: string }> {
   const supabase = await createClient()
 
@@ -121,7 +122,8 @@ export async function activatePairingCode(
       resolucion,
       es_tactil: esTactil,
       tamano_pulgadas: tamanoPulgadas,
-      sospechoso
+      sospechoso,
+      precio_base_impacto: precioBaseImpacto
     })
     .select('id')
     .single()
@@ -234,7 +236,8 @@ export async function createHostPantallaManually(
   latitud?: number,
   longitud?: number,
   tipoPantalla: string = 'gimnasio',
-  densidadNivel: string = 'medio'
+  densidadNivel: string = 'medio',
+  precioBaseImpacto: number = 0.05
 ): Promise<{ success: boolean; pantallaId?: string; error?: string }> {
   const supabase = await createClient()
 
@@ -277,7 +280,8 @@ export async function createHostPantallaManually(
       tipo_pantalla: tipoPantalla,
       densidad_poblacion_nivel: densidadNivel,
       organizacion_id: perfil?.organizacion_id,
-      creado_por: user.id
+      creado_por: user.id,
+      precio_base_impacto: precioBaseImpacto
     })
     .select('id')
     .single()
