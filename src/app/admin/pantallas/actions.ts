@@ -111,3 +111,45 @@ export async function deletePantalla(id: string) {
       return { success: false, error: err.message || 'Error inesperado al eliminar' }
     }
 }
+
+export async function updatePantallaPlan(pantallaId: string, newPlan: string) {
+  try {
+    const supabase = await createClient()
+
+    // 1. Verificar que el que llama sea superadmin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'No autorizado' }
+
+    const { data: perfil } = await supabase
+      .from('perfiles')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+
+    if (perfil?.rol !== 'superadmin') return { success: false, error: 'Acceso denegado' }
+
+    const plan = newPlan.toLowerCase()
+    const precio = plan === 'premium' ? 20.00 : plan === 'gold' ? 50.00 : 0.00
+    const esPublica = plan !== 'gold'
+
+    const adminClient = await createAdminClient()
+    const { error } = await adminClient
+      .from('pantallas')
+      .update({
+        plan_host: plan,
+        precio_plan_host: precio,
+        es_publica: esPublica
+      })
+      .eq('id', pantallaId)
+
+    if (error) throw error
+
+    revalidatePath('/admin/pantallas')
+    revalidatePath('/host')
+    revalidatePath('/dashboard')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Excepción en updatePantallaPlan:', err)
+    return { success: false, error: err.message || 'Error inesperado al actualizar plan' }
+  }
+}

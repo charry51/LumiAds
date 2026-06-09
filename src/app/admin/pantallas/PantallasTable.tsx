@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { sendDirectMessageToHost } from '@/app/actions/contact'
+import { PantallaPlanToggle } from './PantallaPlanToggle'
 
 function ContactHostDialog({ email, screenName }: { email: string, screenName: string }) {
   const [open, setOpen] = useState(false)
@@ -95,12 +96,13 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
             <th className="px-6 py-4">ID</th>
             <th className="px-6 py-4">Nombre y Ciudad</th>
             <th className="px-6 py-4">Host / Propietario</th>
+            <th className="px-6 py-4">Plan de Pantalla</th>
             <th className="px-6 py-4 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800">
           {initialData.length === 0 && (
-            <tr><td colSpan={4} className="p-6 text-center text-zinc-500">No hay pantallas registradas. Usa el botón de Nueva Pantalla.</td></tr>
+            <tr><td colSpan={5} className="p-6 text-center text-zinc-500">No hay pantallas registradas. Usa el botón de Nueva Pantalla.</td></tr>
           )}
           {initialData.map(p => {
             // 1. Prioridad: Host Propietario (ingresos)
@@ -141,6 +143,9 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
                   {hostEmail && (
                     <ContactHostDialog email={hostEmail} screenName={p.nombre} />
                   )}
+                </td>
+                <td className="px-6 py-4">
+                  <PantallaPlanToggle pantallaId={p.id} currentPlan={p.plan_host || 'basic'} />
                 </td>
               <td className="px-6 py-4 text-right flex justify-end gap-2">
                 <Link href={`/player/${p.id}`} target="_blank">
