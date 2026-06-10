@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -283,12 +284,17 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
               </div>
            </div>
            
-           <div className="relative z-10 hidden sm:block">
-              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest text-zinc-300 font-bold flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                 Billetera Activa
-              </div>
-           </div>
+            <div className="relative z-10 flex items-center gap-3">
+               <Link href="/dashboard/billetera">
+                  <Button type="button" variant="outline" className="border-[#2BC8FF]/30 bg-[#2BC8FF]/5 text-[#2BC8FF] hover:bg-[#2BC8FF] hover:text-black text-[9px] uppercase font-black tracking-widest px-4 h-9 transition-all">
+                     Recargar Billetera
+                  </Button>
+               </Link>
+               <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest text-zinc-300 font-bold flex items-center gap-2 hidden sm:flex">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Billetera Activa
+               </div>
+            </div>
         </div>
 
         {/* DETAILS & SCHEDULE */}
@@ -501,9 +507,16 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                     placeholder="Ej. 150.50"
                   />
                   {presupuestoTotal > walletBalance && (
-                     <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest mt-2 flex items-center gap-1">
-                        ⚠️ Saldo insuficiente en billetera (Máx. {walletBalance.toLocaleString('es-ES')}€)
-                     </p>
+                     <div className="flex flex-col gap-2 mt-2">
+                        <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                           ⚠️ Saldo insuficiente en billetera (Máx. {walletBalance.toLocaleString('es-ES')}€)
+                        </p>
+                        <Link href="/dashboard/billetera" className="self-start">
+                           <Button type="button" size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black text-[9px] uppercase font-black tracking-widest px-3 h-7 rounded shadow-[0_0_10px_rgba(43,200,255,0.2)] border-none">
+                              Recargar Saldo
+                           </Button>
+                        </Link>
+                     </div>
                   )}
                </div>
             </div>
