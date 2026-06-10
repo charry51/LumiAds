@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Wallet, Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
-export default function BilleteraPage() {
+function BilleteraForm() {
   const [amount, setAmount] = useState<string>('50')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
 
   const handleRecharge = async () => {
     const value = parseFloat(amount)
@@ -19,7 +22,7 @@ export default function BilleteraPage() {
       const res = await fetch('/api/stripe/billetera', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: value })
+        body: JSON.stringify({ amount: value, returnTo })
       })
       if (!res.ok) {
         const errorText = await res.text()
@@ -38,8 +41,8 @@ export default function BilleteraPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-8 flex flex-col items-center justify-center font-sans">
       <div className="max-w-md w-full">
-        <Link href="/dashboard" className="text-[10px] text-muted-foreground hover:text-primary uppercase tracking-[3px] font-bold flex items-center gap-2 mb-8">
-          <ArrowLeft className="w-3 h-3" /> Volver al Dashboard
+        <Link href={returnTo || "/dashboard"} className="text-[10px] text-muted-foreground hover:text-primary uppercase tracking-[3px] font-bold flex items-center gap-2 mb-8">
+          <ArrowLeft className="w-3 h-3" /> {returnTo ? "Volver" : "Volver al Dashboard"}
         </Link>
         <div className="cyber-card p-8 text-center bg-card shadow-2xl border-border">
           <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
@@ -73,5 +76,13 @@ export default function BilleteraPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BilleteraPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>}>
+      <BilleteraForm />
+    </Suspense>
   )
 }
