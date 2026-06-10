@@ -49,34 +49,33 @@ export default async function SuccessPage({
     if (session.metadata?.type === 'billetera_recharge') {
       homePath = '/advertiser'
       const amount = parseFloat(session.metadata.amount || '0')
-      
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const isLocal = appUrl.includes('localhost') || appUrl.includes('127.0.0.1')
+      const isProcessed = session.metadata.processed === 'true'
 
-      // Credit balance on success page ONLY in local development to avoid double crediting in production (where webhooks handle it).
-      if (isLocal && amount > 0 && user) {
-        const cookieStore = await cookies()
-        const isProcessed = cookieStore.get(`session_${sessionId}`)
-
-        if (!isProcessed) {
-          const { data: profile } = await supabase
-            .from('perfiles')
-            .select('saldo_billetera')
-            .eq('id', user.id)
-            .single()
-
-          const newBalance = parseFloat(profile?.saldo_billetera || '0') + amount
-
-          const { error: updateError } = await supabase
-            .from('perfiles')
-            .update({ saldo_billetera: newBalance })
-            .eq('id', user.id)
-
-          if (!updateError) {
-            cookieStore.set(`session_${sessionId}`, 'true', { maxAge: 60 * 60 * 24 })
-          } else {
-            console.error("Error updating wallet balance:", updateError)
+      if (!isProcessed && amount > 0 && user) {
+        // Mark as processed in Stripe first to avoid double crediting
+        await stripe.checkout.sessions.update(sessionId, {
+          metadata: {
+            ...session.metadata,
+            processed: 'true'
           }
+        })
+
+        const { data: profile } = await supabase
+          .from('perfiles')
+          .select('saldo_billetera')
+          .eq('id', user.id)
+          .single()
+
+        const currentBalance = parseFloat(profile?.saldo_billetera?.toString() || '0')
+        const newBalance = currentBalance + amount
+
+        const { error: updateError } = await supabase
+          .from('perfiles')
+          .update({ saldo_billetera: newBalance })
+          .eq('id', user.id)
+
+        if (updateError) {
+          console.error("Error updating wallet balance:", updateError)
         }
       }
     } else if (user && planId) {

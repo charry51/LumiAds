@@ -43,12 +43,32 @@ export async function POST(req: Request) {
     if (session.metadata.type === 'billetera_recharge') {
        const amountStr = session.metadata.amount
        const amount = parseFloat(amountStr || '0')
+       const isProcessed = session.metadata.processed === 'true'
        
-       if (amount > 0) {
-          const { data: profile } = await supabase.from('perfiles').select('saldo_billetera').eq('id', session.metadata.userId).single()
-          await supabase.from('perfiles').update({
-             saldo_billetera: (profile?.saldo_billetera || 0) + amount
-          }).eq('id', session.metadata.userId)
+       if (!isProcessed && amount > 0) {
+          // Mark as processed in Stripe first to avoid double crediting
+          await stripe.checkout.sessions.update(session.id, {
+             metadata: {
+                ...session.metadata,
+                processed: 'true'
+             }
+          })
+
+          const { data: profile } = await supabase
+             .from('perfiles')
+             .select('saldo_billetera')
+             .eq('id', session.metadata.userId)
+             .single()
+
+          const currentBalance = parseFloat(profile?.saldo_billetera?.toString() || '0')
+          const newBalance = currentBalance + amount
+
+          await supabase
+             .from('perfiles')
+             .update({
+                saldo_billetera: newBalance
+             })
+             .eq('id', session.metadata.userId)
        }
     } else {
        // Retrieve the subscription details from Stripe
