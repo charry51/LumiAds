@@ -35,7 +35,10 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const [selectedMapScreens, setSelectedMapScreens] = useState<string[]>([])
+  const [screenWeights, setScreenWeights] = useState<Record<string, number>>({})
+  const [selectedCity, setSelectedCity] = useState<string>('todas')
   
+  const uniqueCities = Array.from(new Set(pantallas.map(p => p.ciudad).filter(Boolean))).sort()
   // Drag and Drop States
   const [dragActive, setDragActive] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
@@ -55,22 +58,35 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
 
   const selectedScreensFull = pantallas.filter(p => selectedMapScreens.includes(p.id))
   
-  const effType = selectedScreensFull.length > 0 ? (selectedScreensFull[0].tipo_pantalla || 'gimnasio') : targetType
-  const effDensity = selectedScreensFull.length > 0 ? (selectedScreensFull[0].densidad_poblacion_nivel || 'medio') : targetDensity
-  const effBasePrice = selectedScreensFull.length > 0 ? selectedScreensFull[0].precio_base_impacto : undefined
-  const effMarkup = selectedScreensFull.length > 0 ? selectedScreensFull[0].comision_markup_porcentaje : undefined
-
-  const impactosEstimados = calculateEstimatedImpacts({
-    presupuestoTotal,
-    prioridad,
-    duracionSegundos: duracion,
-    zona: 'standard', // Por simplicidad
-    tipoPantalla: effType,
-    densidadNivel: effDensity,
-    frecuenciaRelativa: planFrequency,
-    precioBaseImpacto: effBasePrice,
-    comisionMarkupPorcentaje: effMarkup
-  })
+  const totalWeight = selectedScreensFull.reduce((sum, s) => sum + (screenWeights[s.id] || 1), 0)
+  
+  const impactosEstimados = selectedScreensFull.length > 0 
+    ? Math.floor(selectedScreensFull.reduce((sum, screen) => {
+        const weight = screenWeights[screen.id] || 1
+        const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
+        const screenBudget = presupuestoTotal * budgetFraction
+        
+        return sum + calculateEstimatedImpacts({
+          presupuestoTotal: screenBudget,
+          prioridad,
+          duracionSegundos: duracion,
+          zona: 'standard',
+          tipoPantalla: screen.tipo_pantalla || 'gimnasio',
+          densidadNivel: screen.densidad_poblacion_nivel || 'medio',
+          frecuenciaRelativa: planFrequency,
+          precioBaseImpacto: screen.precio_base_impacto,
+          comisionMarkupPorcentaje: screen.comision_markup_porcentaje
+        })
+      }, 0))
+    : calculateEstimatedImpacts({
+        presupuestoTotal,
+        prioridad,
+        duracionSegundos: duracion,
+        zona: 'standard',
+        tipoPantalla: targetType,
+        densidadNivel: targetDensity,
+        frecuenciaRelativa: planFrequency,
+      })
 
   const isPremium = userPlan.toLowerCase().includes('expansión') || userPlan.toLowerCase().includes('dominio')
 
@@ -81,7 +97,20 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   }
 
   const toggleScreen = (id: string) => {
-     setSelectedMapScreens(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])
+     setSelectedMapScreens(prev => {
+       const isSelected = prev.includes(id)
+       if (isSelected) {
+         setScreenWeights(w => {
+           const newW = { ...w }
+           delete newW[id]
+           return newW
+         })
+         return prev.filter(s => s !== id)
+       } else {
+         setScreenWeights(w => ({ ...w, [id]: 1 }))
+         return [...prev, id]
+       }
+     })
   }
 
   const handleDrag = (e: React.DragEvent) => {
@@ -230,6 +259,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         hora_fin: (formData.get('hora_fin') as string) || '',
         pantalla_id: selectedMapScreens[0],
         pantalla_idsRaw: selectedMapScreens.join(','),
+        pantalla_weights: JSON.stringify(screenWeights),
         dias_semana: selectedDays,
         presupuesto_total: presupuestoTotal,
         prioridad: prioridad,
@@ -414,7 +444,19 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
 
         {/* SCREEN SELECTOR MARKETPLACE */}
         <div className="flex flex-col gap-4 mt-6">
-           <Label className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Marketplace de Pantallas</Label>
+           <div className="flex items-center justify-between">
+             <Label className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Marketplace de Pantallas</Label>
+             <select 
+               value={selectedCity} 
+               onChange={(e) => setSelectedCity(e.target.value)}
+               className="bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-1 focus:outline-none focus:border-[#2BC8FF]/50"
+             >
+               <option value="todas">Todas las ciudades</option>
+               {uniqueCities.map(city => (
+                 <option key={city} value={city}>{city}</option>
+               ))}
+             </select>
+           </div>
            
            {isPremium ? (
               <div className="h-[500px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(124,60,255,0.1)]">
@@ -426,31 +468,30 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
               </div>
            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {pantallas.length === 0 ? (
-                    <div className="col-span-full p-8 text-center text-zinc-500 border border-white/10 bg-white/5 rounded-2xl">No hay pantallas disponibles en este momento.</div>
+                 {pantallas.filter(p => selectedCity === 'todas' || p.ciudad === selectedCity).length === 0 ? (
+                    <div className="col-span-full p-8 text-center text-zinc-500 border border-white/10 bg-white/5 rounded-2xl">No hay pantallas disponibles en esta ciudad.</div>
                  ) : (
-                    pantallas.map((pantalla) => {
+                    pantallas.filter(p => selectedCity === 'todas' || p.ciudad === selectedCity).map((pantalla) => {
                        const isSelected = selectedMapScreens.includes(pantalla.id)
                        const isHighDemand = pantalla.precio_emision > (pantalla.precio_base || 50)
                        
                        return (
                           <div 
                              key={pantalla.id}
-                             onClick={() => toggleScreen(pantalla.id)}
                              className={`
-                                cursor-pointer p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group
+                                p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden group
                                 ${isSelected 
                                    ? 'border-[#2BC8FF] bg-[#2BC8FF]/10 shadow-[0_0_20px_rgba(43,200,255,0.2)]' 
-                                   : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20'
+                                   : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 cursor-pointer'
                                 }
                              `}
                           >
                              {/* Selected Glow */}
                              {isSelected && <div className="absolute -top-10 -right-10 w-20 h-20 bg-[#2BC8FF]/30 blur-2xl rounded-full pointer-events-none" />}
                              
-                             <div className="flex justify-between items-start mb-3 relative z-10">
-                                <div>
-                                   <h3 className="text-white font-bold text-sm uppercase tracking-tight">{pantalla.nombre}</h3>
+                             <div className="flex justify-between items-start mb-3 relative z-10" onClick={!isSelected ? () => toggleScreen(pantalla.id) : undefined}>
+                                <div className={isSelected ? 'cursor-pointer' : ''} onClick={isSelected ? () => toggleScreen(pantalla.id) : undefined}>
+                                   <h3 className="text-white font-bold text-sm uppercase tracking-tight hover:text-[#2BC8FF] transition-colors">{pantalla.nombre}</h3>
                                    <div className="flex items-center gap-1 text-zinc-400 text-[10px] uppercase font-mono mt-1">
                                       <MapPin className="w-3 h-3" /> {pantalla.ciudad}
                                    </div>
@@ -460,7 +501,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                 </div>
                              </div>
                              
-                             <div className="flex items-end justify-between relative z-10 mt-6">
+                             <div className="flex items-end justify-between relative z-10 mt-6" onClick={!isSelected ? () => toggleScreen(pantalla.id) : undefined}>
                                 <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">
                                    Precio por Impacto
                                 </div>
@@ -468,6 +509,24 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                    {((pantalla.precio_base_impacto ?? 0.05) * (1 + (pantalla.comision_markup_porcentaje ?? 30) / 100)).toFixed(3)} <span className="text-[#2BC8FF] text-xs">€/Impacto</span>
                                 </div>
                              </div>
+
+                             {isSelected && (
+                               <div className="mt-4 pt-4 border-t border-[#2BC8FF]/20 relative z-10">
+                                 <div className="flex justify-between items-center mb-2">
+                                   <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">Prioridad / Peso</Label>
+                                   <span className="text-xs font-mono text-white">{screenWeights[pantalla.id] || 1}/10</span>
+                                 </div>
+                                 <input 
+                                   type="range" 
+                                   min="1" 
+                                   max="10" 
+                                   step="1"
+                                   value={screenWeights[pantalla.id] || 1}
+                                   onChange={(e) => setScreenWeights(prev => ({ ...prev, [pantalla.id]: parseInt(e.target.value) }))}
+                                   className="w-full accent-[#2BC8FF]"
+                                 />
+                               </div>
+                             )}
                           </div>
                        )
                     })

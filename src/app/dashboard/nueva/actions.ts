@@ -15,6 +15,7 @@ export type CampaignData = {
   hora_fin: string
   pantalla_id: string
   pantalla_idsRaw: string
+  pantalla_weights?: string
   presupuesto_total?: number
   prioridad?: number
   impactos_estimados?: number
@@ -56,8 +57,20 @@ export async function createCampaign(data: CampaignData) {
     }
     const pantallaId = data.pantalla_id
     const pantallaIdsRaw = data.pantalla_idsRaw // Nuevo campo opcional para múltiple selección
+    const pantallaWeightsRaw = data.pantalla_weights // JSON string with weights
 
     const pantallaIds = pantallaIdsRaw ? pantallaIdsRaw.split(',') : [pantallaId]
+    
+    let weightsMap: Record<string, number> = {}
+    if (pantallaWeightsRaw) {
+      try {
+        weightsMap = JSON.parse(pantallaWeightsRaw)
+      } catch (e) {
+        console.error('Error parsing pantalla_weights:', e)
+      }
+    }
+    
+    const totalWeight = pantallaIds.reduce((sum: number, id: string) => sum + (weightsMap[id] || 1), 0)
 
     if (!nombreCampana || !fechaInicio || !fechaFin || (pantallaIds.length === 0 && !pantallaId) || !publicUrl) {
       return { type: 'error', message: 'Por favor, completa todos los campos requeridos.' }
@@ -114,6 +127,9 @@ export async function createCampaign(data: CampaignData) {
 
       const finalCostPerImpact = calculatedPrice * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier
 
+        const weight = weightsMap[id] || 1
+      const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
+      
       return {
         cliente_id: user.id,
         pantalla_id: id !== "default" ? id : null,
@@ -127,10 +143,10 @@ export async function createCampaign(data: CampaignData) {
         estado: finalEstado,
         ia_metadata: iaResult,
         precio_pactado: finalCostPerImpact,
-        // LuminAdd v2: Programmatic fields distributed equally
-        presupuesto_total: (data.presupuesto_total || 0) / totalNew,
+        // LuminAdd v2: Programmatic fields distributed by weight
+        presupuesto_total: (data.presupuesto_total || 0) * budgetFraction,
         prioridad: data.prioridad || 1,
-        impactos_estimados: Math.floor((data.impactos_estimados || 0) / totalNew),
+        impactos_estimados: Math.floor((data.impactos_estimados || 0) * budgetFraction),
         dias_semana: data.dias_semana || [0, 1, 2, 3, 4, 5, 6]
       }
     })
