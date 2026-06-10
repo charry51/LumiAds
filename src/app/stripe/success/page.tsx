@@ -47,7 +47,7 @@ export default async function SuccessPage({
     const planId = typeof session.metadata?.planId === 'string' ? session.metadata.planId : null
 
     if (session.metadata?.type === 'billetera_recharge') {
-      homePath = '/advertiser'
+      homePath = session.metadata.returnTo || '/advertiser'
       const amount = parseFloat(session.metadata.amount || '0')
       const isProcessed = session.metadata.processed === 'true'
 

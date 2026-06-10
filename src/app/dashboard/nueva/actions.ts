@@ -127,10 +127,10 @@ export async function createCampaign(data: CampaignData) {
         estado: finalEstado,
         ia_metadata: iaResult,
         precio_pactado: finalCostPerImpact,
-        // LuminAdd v2: Programmatic fields
-        presupuesto_total: data.presupuesto_total || 0,
+        // LuminAdd v2: Programmatic fields distributed equally
+        presupuesto_total: (data.presupuesto_total || 0) / totalNew,
         prioridad: data.prioridad || 1,
-        impactos_estimados: data.impactos_estimados || 0,
+        impactos_estimados: Math.floor((data.impactos_estimados || 0) / totalNew),
         dias_semana: data.dias_semana || [0, 1, 2, 3, 4, 5, 6]
       }
     })

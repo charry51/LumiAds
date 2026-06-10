@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { logout } from '@/app/login/actions'
 import { DeleteCampaignButton } from '@/app/dashboard/DeleteCampaignButton'
+import { ReactivarCampaignButton } from '@/app/dashboard/ReactivarCampaignButton'
 import { BarChart3, Target, TrendingUp, Zap, Monitor, DollarSign, Plus, ArrowUpRight, Wallet } from 'lucide-react'
 import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 
@@ -73,6 +74,7 @@ export default async function AdvertiserDashboardPage() {
   const totalPresupuesto = (misCampanas || []).reduce((sum, c) => sum + Number(c?.presupuesto_total ?? 0), 0)
   const campañasActivas = (misCampanas || []).filter(c => c?.estado === 'aprobada').length
   const saldoBilletera = Number(profile?.saldo_billetera ?? 0)
+  const userName = profile?.nombre_empresa || user.email?.split('@')[0] || 'Anunciante'
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-4 sm:p-8 font-sans selection:bg-[#2BC8FF]/30">
@@ -86,22 +88,27 @@ export default async function AdvertiserDashboardPage() {
                 <span className="text-3xl font-black uppercase tracking-tighter text-white">Lumi<span className="text-[#2BC8FF]">Ads</span></span>
                 <span className="bg-[#2BC8FF]/10 text-[#2BC8FF] text-[9px] font-black px-2 py-0.5 rounded border border-[#2BC8FF]/20 uppercase tracking-widest">ADVERTISER</span>
               </div>
-              <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[4px]">Demand Side Platform (DSP)</p>
+              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Hola, {userName}</p>
            </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
+          <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-xl px-4 py-2 mr-2">
+            <div className="flex flex-col">
+              <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Saldo Disponible</span>
+              <span className="text-lg font-black font-mono text-white leading-none">{saldoBilletera.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<span className="text-[#2BC8FF] ml-1">€</span></span>
+            </div>
+            <Link href="/dashboard/billetera?returnTo=/advertiser">
+               <Button size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-3 h-8 shadow-[0_0_10px_rgba(43,200,255,0.2)]">
+                  <Wallet className="w-3 h-3" />
+                  Recargar
+               </Button>
+            </Link>
+          </div>
           <Link href="/advertiser/estadisticas">
              <Button variant="outline" className="border-zinc-800 bg-zinc-950 text-[#2BC8FF] hover:text-white hover:bg-zinc-900 flex gap-2 items-center text-[10px] uppercase font-bold tracking-widest px-3">
                 <TrendingUp className="w-4 h-4" />
                 Estadísticas
-             </Button>
-          </Link>
-
-          <Link href="/dashboard/billetera">
-             <Button variant="outline" className="border-[#2BC8FF]/30 bg-[#2BC8FF]/5 text-[#2BC8FF] hover:bg-[#2BC8FF] hover:text-black flex gap-2 items-center text-[10px] uppercase font-black tracking-widest px-4 transition-all shadow-[0_0_10px_rgba(43,200,255,0.15)]">
-                <Wallet className="w-4 h-4" />
-                Recargar Monedero
              </Button>
           </Link>
 
@@ -161,7 +168,9 @@ export default async function AdvertiserDashboardPage() {
                       const campaignName = camp?.nombre_campana || 'Campaña sin nombre'
                       const campaignIdPreview = typeof camp?.id === 'string' ? camp.id.split('-')[0] : 'N/A'
                       const pantallaNombre = camp?.pantallas?.nombre || 'Red Global'
-                      const estado = typeof camp?.estado === 'string' ? camp.estado.replace(/_/g, ' ') : 'pendiente'
+                      
+                      const isAgotado = impactosReales >= impactosEstimados && impactosEstimados > 0
+                      const estado = isAgotado ? 'agotado' : (typeof camp?.estado === 'string' ? camp.estado.replace(/_/g, ' ') : 'pendiente')
                       
                       return (
                         <tr key={camp.id || campaignName} className="hover:bg-zinc-950 transition-colors">
@@ -193,6 +202,7 @@ export default async function AdvertiserDashboardPage() {
                           </td>
                           <td className="px-6 py-5">
                             <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
+                              isAgotado ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
                               camp?.estado === 'aprobada' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                               camp?.estado === 'rechazada' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
                               'bg-zinc-800 text-zinc-400'
@@ -201,7 +211,12 @@ export default async function AdvertiserDashboardPage() {
                             </span>
                           </td>
                           <td className="px-6 py-5 text-right">
-                             {typeof camp?.id === 'string' ? <DeleteCampaignButton campaignId={camp.id} /> : null}
+                             <div className="flex items-center justify-end gap-2">
+                               {isAgotado && typeof camp?.id === 'string' && (
+                                 <ReactivarCampaignButton campaignId={camp.id} currentBudget={presupuesto} />
+                               )}
+                               {typeof camp?.id === 'string' ? <DeleteCampaignButton campaignId={camp.id} /> : null}
+                             </div>
                           </td>
                         </tr>
                       )

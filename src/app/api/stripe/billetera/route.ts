@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req: Request) {
   try {
-    const { amount } = await req.json()
+    const { amount, returnTo } = await req.json()
 
     if (!amount || amount <= 0) {
       return new NextResponse("Monto inválido", { status: 400 })
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         })
         .eq('id', user.id)
 
-      return NextResponse.json({ url: `${appUrl}/advertiser` })
+      return NextResponse.json({ url: returnTo || `${appUrl}/advertiser` })
     }
 
     const isValidCustomer = profile?.stripe_customer_id && !profile.stripe_customer_id.includes('sandbox')
@@ -71,7 +71,8 @@ export async function POST(req: Request) {
       metadata: {
         userId: user.id,
         type: 'billetera_recharge',
-        amount: amount.toString()
+        amount: amount.toString(),
+        returnTo: returnTo || ''
       },
     })
 

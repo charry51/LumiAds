@@ -81,11 +81,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   }
 
   const toggleScreen = (id: string) => {
-    if (isPremium) {
-       setSelectedMapScreens(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])
-    } else {
-       setSelectedMapScreens([id])
-    }
+     setSelectedMapScreens(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])
   }
 
   const handleDrag = (e: React.DragEvent) => {
@@ -285,7 +281,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
            </div>
            
             <div className="relative z-10 flex items-center gap-3">
-               <Link href="/dashboard/billetera">
+               <Link href="/dashboard/billetera?returnTo=/dashboard/nueva">
                   <Button type="button" variant="outline" className="border-[#2BC8FF]/30 bg-[#2BC8FF]/5 text-[#2BC8FF] hover:bg-[#2BC8FF] hover:text-black text-[9px] uppercase font-black tracking-widest px-4 h-9 transition-all">
                      Recargar Billetera
                   </Button>
@@ -511,7 +507,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                         <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1">
                            ⚠️ Saldo insuficiente en billetera (Máx. {walletBalance.toLocaleString('es-ES')}€)
                         </p>
-                        <Link href="/dashboard/billetera" className="self-start">
+                        <Link href="/dashboard/billetera?returnTo=/dashboard/nueva" className="self-start">
                            <Button type="button" size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black text-[9px] uppercase font-black tracking-widest px-3 h-7 rounded shadow-[0_0_10px_rgba(43,200,255,0.2)] border-none">
                               Recargar Saldo
                            </Button>
