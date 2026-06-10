@@ -34,10 +34,12 @@ export async function POST(req: Request) {
           .eq('id', user.id)
           .single()
       
+      const currentBalance = parseFloat(currentProfile?.saldo_billetera?.toString() || '0')
+      
       await supabase
         .from('perfiles')
         .update({
-          saldo_billetera: (currentProfile?.saldo_billetera || 0) + amount,
+          saldo_billetera: currentBalance + amount,
         })
         .eq('id', user.id)
 

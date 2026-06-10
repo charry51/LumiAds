@@ -149,7 +149,7 @@ export async function AnuncianteDashboardView() {
           <div className="absolute top-0 left-0 w-1 h-full bg-[#2BC8FF] opacity-0 group-hover:opacity-100 transition-opacity" />
           <div>
             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1 font-mono">Saldo Billetera</p>
-            <p className="text-2xl font-heading text-foreground dark:text-white">{(profile?.saldo_billetera || 0).toFixed(2)}€</p>
+            <p className="text-2xl font-heading text-foreground dark:text-white">{Number(profile?.saldo_billetera || 0).toFixed(2)}€</p>
             <Link href="/dashboard/billetera" className="text-[9px] text-primary uppercase font-bold tracking-widest hover:underline mt-1 block">
               + Recargar Saldo
             </Link>

@@ -145,7 +145,8 @@ export async function createCampaign(data: CampaignData) {
     }
     // Descontar presupuesto de la billetera
     if (data.presupuesto_total && data.presupuesto_total > 0) {
-      const nuevoSaldo = (profile?.saldo_billetera || 0) - data.presupuesto_total
+      const currentBalance = parseFloat(profile?.saldo_billetera?.toString() || '0')
+      const nuevoSaldo = currentBalance - data.presupuesto_total
       
       const { error: walletError } = await supabase
         .from('perfiles')
