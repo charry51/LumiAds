@@ -54,6 +54,7 @@ export async function AnuncianteDashboardView() {
     .select('*')
     .eq('id', user?.id)
     .single()
+  const userName = profile?.nombre || profile?.nombre_empresa || user?.email?.split('@')[0] || 'Anunciante'
 
   // QUERY ACTUALIZADA PARA MÉTRICAS PROGRAMÁTICAS
   const { data: misCampanas, error: errorCampanas } = await supabase
@@ -79,9 +80,14 @@ export async function AnuncianteDashboardView() {
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-8 font-sans">
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border pb-6">
-        <div className="flex items-center gap-2">
-          <img src="/LogoPequeno.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
-          <img src="/LogoTexto.png" alt="LumiAds" className="h-[100px] w-auto" />
+        <div>
+          <div className="flex items-center gap-2">
+            <img src="/LogoPequeno.png" alt="LumiAds Logo" className="h-[80px] w-auto" />
+            <img src="/LogoTexto.png" alt="LumiAds" className="h-[100px] w-auto" />
+          </div>
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest -mt-4">
+            Hola, {userName}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto">

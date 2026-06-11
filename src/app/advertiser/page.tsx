@@ -74,7 +74,7 @@ export default async function AdvertiserDashboardPage() {
   const totalPresupuesto = (misCampanas || []).reduce((sum, c) => sum + Number(c?.presupuesto_total ?? 0), 0)
   const campañasActivas = (misCampanas || []).filter(c => c?.estado === 'aprobada').length
   const saldoBilletera = Number(profile?.saldo_billetera ?? 0)
-  const userName = profile?.nombre_empresa || user.email?.split('@')[0] || 'Anunciante'
+  const userName = profile?.nombre || profile?.nombre_empresa || user.email?.split('@')[0] || 'Anunciante'
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-4 sm:p-8 font-sans selection:bg-[#2BC8FF]/30">

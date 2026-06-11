@@ -91,6 +91,7 @@ export default async function HostDashboardPage({
   const totalGenerado = hosts ? hosts.reduce((sum, h) => sum + (h.saldo_pendiente || 0) + (h.saldo_pagado || 0), 0) : 0
   const totalPendiente = hosts ? hosts.reduce((sum, h) => sum + (h.saldo_pendiente || 0), 0) : 0
   const activos = hosts ? hosts.filter(h => (h.pantallas as any)?.estado === 'activa').length : 0
+  const userName = currentProfile?.nombre || currentProfile?.nombre_empresa || user.email?.split('@')[0] || 'Gestor'
 
   let comisiones: any[] = []
   if (hostData) {
@@ -116,7 +117,7 @@ export default async function HostDashboardPage({
                 <span className="text-3xl font-black uppercase tracking-tighter text-white">Lumi<span className="text-violet-500">Host</span></span>
                 <span className="bg-violet-500/10 text-violet-400 text-[9px] font-black px-2 py-0.5 rounded border border-violet-500/20 uppercase tracking-widest">DUEÑO DE PANTALLAS</span>
               </div>
-              <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[4px]">Infraestructura Descentralizada</p>
+              <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[4px]">Hola, {userName}</p>
            </div>
         </div>
 
