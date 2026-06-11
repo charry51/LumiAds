@@ -4,6 +4,10 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { syncPlanToScreens } from '@/app/actions/profile'
 
+function isMissingDailyCapacityColumn(error: { message?: string } | null) {
+  return error?.message?.includes('capacidad_impactos_diarios')
+}
+
 export async function createPantalla(formData: FormData) {
   const supabase = await createClient()
 
@@ -44,16 +48,18 @@ export async function createPantalla(formData: FormData) {
   const ciudad = formData.get('ciudad') as string
   const latStr = formData.get('latitud') as string
   const lngStr = formData.get('longitud') as string
+  const impactosDiariosStr = formData.get('capacidad_impactos_diarios') as string
 
   const lat = latStr ? parseFloat(latStr) : null
   const lng = lngStr ? parseFloat(lngStr) : null
+  const capacidadImpactosDiarios = Math.max(1, Math.floor(Number(impactosDiariosStr) || 1000))
 
   const esPublica = formData.get('es_publica') !== 'false' // Si no viene o es 'on', es pública
 
   const adminClient = await createAdminClient()
 
   // 5. Inserción con Vínculo de Organización y Privacidad
-  const { error } = await adminClient.from('pantallas').insert({
+  let { error } = await adminClient.from('pantallas').insert({
     nombre,
     ubicacion,
     ciudad,
@@ -61,9 +67,25 @@ export async function createPantalla(formData: FormData) {
     longitud: lng,
     estado: 'activa',
     es_publica: esPublica,
+    capacidad_impactos_diarios: capacidadImpactosDiarios,
     organizacion_id: perfil.organizacion_id,
     creado_por: user.id
   })
+
+  if (isMissingDailyCapacityColumn(error)) {
+    const fallback = await adminClient.from('pantallas').insert({
+      nombre,
+      ubicacion,
+      ciudad,
+      latitud: lat,
+      longitud: lng,
+      estado: 'activa',
+      es_publica: esPublica,
+      organizacion_id: perfil.organizacion_id,
+      creado_por: user.id
+    })
+    error = fallback.error
+  }
 
   if (error) return { success: false, error: error.message }
 
