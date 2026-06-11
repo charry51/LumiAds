@@ -151,6 +151,35 @@ export async function createCampaign(data: CampaignData) {
     const diasSemana = data.dias_semana || [0, 1, 2, 3, 4, 5, 6]
     const activeCampaignDays = countCampaignDays(fechaInicio, fechaFin, diasSemana)
 
+    // Calculate Day Multiplier Average
+    let sumDayMult = 0
+    let activeDaysCount = 0
+    const startCursor = new Date(`${fechaInicio}T00:00:00`)
+    const endCursor = new Date(`${fechaFin}T00:00:00`)
+    if (!Number.isNaN(startCursor.getTime()) && !Number.isNaN(endCursor.getTime()) && startCursor <= endCursor) {
+      const cursor = new Date(startCursor)
+      while (cursor <= endCursor) {
+        if (diasSemana.includes(cursor.getDay())) {
+          activeDaysCount += 1
+          const month = cursor.getMonth()
+          const dayNum = cursor.getDate()
+          const isH = [
+            { m: 0, d: 1 }, { m: 0, d: 6 }, { m: 3, d: 2 }, { m: 3, d: 3 },
+            { m: 4, d: 1 }, { m: 7, d: 15 }, { m: 9, d: 12 }, { m: 10, d: 1 },
+            { m: 11, d: 6 }, { m: 11, d: 8 }, { m: 11, d: 25 }
+          ].some(h => h.m === month && h.d === dayNum)
+          
+          let dayMult = 1.0
+          if (isH) dayMult = 1.2
+          else if (cursor.getDay() === 5 || cursor.getDay() === 6 || cursor.getDay() === 0) dayMult = 1.3
+          
+          sumDayMult += dayMult
+        }
+        cursor.setDate(cursor.getDate() + 1)
+      }
+    }
+    const avgDayMultiplier = activeDaysCount > 0 ? (sumDayMult / activeDaysCount) : 1.0
+
     // 5. Insert into Database (Loop over IDs)
     const inserts = pantallaIds.map(id => {
       const screen = screensMap.get(id)
@@ -169,7 +198,7 @@ export async function createCampaign(data: CampaignData) {
       const durationMultiplier = duracion / 10
       const avgTimeMultiplier = 0.93
 
-      const finalCostPerImpact = calculatedPrice * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier
+      const finalCostPerImpact = calculatedPrice * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier * avgDayMultiplier
 
       const weight = weightsMap[id] || 1
       const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
@@ -182,7 +211,8 @@ export async function createCampaign(data: CampaignData) {
         tipoPantalla: (screen?.tipo_pantalla || 'gimnasio') as ScreenType,
         densidadNivel: (screen?.densidad_poblacion_nivel || 'medio') as DensityLevel,
         precioBaseImpacto: screen?.precio_base_impacto,
-        comisionMarkupPorcentaje: screen?.comision_markup_porcentaje
+        comisionMarkupPorcentaje: screen?.comision_markup_porcentaje,
+        averageDayMultiplier: avgDayMultiplier
       })
       const dailyCapacity = Math.max(1, Number(screen?.capacidad_impactos_diarios ?? 1000))
       const cappedEstimatedImpacts = Math.min(rawEstimatedImpacts, dailyCapacity * activeCampaignDays)
