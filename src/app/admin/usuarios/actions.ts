@@ -115,8 +115,9 @@ export async function updateUserPlan(userId: string, newPlanId: string) {
       return { success: false, message: 'No tienes permisos suficientes' }
     }
 
-    // 2. Actualizar el plan
-    const { error } = await supabase
+    // 2. Actualizar el plan usando el cliente admin para evitar RLS
+    const adminClient = await createAdminClient()
+    const { error } = await adminClient
       .from('perfiles')
       .update({ plan_id: newPlanId })
       .eq('id', userId)

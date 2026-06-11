@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { syncPlanToScreens } from '@/app/actions/profile'
 
 function isMissingDailyCapacityColumn(error: { message?: string } | null) {
   return error?.message?.includes('capacidad_impactos_diarios')
@@ -155,6 +156,15 @@ export async function updatePantallaPlan(pantallaId: string, newPlan: string) {
     const esPublica = plan !== 'gold'
 
     const adminClient = await createAdminClient()
+
+    // Buscar si la pantalla tiene un propietario/host
+    const { data: hostRecord } = await adminClient
+      .from('hosts')
+      .select('perfil_id')
+      .eq('pantalla_id', pantallaId)
+      .maybeSingle()
+
+    // Actualizar el plan de la pantalla
     const { error } = await adminClient
       .from('pantallas')
       .update({
@@ -165,6 +175,18 @@ export async function updatePantallaPlan(pantallaId: string, newPlan: string) {
       .eq('id', pantallaId)
 
     if (error) throw error
+
+    // Si tiene propietario, actualizar su perfil y sincronizar el resto de sus pantallas
+    if (hostRecord?.perfil_id) {
+      const { error: profileError } = await adminClient
+        .from('perfiles')
+        .update({ plan_id: plan })
+        .eq('id', hostRecord.perfil_id)
+
+      if (profileError) throw profileError
+
+      await syncPlanToScreens(hostRecord.perfil_id, plan, true)
+    }
 
     revalidatePath('/admin/pantallas')
     revalidatePath('/host')

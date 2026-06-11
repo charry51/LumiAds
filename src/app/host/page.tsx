@@ -8,6 +8,7 @@ import { SoporteNotificationBadge } from '@/components/SoporteNotificationBadge'
 import { logout } from '@/app/login/actions'
 import { WithdrawButton } from './WithdrawButton'
 import { ConectarPantallaModal } from './ConectarPantallaModal'
+import { GoldCmsControls } from './GoldCmsControls'
 
 export default async function HostDashboardPage({
   searchParams,
@@ -178,30 +179,37 @@ export default async function HostDashboardPage({
                  <Tv className="w-4 h-4 text-violet-500" /> Tus Nodos
               </h2>
               <div className="space-y-2">
-                 {hosts.map((h: any) => (
-                    <Link key={h.id} href={`/host/pantallas/${h.id}`} className="block group">
-                       <div className="p-4 rounded-lg border border-zinc-900 bg-zinc-950 hover:border-violet-500/50 hover:bg-violet-500/5 transition-all cursor-pointer">
-                          <div className="flex justify-between items-start mb-2">
-                             <h3 className="text-xs font-black uppercase text-white truncate pr-2">{h.pantallas?.nombre}</h3>
-                             <span className={`w-2 h-2 rounded-full mt-1 ${h.pantallas?.estado === 'activa' ? 'bg-emerald-500 shadow-[0_0_5px_#10B981]' : 'bg-zinc-600'}`} />
-                          </div>
-                          <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest mb-2 truncate">{h.pantallas?.ciudad}</p>
-                          <div className="flex items-center justify-between">
-                             <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded border ${
-                               h.pantallas?.plan_host === 'gold' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                               h.pantallas?.plan_host === 'premium' ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' :
-                               'bg-zinc-800 text-zinc-400 border-zinc-700'
-                             }`}>
-                                {h.pantallas?.plan_host}
-                             </span>
-                             <span className="text-[9px] font-mono text-zinc-400 font-bold group-hover:text-violet-400 transition-colors">{h.porcentaje}% →</span>
+                 {hosts.map((h: any) => {
+                     const isSelected = h.id === hostData?.id
+                     return (
+                        <Link key={h.id} href={`/host?screenId=${h.id}`} className="block group">
+                           <div className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                              isSelected 
+                                 ? 'border-violet-500 bg-violet-500/10 shadow-[0_0_15px_rgba(124,60,255,0.15)]' 
+                                 : 'border-zinc-900 bg-zinc-950 hover:border-violet-500/50 hover:bg-violet-500/5'
+                           }`}>
+                              <div className="flex justify-between items-start mb-2">
+                                 <h3 className="text-xs font-black uppercase text-white truncate pr-2">{h.pantallas?.nombre}</h3>
+                                 <span className={`w-2 h-2 rounded-full mt-1 ${h.pantallas?.estado === 'activa' ? 'bg-emerald-500 shadow-[0_0_5px_#10B981]' : 'bg-zinc-600'}`} />
+                              </div>
+                              <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest mb-2 truncate">{h.pantallas?.ciudad}</p>
+                              <div className="flex items-center justify-between">
+                                 <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded border ${
+                                   h.pantallas?.plan_host === 'gold' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                   h.pantallas?.plan_host === 'premium' ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' :
+                                   'bg-zinc-800 text-zinc-400 border-zinc-700'
+                                 }`}>
+                                    {h.pantallas?.plan_host}
+                                 </span>
+                                 <span className="text-[9px] font-mono text-zinc-400 font-bold group-hover:text-violet-400 transition-colors">{h.porcentaje}% →</span>
+                              </div>
+                              <div className="mt-3 border-t border-zinc-900 pt-3 text-[9px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-violet-400 transition-colors">
+                                 {isSelected ? 'Mostrando en panel' : 'Ver estadísticas y directo'}
+                              </div>
                            </div>
-                          <div className="mt-3 border-t border-zinc-900 pt-3 text-[9px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-violet-400 transition-colors">
-                             Ver estadísticas y directo
-                          </div>
-                        </div>
-                    </Link>
-                 ))}
+                        </Link>
+                     )
+                  })}
               </div>
            </div>
 
@@ -213,7 +221,12 @@ export default async function HostDashboardPage({
                     <div className="p-6 bg-zinc-950 border border-zinc-900 rounded-xl">
                        <div className="flex justify-between items-start mb-4">
                           <div>
-                             <h2 className="text-xl font-black uppercase text-white mb-1">{pantalla?.nombre}</h2>
+                             <h2 className="text-xl font-black uppercase text-white mb-1 flex items-center gap-3">
+                                 {pantalla?.nombre}
+                                 <Link href={`/host/pantallas/${hostData?.id}`} className="text-[9px] uppercase tracking-widest font-black text-violet-500 hover:text-violet-400 flex items-center gap-1 normal-case font-sans">
+                                    Ver directo ↗
+                                 </Link>
+                             </h2>
                              <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-[2px]">{pantalla?.ubicacion}</span>
                           </div>
                           <div className="bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded flex items-center gap-2">
@@ -273,7 +286,12 @@ export default async function HostDashboardPage({
                     <div className="p-8 bg-zinc-950/80 border border-violet-500/20 rounded-xl relative z-10 backdrop-blur-sm">
                        <div className="flex justify-between items-start mb-6">
                           <div>
-                             <h2 className="text-2xl font-black uppercase text-white mb-1 shadow-sm">{pantalla?.nombre}</h2>
+                             <h2 className="text-2xl font-black uppercase text-white mb-1 shadow-sm flex items-center gap-3">
+                                 {pantalla?.nombre}
+                                 <Link href={`/host/pantallas/${hostData?.id}`} className="text-[9px] uppercase tracking-widest font-black text-violet-500 hover:text-violet-400 flex items-center gap-1 normal-case font-sans">
+                                    Ver directo ↗
+                                 </Link>
+                             </h2>
                              <span className="text-[10px] text-violet-400 font-mono uppercase tracking-[3px]">{pantalla?.ubicacion}</span>
                           </div>
                           <div className="bg-violet-500/10 border border-violet-500/30 px-4 py-2 rounded flex items-center gap-2">
@@ -331,7 +349,12 @@ export default async function HostDashboardPage({
                     <div className="p-8 bg-zinc-950/90 border border-amber-500/40 rounded-xl relative z-10 backdrop-blur-md shadow-[0_0_50px_rgba(245,158,11,0.05)]">
                        <div className="flex justify-between items-start mb-6">
                           <div>
-                             <h2 className="text-3xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 mb-1">{pantalla?.nombre}</h2>
+                             <h2 className="text-3xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 mb-1 flex items-center gap-3">
+                                 {pantalla?.nombre}
+                                 <Link href={`/host/pantallas/${hostData?.id}`} className="text-[9px] uppercase tracking-widest font-black text-amber-500 hover:text-amber-400 flex items-center gap-1 normal-case font-sans">
+                                    Ver directo ↗
+                                 </Link>
+                             </h2>
                              <span className="text-[10px] text-amber-500/70 font-mono uppercase tracking-[4px]">{pantalla?.ubicacion}</span>
                           </div>
                           <div className="bg-amber-500/10 border border-amber-500/50 px-4 py-2 rounded flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
@@ -344,32 +367,7 @@ export default async function HostDashboardPage({
                           Este nodo está completamente aislado de la red de anunciantes. Utiliza el CMS Exclusivo para programar tu contenido corporativo.
                        </p>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-                       <div className="p-6 bg-zinc-950 border border-amber-500/20 hover:border-amber-500/50 transition-colors rounded-xl flex flex-col items-center justify-center text-center cursor-pointer group">
-                          <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                             <Plus className="w-6 h-6 text-amber-500" />
-                          </div>
-                          <h3 className="text-xs font-black uppercase text-white mb-2">Subir contenido</h3>
-                          <p className="text-[9px] font-mono text-zinc-500 tracking-[1px]">Sube videos o imágenes</p>
-                       </div>
-                       
-                       <div className="p-6 bg-zinc-950 border border-amber-500/20 hover:border-amber-500/50 transition-colors rounded-xl flex flex-col items-center justify-center text-center cursor-pointer group">
-                          <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                             <History className="w-6 h-6 text-amber-500" />
-                          </div>
-                          <h3 className="text-xs font-black uppercase text-white mb-2">Librería CMS</h3>
-                          <p className="text-[9px] font-mono text-zinc-500 tracking-[1px]">Organiza tus contenidos</p>
-                       </div>
-
-                       <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-xl flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-4 animate-pulse">
-                             <Tv className="w-6 h-6 text-amber-500" />
-                          </div>
-                          <h3 className="text-xs font-black uppercase text-amber-400 mb-2">Emisión Actual</h3>
-                          <p className="text-[9px] font-mono text-amber-500/60 tracking-[1px]">Promo_Verano.mp4</p>
-                       </div>
-                    </div>
+                    <GoldCmsControls pantallaId={pantalla?.id} />
                  </div>
               )}
 

@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 import { syncPlanToScreens } from '@/app/actions/profile'
+import { subscriptionPlans } from '@/config/subscriptions'
 
 
 export async function POST(req: Request) {
@@ -111,6 +112,48 @@ export async function POST(req: Request) {
         suscripcion_activa: true,
       })
       .eq('stripe_subscription_id', (stripeSubscription as any).id)
+  }
+
+  if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object as any
+    const priceId = subscription.items.data[0].price.id
+
+    // Find plan by priceId
+    let planId = subscriptionPlans.find(p => p.stripePriceId === priceId)?.id
+    if (!planId && stripe) {
+      try {
+        const productId = subscription.items.data[0].price.product as string
+        const product = await stripe.products.retrieve(productId)
+        planId = product.metadata.planId
+      } catch (err) {
+        console.error("Error retrieving Stripe product in webhook:", err)
+      }
+    }
+
+    const status = subscription.status
+    const suscripcionActiva = status === 'active' || status === 'trialing'
+    const finalPlanId = (suscripcionActiva && planId) ? planId : null
+
+    // Update profile using admin client to bypass RLS
+    const { data: profile, error: profileError } = await supabase
+      .from('perfiles')
+      .update({
+        stripe_price_id: priceId,
+        stripe_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        plan_id: finalPlanId,
+        suscripcion_activa: suscripcionActiva,
+      })
+      .eq('stripe_subscription_id', subscription.id)
+      .select('id')
+      .maybeSingle()
+
+    if (profileError) {
+      console.error("Error updating profile in subscription.updated webhook:", profileError)
+    }
+
+    if (profile) {
+      await syncPlanToScreens(profile.id, finalPlanId, suscripcionActiva)
+    }
   }
   
   if (event.type === 'customer.subscription.deleted') {
