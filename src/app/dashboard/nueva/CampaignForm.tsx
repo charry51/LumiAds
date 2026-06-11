@@ -74,7 +74,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   // Días de la semana (0=Dom, 1=Lun, ..., 6=Sab)
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]) // Por defecto Lun-Vie
   
-  const [presupuestoTotal, setPresupuestoTotal] = useState<number>(100)
+  const [pricingMode, setPricingMode] = useState<'budget' | 'frequency'>('budget')
+  const [manualPresupuesto, setManualPresupuesto] = useState<number>(100)
   const [prioridad, setPrioridad] = useState<number>(1)
   const [duracion, setDuracion] = useState<number>(10)
   
@@ -84,27 +85,102 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   const activeCampaignDays = countCampaignDays(fechaInicio, fechaFin, selectedDays)
   
   const totalWeight = selectedScreensFull.reduce((sum, s) => sum + (screenWeights[s.id] || 1), 0)
+
+  // Función para obtener el coste por impacto en UI
+  function getScreenCostPerImpact(screen: Pantalla, priorityVal: number, durationVal: number) {
+    const typeMult = screen.tipo_pantalla ? (
+      screen.tipo_pantalla === 'calle_principal' ? 2.5 :
+      screen.tipo_pantalla === 'centro_comercial' ? 2.0 :
+      screen.tipo_pantalla === 'calle' ? 1.5 :
+      screen.tipo_pantalla === 'restaurante' ? 1.2 :
+      screen.tipo_pantalla === 'gimnasio' ? 1.0 : 0.5
+    ) : 1.0;
+
+    const densMult = screen.densidad_poblacion_nivel ? (
+      screen.densidad_poblacion_nivel === 'muy_alto' ? 1.5 :
+      screen.densidad_poblacion_nivel === 'alto' ? 1.2 :
+      screen.densidad_poblacion_nivel === 'medio' ? 1.0 : 0.8
+    ) : 1.0;
+
+    const priorityPenalty = 1 + (priorityVal * 0.1);
+    const durationMultiplier = durationVal / 10;
+    const avgTimeMultiplier = 0.93;
+
+    let baseCost = 0.05;
+    if (screen.precio_base_impacto !== undefined && screen.precio_base_impacto !== null) {
+      const markup = screen.comision_markup_porcentaje !== undefined && screen.comision_markup_porcentaje !== null ? screen.comision_markup_porcentaje : 30.00;
+      baseCost = screen.precio_base_impacto * (1 + markup / 100);
+    }
+
+    return baseCost * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier;
+  }
+
+  // Coste estimado por impacto para cada pantalla seleccionada
+  const screenCostEstimations = selectedScreensFull.reduce((acc, screen) => {
+    acc[screen.id] = getScreenCostPerImpact(screen, prioridad, duracion)
+    return acc
+  }, {} as Record<string, number>)
+
+  // Presupuesto por pantalla y total para el modo Frecuencia
+  const screenCalculatedBudgets = selectedScreensFull.reduce((acc, screen) => {
+    const weight = screenWeights[screen.id] || 1
+    const cost = screenCostEstimations[screen.id] || 0.05
+    const capacity = getDailyCapacity(screen)
+    const targetDailyImpacts = capacity * (weight / 10)
+    const targetTotalImpacts = targetDailyImpacts * activeCampaignDays
+    acc[screen.id] = parseFloat((targetTotalImpacts * cost).toFixed(2))
+    return acc
+  }, {} as Record<string, number>)
+
+  const calculatedTotalBudget = parseFloat(
+    Object.values(screenCalculatedBudgets).reduce((sum, b) => sum + b, 0).toFixed(2)
+  )
+
+  const presupuestoTotal = pricingMode === 'frequency' ? calculatedTotalBudget : manualPresupuesto
   
+  const selectedScreenSummary = selectedScreensFull.map((screen) => {
+    const weight = screenWeights[screen.id] || 1
+    const dailyCapacity = getDailyCapacity(screen)
+    
+    let screenBudget = 0
+    let estimatedImpacts = 0
+    let isLimited = false
+
+    if (pricingMode === 'frequency') {
+      screenBudget = screenCalculatedBudgets[screen.id] || 0
+      estimatedImpacts = Math.floor(dailyCapacity * (weight / 10) * activeCampaignDays)
+    } else {
+      const budgetFraction = totalWeight > 0 ? weight / totalWeight : 0
+      screenBudget = presupuestoTotal * budgetFraction
+      const rawImpacts = calculateEstimatedImpacts({
+        presupuestoTotal: screenBudget,
+        prioridad,
+        duracionSegundos: duracion,
+        zona: 'standard',
+        tipoPantalla: screen.tipo_pantalla || 'gimnasio',
+        densidadNivel: screen.densidad_poblacion_nivel || 'medio',
+        frecuenciaRelativa: planFrequency,
+        precioBaseImpacto: screen.precio_base_impacto,
+        comisionMarkupPorcentaje: screen.comision_markup_porcentaje
+      })
+      const maxImpacts = dailyCapacity * activeCampaignDays
+      estimatedImpacts = Math.min(rawImpacts, maxImpacts)
+      isLimited = rawImpacts > maxImpacts
+    }
+
+    return {
+      screen,
+      weight,
+      share: totalWeight > 0 ? Math.round((weight / totalWeight) * 100) : 0,
+      dailyCapacity,
+      estimatedImpacts,
+      isLimited,
+      screenBudget,
+    }
+  })
+
   const impactosEstimados = selectedScreensFull.length > 0 
-    ? Math.floor(selectedScreensFull.reduce((sum, screen) => {
-        const weight = screenWeights[screen.id] || 1
-        const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
-        const screenBudget = presupuestoTotal * budgetFraction
-        
-        const rawImpacts = calculateEstimatedImpacts({
-          presupuestoTotal: screenBudget,
-          prioridad,
-          duracionSegundos: duracion,
-          zona: 'standard',
-          tipoPantalla: screen.tipo_pantalla || 'gimnasio',
-          densidadNivel: screen.densidad_poblacion_nivel || 'medio',
-          frecuenciaRelativa: planFrequency,
-          precioBaseImpacto: screen.precio_base_impacto,
-          comisionMarkupPorcentaje: screen.comision_markup_porcentaje
-        })
-        const maxScreenImpacts = getDailyCapacity(screen) * activeCampaignDays
-        return sum + Math.min(rawImpacts, maxScreenImpacts)
-      }, 0))
+    ? selectedScreenSummary.reduce((sum, s) => sum + s.estimatedImpacts, 0)
     : calculateEstimatedImpacts({
         presupuestoTotal,
         prioridad,
@@ -114,35 +190,6 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         densidadNivel: targetDensity,
         frecuenciaRelativa: planFrequency,
       })
-
-  const selectedScreenSummary = selectedScreensFull.map((screen) => {
-    const weight = screenWeights[screen.id] || 1
-    const budgetFraction = totalWeight > 0 ? weight / totalWeight : 0
-    const screenBudget = presupuestoTotal * budgetFraction
-    const rawImpacts = calculateEstimatedImpacts({
-      presupuestoTotal: screenBudget,
-      prioridad,
-      duracionSegundos: duracion,
-      zona: 'standard',
-      tipoPantalla: screen.tipo_pantalla || 'gimnasio',
-      densidadNivel: screen.densidad_poblacion_nivel || 'medio',
-      frecuenciaRelativa: planFrequency,
-      precioBaseImpacto: screen.precio_base_impacto,
-      comisionMarkupPorcentaje: screen.comision_markup_porcentaje
-    })
-    const dailyCapacity = getDailyCapacity(screen)
-    const maxImpacts = dailyCapacity * activeCampaignDays
-    const estimatedImpacts = Math.min(rawImpacts, maxImpacts)
-
-    return {
-      screen,
-      weight,
-      share: Math.round(budgetFraction * 100),
-      dailyCapacity,
-      estimatedImpacts,
-      isLimited: rawImpacts > maxImpacts,
-    }
-  })
 
   const isPremium = userPlan.toLowerCase().includes('expansión') || userPlan.toLowerCase().includes('dominio')
 
@@ -315,7 +362,9 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         hora_fin: (formData.get('hora_fin') as string) || '',
         pantalla_id: selectedMapScreens[0],
         pantalla_idsRaw: selectedMapScreens.join(','),
-        pantalla_weights: JSON.stringify(screenWeights),
+        pantalla_weights: pricingMode === 'frequency' 
+          ? JSON.stringify(screenCalculatedBudgets) 
+          : JSON.stringify(screenWeights),
         dias_semana: selectedDays,
         presupuesto_total: presupuestoTotal,
         prioridad: prioridad,
@@ -591,29 +640,31 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                 <div className="text-sm font-black font-mono text-zinc-200 tracking-tighter">
                                    {getDailyCapacity(pantalla).toLocaleString('es-ES')}
                                 </div>
+                                
+                                {isSelected && (
+                                  <div className="mt-4 pt-4 border-t border-[#2BC8FF]/20 relative z-10">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">
+                                        {pricingMode === 'frequency' ? 'Frecuencia de Emisión' : 'Prioridad de Reparto'}
+                                      </Label>
+                                      <span className="text-xs font-mono text-white">{screenWeights[pantalla.id] || 1}/10</span>
+                                    </div>
+                                    <input 
+                                      type="range" 
+                                      min="1" 
+                                      max="10" 
+                                      step="1"
+                                      value={screenWeights[pantalla.id] || 1}
+                                      onChange={(e) => setScreenWeights(prev => ({ ...prev, [pantalla.id]: parseInt(e.target.value) }))}
+                                      className="w-full accent-[#2BC8FF]"
+                                    />
+                                    <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
+                                      <span>{pricingMode === 'frequency' ? 'Menos Veces (10%)' : 'Menos Presupuesto'}</span>
+                                      <span>{pricingMode === 'frequency' ? 'Más Veces (100%)' : 'Más Presupuesto'}</span>
+                                    </div>
+                                  </div>
+                                )}
                              </div>
-
-                             {isSelected && (
-                               <div className="mt-4 pt-4 border-t border-[#2BC8FF]/20 relative z-10">
-                                 <div className="flex justify-between items-center mb-2">
-                                   <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">Aparecer aqui</Label>
-                                   <span className="text-xs font-mono text-white">{screenWeights[pantalla.id] || 1}/10</span>
-                                 </div>
-                                 <input 
-                                   type="range" 
-                                   min="1" 
-                                   max="10" 
-                                   step="1"
-                                   value={screenWeights[pantalla.id] || 1}
-                                   onChange={(e) => setScreenWeights(prev => ({ ...prev, [pantalla.id]: parseInt(e.target.value) }))}
-                                   className="w-full accent-[#2BC8FF]"
-                                 />
-                                 <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
-                                   <span>Menos</span>
-                                   <span>Mas</span>
-                                 </div>
-                               </div>
-                             )}
                           </div>
                        )
                     })
@@ -654,7 +705,9 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
 
                      <div className="mt-4">
                        <div className="mb-2 flex items-center justify-between">
-                         <span className="text-[9px] font-bold uppercase tracking-widest text-[#2BC8FF]">Aparecer aqui</span>
+                         <span className="text-[9px] font-bold uppercase tracking-widest text-[#2BC8FF]">
+                           {pricingMode === 'frequency' ? 'Frecuencia de Emisión' : 'Prioridad de Reparto'}
+                         </span>
                          <span className="text-xs font-mono text-white">{weight}/10</span>
                        </div>
                        <input
@@ -667,8 +720,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                          className="w-full accent-[#2BC8FF]"
                        />
                        <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
-                         <span>Menos</span>
-                         <span>Mas</span>
+                         <span>{pricingMode === 'frequency' ? 'Menos Veces (10%)' : 'Menos Presupuesto'}</span>
+                         <span>{pricingMode === 'frequency' ? 'Más Veces (100%)' : 'Más Presupuesto'}</span>
                        </div>
                      </div>
                    </div>
@@ -687,23 +740,70 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
             <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-[#7C3CFF] via-[#C94BFF] to-[#2BC8FF]" />
 
             <div>
-               <h3 className="text-[11px] text-zinc-400 uppercase font-black tracking-[0.2em] mb-6 flex items-center gap-2">
+               <h3 className="text-[11px] text-zinc-400 uppercase font-black tracking-[0.2em] mb-4 flex items-center gap-2">
                   <Zap className="w-4 h-4 text-[#C94BFF]" /> Configuración Smart
                </h3>
+
+               {/* Mode Switcher */}
+               <div className="bg-white/5 p-1 rounded-xl border border-white/10 flex items-center mb-6 relative">
+                  <button
+                     type="button"
+                     onClick={() => setPricingMode('budget')}
+                     className={`flex-1 py-2 rounded-lg text-[10px] uppercase font-black tracking-widest transition-all duration-300 relative z-10 ${
+                        pricingMode === 'budget' 
+                           ? 'bg-gradient-to-r from-[#7C3CFF] to-[#C94BFF] text-white shadow-[0_0_10px_rgba(124,60,255,0.3)]' 
+                           : 'text-zinc-400 hover:text-white'
+                     }`}
+                  >
+                     Presupuesto Fijo
+                  </button>
+                  <button
+                     type="button"
+                     onClick={() => setPricingMode('frequency')}
+                     className={`flex-1 py-2 rounded-lg text-[10px] uppercase font-black tracking-widest transition-all duration-300 relative z-10 ${
+                        pricingMode === 'frequency' 
+                           ? 'bg-gradient-to-r from-[#C94BFF] to-[#2BC8FF] text-white shadow-[0_0_10px_rgba(43,200,255,0.3)]' 
+                           : 'text-zinc-400 hover:text-white'
+                     }`}
+                  >
+                     Por Frecuencia
+                  </button>
+               </div>
                
                <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-end mb-2">
-                     <Label className="text-zinc-300 font-bold uppercase tracking-widest text-[10px]">Inversión Total (€)</Label>
+                     <Label className="text-zinc-300 font-bold uppercase tracking-widest text-[10px]">
+                        {pricingMode === 'frequency' ? 'Inversión Calculada (€)' : 'Inversión Total (€)'}
+                     </Label>
+                     {pricingMode === 'frequency' && (
+                        <span className="text-[8px] uppercase tracking-widest font-mono text-[#2BC8FF] bg-[#2BC8FF]/10 px-2 py-0.5 rounded border border-[#2BC8FF]/30">
+                           Frecuencia
+                        </span>
+                     )}
                   </div>
                   <Input
                     type="number"
                     min={0}
                     step={0.01}
                     value={presupuestoTotal || ''}
-                    onChange={(e) => setPresupuestoTotal(parseFloat(e.target.value) || 0)}
-                    className={`bg-white/5 border-white/10 text-white h-14 rounded-xl px-4 text-2xl font-mono font-black transition-colors focus:border-[#C94BFF]/50 ${presupuestoTotal > walletBalance ? 'border-red-500/50 text-red-400 focus:border-red-500' : ''}`}
+                    onChange={(e) => pricingMode === 'budget' && setManualPresupuesto(parseFloat(e.target.value) || 0)}
+                    readOnly={pricingMode === 'frequency'}
+                    className={`bg-white/5 border-white/10 text-white h-14 rounded-xl px-4 text-2xl font-mono font-black transition-all focus:border-[#C94BFF]/50 
+                      ${pricingMode === 'frequency' ? 'opacity-80 cursor-not-allowed border-[#2BC8FF]/30 text-[#2BC8FF] bg-[#2BC8FF]/5' : ''} 
+                      ${presupuestoTotal > walletBalance ? 'border-red-500/50 text-red-400 focus:border-red-500' : ''}`}
                     placeholder="Ej. 150.50"
                   />
+                  
+                  {pricingMode === 'frequency' ? (
+                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mt-1">
+                        El coste se calcula sumando el coste por impacto de cada pantalla según la frecuencia elegida (1-10/10) y los días de campaña.
+                     </p>
+                  ) : (
+                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mt-1">
+                        Define un presupuesto fijo y repártelo entre tus pantallas usando el selector de frecuencia de cada una.
+                     </p>
+                  )}
+
                   {presupuestoTotal > walletBalance && (
                      <div className="flex flex-col gap-2 mt-2">
                         <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1">
