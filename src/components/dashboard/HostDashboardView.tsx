@@ -80,6 +80,12 @@ export async function HostDashboardView({
   const totalGenerado = (hostData.saldo_pendiente || 0) + (hostData.saldo_pagado || 0)
   const rawPantalla = hostData.pantallas
   const pantalla = (Array.isArray(rawPantalla) ? rawPantalla[0] : rawPantalla) as any
+  const { data: profile } = await supabase
+    .from('perfiles')
+    .select('nombre, nombre_empresa')
+    .eq('id', user.id)
+    .single()
+  const userName = profile?.nombre || profile?.nombre_empresa || user.email?.split('@')[0] || 'Gestor'
 
   // YIELD INTELLIGENCE
   const screenType = pantalla?.tipo_pantalla as ScreenType || 'gimnasio'
@@ -99,7 +105,7 @@ export async function HostDashboardView({
                 <img src="/LogoTexto.png" alt="LuminAdd" className="h-12 w-auto inline-block text-4xl font-heading font-black text-gradient-ui tracking-tighter" />
                 <span className="bg-primary/10 text-primary text-[9px] font-black px-2 py-0.5 rounded border border-primary/20 uppercase tracking-widest">HOST PORTAL</span>
               </div>
-              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-[4px]">Verified Infrastructure Node</p>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-[4px]">Hola, {userName}</p>
            </div>
         </div>
         
@@ -118,7 +124,7 @@ export async function HostDashboardView({
             </Link>
             <div className="text-right hidden lg:block">
               <p className="text-[10px] text-muted-foreground font-mono uppercase mb-1 tracking-tighter">Identidad Verificada</p>
-              <p className="text-xs text-lumi-violet dark:text-[#7C3CFF] font-bold tracking-tight">{user.email}</p>
+              <p className="text-xs text-lumi-violet dark:text-[#7C3CFF] font-bold tracking-tight">{userName}</p>
             </div>
           </div>
         </div>
