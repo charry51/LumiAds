@@ -104,6 +104,14 @@ export async function activatePairingCode(
 
   const adminClient = await createAdminClient()
 
+  // Determinar plan de pantalla basado en el plan del perfil del usuario
+  const planId = perfil?.plan_id || 'basic'
+  const suscripcionActiva = perfil?.suscripcion_activa ?? false
+  const normalizedPlan = (suscripcionActiva && planId) ? planId.toLowerCase() : 'basic'
+  const planHost = (normalizedPlan === 'premium' || normalizedPlan === 'gold') ? normalizedPlan : 'basic'
+  const precioPlanHost = planHost === 'premium' ? 20.00 : planHost === 'gold' ? 50.00 : 0.00
+  const esPublicaReal = planHost === 'gold' ? false : esPublica
+
   // 3. Crear la pantalla en la BD
   const { data: pantalla, error: insertError } = await adminClient
     .from('pantallas')
@@ -114,7 +122,7 @@ export async function activatePairingCode(
       latitud,
       longitud,
       estado: 'activa',
-      es_publica: esPublica,
+      es_publica: esPublicaReal,
       tipo_pantalla: tipoPantalla,
       densidad_poblacion_nivel: densidadNivel,
       organizacion_id: perfil?.organizacion_id,
@@ -123,7 +131,9 @@ export async function activatePairingCode(
       es_tactil: esTactil,
       tamano_pulgadas: tamanoPulgadas,
       sospechoso,
-      precio_base_impacto: precioBaseImpacto
+      precio_base_impacto: precioBaseImpacto,
+      plan_host: planHost,
+      precio_plan_host: precioPlanHost
     })
     .select('id')
     .single()
@@ -266,6 +276,14 @@ export async function createHostPantallaManually(
 
   const adminClient = await createAdminClient()
 
+  // Determinar plan de pantalla basado en el plan del perfil del usuario
+  const planId = perfil?.plan_id || 'basic'
+  const suscripcionActiva = perfil?.suscripcion_activa ?? false
+  const normalizedPlan = (suscripcionActiva && planId) ? planId.toLowerCase() : 'basic'
+  const planHost = (normalizedPlan === 'premium' || normalizedPlan === 'gold') ? normalizedPlan : 'basic'
+  const precioPlanHost = planHost === 'premium' ? 20.00 : planHost === 'gold' ? 50.00 : 0.00
+  const esPublicaReal = planHost === 'gold' ? false : esPublica
+
   // 3. Crear la pantalla en la BD
   const { data: pantalla, error: insertError } = await adminClient
     .from('pantallas')
@@ -276,12 +294,14 @@ export async function createHostPantallaManually(
       latitud,
       longitud,
       estado: 'activa',
-      es_publica: esPublica,
+      es_publica: esPublicaReal,
       tipo_pantalla: tipoPantalla,
       densidad_poblacion_nivel: densidadNivel,
       organizacion_id: perfil?.organizacion_id,
       creado_por: user.id,
-      precio_base_impacto: precioBaseImpacto
+      precio_base_impacto: precioBaseImpacto,
+      plan_host: planHost,
+      precio_plan_host: precioPlanHost
     })
     .select('id')
     .single()
