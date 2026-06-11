@@ -5,6 +5,10 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import crypto from 'node:crypto'
 import { analyzeVideo } from '@/lib/ia/validator'
+import { calculateEstimatedImpacts, type DensityLevel, type ScreenType } from '@/lib/yield/pricing'
+
+const screensSelectBase =
+  'id, precio_emision, organizacion_id, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel'
 
 export type CampaignData = {
   nombre_campana: string
@@ -21,6 +25,27 @@ export type CampaignData = {
   impactos_estimados?: number
   duracion_segundos?: number
   dias_semana?: number[]
+}
+
+function countCampaignDays(fechaInicio: string, fechaFin: string, selectedDays: number[]) {
+  if (!fechaInicio || !fechaFin || selectedDays.length === 0) return 1
+
+  const start = new Date(`${fechaInicio}T00:00:00`)
+  const end = new Date(`${fechaFin}T00:00:00`)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 1
+
+  let count = 0
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    if (selectedDays.includes(cursor.getDay())) count += 1
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return Math.max(1, count)
+}
+
+function isMissingDailyCapacityColumn(error: { message?: string } | null) {
+  return error?.message?.includes('capacidad_impactos_diarios')
 }
 
 export async function createCampaign(data: CampaignData) {
@@ -100,12 +125,31 @@ export async function createCampaign(data: CampaignData) {
     }
 
     // 4. Obtener datos de las pantallas (para precio y organización)
-    const { data: screensData } = await supabase
+    let { data: screensData, error: screensError } = await supabase
       .from('pantallas')
-      .select('id, precio_emision, organizacion_id, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel')
+      .select(`${screensSelectBase}, capacidad_impactos_diarios`)
       .in('id', pantallaIds)
 
+    if (isMissingDailyCapacityColumn(screensError)) {
+      const fallback = await supabase
+        .from('pantallas')
+        .select(screensSelectBase)
+        .in('id', pantallaIds)
+
+      screensData = fallback.data?.map((screen) => ({
+        ...screen,
+        capacidad_impactos_diarios: 1000,
+      })) || null
+      screensError = fallback.error
+    }
+
+    if (screensError) {
+      return { type: 'error', message: `Error cargando pantallas: ${screensError.message}` }
+    }
+
     const screensMap = new Map(screensData?.map(s => [s.id, s]) || [])
+    const diasSemana = data.dias_semana || [0, 1, 2, 3, 4, 5, 6]
+    const activeCampaignDays = countCampaignDays(fechaInicio, fechaFin, diasSemana)
 
     // 5. Insert into Database (Loop over IDs)
     const inserts = pantallaIds.map(id => {
@@ -127,8 +171,21 @@ export async function createCampaign(data: CampaignData) {
 
       const finalCostPerImpact = calculatedPrice * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier
 
-        const weight = weightsMap[id] || 1
+      const weight = weightsMap[id] || 1
       const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
+      const screenBudget = (data.presupuesto_total || 0) * budgetFraction
+      const rawEstimatedImpacts = calculateEstimatedImpacts({
+        presupuestoTotal: screenBudget,
+        prioridad: data.prioridad || 1,
+        duracionSegundos: duracion,
+        zona: 'standard',
+        tipoPantalla: (screen?.tipo_pantalla || 'gimnasio') as ScreenType,
+        densidadNivel: (screen?.densidad_poblacion_nivel || 'medio') as DensityLevel,
+        precioBaseImpacto: screen?.precio_base_impacto,
+        comisionMarkupPorcentaje: screen?.comision_markup_porcentaje
+      })
+      const dailyCapacity = Math.max(1, Number(screen?.capacidad_impactos_diarios ?? 1000))
+      const cappedEstimatedImpacts = Math.min(rawEstimatedImpacts, dailyCapacity * activeCampaignDays)
       
       return {
         cliente_id: user.id,
@@ -144,10 +201,10 @@ export async function createCampaign(data: CampaignData) {
         ia_metadata: iaResult,
         precio_pactado: finalCostPerImpact,
         // LuminAdd v2: Programmatic fields distributed by weight
-        presupuesto_total: (data.presupuesto_total || 0) * budgetFraction,
+        presupuesto_total: screenBudget,
         prioridad: data.prioridad || 1,
-        impactos_estimados: Math.floor((data.impactos_estimados || 0) * budgetFraction),
-        dias_semana: data.dias_semana || [0, 1, 2, 3, 4, 5, 6]
+        impactos_estimados: cappedEstimatedImpacts,
+        dias_semana: diasSemana
       }
     })
 

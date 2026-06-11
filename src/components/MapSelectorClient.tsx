@@ -36,6 +36,7 @@ type Pantalla = {
   precio_base?: number
   precio_base_impacto?: number
   comision_markup_porcentaje?: number
+  capacidad_impactos_diarios?: number | null
 }
 
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
@@ -146,6 +147,9 @@ export default function MapSelectorClient({
                   <p className="opacity-60 text-[10px] uppercase font-mono">{pantalla.ciudad}</p>
                   <p className="text-[11px] font-bold mt-2 mb-0 font-sans text-zinc-800">
                      Precio: {(((pantalla.precio_base_impacto ?? 0.05) * (1 + (pantalla.comision_markup_porcentaje ?? 30) / 100))).toFixed(3)}€ / Impacto
+                  </p>
+                  <p className="text-[10px] font-bold mt-1 mb-0 font-sans text-zinc-600">
+                     Capacidad: {(pantalla.capacidad_impactos_diarios ?? 1000).toLocaleString('es-ES')} impactos/dia
                   </p>
                   
                   <button 
