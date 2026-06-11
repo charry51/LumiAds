@@ -74,8 +74,6 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   // Días de la semana (0=Dom, 1=Lun, ..., 6=Sab)
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]) // Por defecto Lun-Vie
   
-  const [pricingMode, setPricingMode] = useState<'budget' | 'frequency'>('budget')
-  const [manualPresupuesto, setManualPresupuesto] = useState<number>(100)
   const [prioridad, setPrioridad] = useState<number>(1)
   const [duracion, setDuracion] = useState<number>(10)
   
@@ -222,38 +220,13 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
     Object.values(screenCalculatedBudgets).reduce((sum, b) => sum + b, 0).toFixed(2)
   )
 
-  const presupuestoTotal = pricingMode === 'frequency' ? calculatedTotalBudget : manualPresupuesto
+  const presupuestoTotal = calculatedTotalBudget
 
   const selectedScreenSummary = selectedScreensFull.map((screen) => {
     const weight = screenWeights[screen.id] || 1
     const dailyCapacity = getDailyCapacity(screen)
-    
-    let screenBudget = 0
-    let estimatedImpacts = 0
-    let isLimited = false
-
-    if (pricingMode === 'frequency') {
-      screenBudget = screenCalculatedBudgets[screen.id] || 0
-      estimatedImpacts = Math.floor(dailyCapacity * (weight / 10) * activeCampaignDays)
-    } else {
-      const budgetFraction = totalWeight > 0 ? weight / totalWeight : 0
-      screenBudget = presupuestoTotal * budgetFraction
-      const rawImpacts = calculateEstimatedImpacts({
-        presupuestoTotal: screenBudget,
-        prioridad,
-        duracionSegundos: duracion,
-        zona: 'standard',
-        tipoPantalla: screen.tipo_pantalla || 'gimnasio',
-        densidadNivel: screen.densidad_poblacion_nivel || 'medio',
-        frecuenciaRelativa: planFrequency,
-        precioBaseImpacto: screen.precio_base_impacto,
-        comisionMarkupPorcentaje: screen.comision_markup_porcentaje,
-        averageDayMultiplier: campaignAverageMultiplier
-      })
-      const maxImpacts = dailyCapacity * activeCampaignDays
-      estimatedImpacts = Math.min(rawImpacts, maxImpacts)
-      isLimited = rawImpacts > maxImpacts
-    }
+    const screenBudget = screenCalculatedBudgets[screen.id] || 0
+    const estimatedImpacts = Math.floor(dailyCapacity * (weight / 10) * activeCampaignDays)
 
     return {
       screen,
@@ -261,7 +234,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
       share: totalWeight > 0 ? Math.round((weight / totalWeight) * 100) : 0,
       dailyCapacity,
       estimatedImpacts,
-      isLimited,
+      isLimited: false,
       screenBudget,
     }
   })
@@ -450,9 +423,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         hora_fin: (formData.get('hora_fin') as string) || '',
         pantalla_id: selectedMapScreens[0],
         pantalla_idsRaw: selectedMapScreens.join(','),
-        pantalla_weights: pricingMode === 'frequency' 
-          ? JSON.stringify(screenCalculatedBudgets) 
-          : JSON.stringify(screenWeights),
+        pantalla_weights: JSON.stringify(screenCalculatedBudgets),
         dias_semana: selectedDays,
         presupuesto_total: presupuestoTotal,
         prioridad: prioridad,
@@ -733,7 +704,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                   <div className="mt-4 pt-4 border-t border-[#2BC8FF]/20 relative z-10">
                                     <div className="flex justify-between items-center mb-2">
                                       <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">
-                                        {pricingMode === 'frequency' ? 'Frecuencia de Emisión' : 'Prioridad de Reparto'}
+                                        Frecuencia de Emisión
                                       </Label>
                                       <span className="text-xs font-mono text-white">{screenWeights[pantalla.id] || 1}/10</span>
                                     </div>
@@ -747,8 +718,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                       className="w-full accent-[#2BC8FF]"
                                     />
                                     <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
-                                      <span>{pricingMode === 'frequency' ? 'Menos Veces (10%)' : 'Menos Presupuesto'}</span>
-                                      <span>{pricingMode === 'frequency' ? 'Más Veces (100%)' : 'Más Presupuesto'}</span>
+                                      <span>Menos Veces (10%)</span>
+                                      <span>Más Veces (100%)</span>
                                     </div>
                                   </div>
                                 )}
@@ -794,7 +765,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                      <div className="mt-4">
                        <div className="mb-2 flex items-center justify-between">
                          <span className="text-[9px] font-bold uppercase tracking-widest text-[#2BC8FF]">
-                           {pricingMode === 'frequency' ? 'Frecuencia de Emisión' : 'Prioridad de Reparto'}
+                           Frecuencia de Emisión
                          </span>
                          <span className="text-xs font-mono text-white">{weight}/10</span>
                        </div>
@@ -808,8 +779,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                          className="w-full accent-[#2BC8FF]"
                        />
                        <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
-                         <span>{pricingMode === 'frequency' ? 'Menos Veces (10%)' : 'Menos Presupuesto'}</span>
-                         <span>{pricingMode === 'frequency' ? 'Más Veces (100%)' : 'Más Presupuesto'}</span>
+                         <span>Menos Veces (10%)</span>
+                         <span>Más Veces (100%)</span>
                        </div>
                      </div>
                    </div>
@@ -832,80 +803,45 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                   <Zap className="w-4 h-4 text-[#C94BFF]" /> Configuración Smart
                </h3>
 
-               {/* Mode Switcher */}
-               <div className="bg-white/5 p-1 rounded-xl border border-white/10 flex items-center mb-6 relative">
-                  <button
-                     type="button"
-                     onClick={() => setPricingMode('budget')}
-                     className={`flex-1 py-2 rounded-lg text-[10px] uppercase font-black tracking-widest transition-all duration-300 relative z-10 ${
-                        pricingMode === 'budget' 
-                           ? 'bg-gradient-to-r from-[#7C3CFF] to-[#C94BFF] text-white shadow-[0_0_10px_rgba(124,60,255,0.3)]' 
-                           : 'text-zinc-400 hover:text-white'
-                     }`}
-                  >
-                     Presupuesto Fijo
-                  </button>
-                  <button
-                     type="button"
-                     onClick={() => setPricingMode('frequency')}
-                     className={`flex-1 py-2 rounded-lg text-[10px] uppercase font-black tracking-widest transition-all duration-300 relative z-10 ${
-                        pricingMode === 'frequency' 
-                           ? 'bg-gradient-to-r from-[#C94BFF] to-[#2BC8FF] text-white shadow-[0_0_10px_rgba(43,200,255,0.3)]' 
-                           : 'text-zinc-400 hover:text-white'
-                     }`}
-                  >
-                     Por Frecuencia
-                  </button>
-               </div>
-               
                <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-end mb-2">
                      <Label className="text-zinc-300 font-bold uppercase tracking-widest text-[10px]">
-                        {pricingMode === 'frequency' ? 'Inversión Calculada (€)' : 'Inversión Total (€)'}
+                        Inversión Calculada (€)
                      </Label>
-                     {pricingMode === 'frequency' && (
-                        <span className="text-[8px] uppercase tracking-widest font-mono text-[#2BC8FF] bg-[#2BC8FF]/10 px-2 py-0.5 rounded border border-[#2BC8FF]/30">
-                           Frecuencia
-                        </span>
-                     )}
+                     <span className="text-[8px] uppercase tracking-widest font-mono text-[#2BC8FF] bg-[#2BC8FF]/10 px-2 py-0.5 rounded border border-[#2BC8FF]/30">
+                        Frecuencia
+                     </span>
                   </div>
                   <Input
                     type="number"
                     min={0}
                     step={0.01}
                     value={presupuestoTotal || ''}
-                    onChange={(e) => pricingMode === 'budget' && setManualPresupuesto(parseFloat(e.target.value) || 0)}
-                    readOnly={pricingMode === 'frequency'}
+                    readOnly
                     className={`bg-white/5 border-white/10 text-white h-14 rounded-xl px-4 text-2xl font-mono font-black transition-all focus:border-[#C94BFF]/50 
-                      ${pricingMode === 'frequency' ? 'opacity-80 cursor-not-allowed border-[#2BC8FF]/30 text-[#2BC8FF] bg-[#2BC8FF]/5' : ''} 
+                      opacity-80 cursor-not-allowed border-[#2BC8FF]/30 text-[#2BC8FF] bg-[#2BC8FF]/5 
                       ${presupuestoTotal > walletBalance ? 'border-red-500/50 text-red-400 focus:border-red-500' : ''}`}
                     placeholder="Ej. 150.50"
                   />
                   
-                  {pricingMode === 'frequency' ? (
-                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mt-1">
-                        El coste se calcula sumando el coste por impacto de cada pantalla según la frecuencia elegida (1-10/10) y los días de campaña.
-                     </p>
-                  ) : (
-                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mt-1">
-                        Define un presupuesto fijo y repártelo entre tus pantallas usando el selector de frecuencia de cada una.
-                     </p>
-                  )}
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed mt-1">
+                     El coste se calcula sumando el coste por impacto de cada pantalla según la frecuencia elegida (1-10/10) y los días de campaña.
+                  </p>
 
                   {presupuestoTotal > walletBalance && (
-                     <div className="flex flex-col gap-2 mt-2">
-                        <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                           ⚠️ Saldo insuficiente en billetera (Máx. {walletBalance.toLocaleString('es-ES')}€)
-                        </p>
-                        <Link href="/dashboard/billetera?returnTo=/dashboard/nueva" className="self-start">
-                           <Button type="button" size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black text-[9px] uppercase font-black tracking-widest px-3 h-7 rounded shadow-[0_0_10px_rgba(43,200,255,0.2)] border-none">
-                              Recargar Saldo
-                           </Button>
-                        </Link>
-                     </div>
-                  )}
-               </div>
-            </div>
+                      <div className="flex flex-col gap-2 mt-2">
+                         <p className="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                            ⚠️ Saldo insuficiente en billetera (Máx. {walletBalance.toLocaleString('es-ES')}€)
+                         </p>
+                         <Link href="/dashboard/billetera?returnTo=/dashboard/nueva" className="self-start">
+                            <Button type="button" size="sm" className="bg-[#2BC8FF] hover:bg-[#2BC8FF]/80 text-black text-[9px] uppercase font-black tracking-widest px-3 h-7 rounded shadow-[0_0_10px_rgba(43,200,255,0.2)] border-none">
+                               Recargar Saldo
+                            </Button>
+                         </Link>
+                      </div>
+                   )}
+                </div>
+             </div>
 
             <div className="flex flex-col gap-2 border-t border-white/10 pt-6">
                <div className="flex justify-between items-end mb-2">
