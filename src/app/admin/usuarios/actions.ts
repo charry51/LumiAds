@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { syncPlanToScreens } from '@/app/actions/profile'
+import { headers } from 'next/headers'
 
 
 type UserRole = 'cliente' | 'gestor_local' | 'superadmin'
@@ -224,3 +225,108 @@ export async function deleteUser(userId: string) {
     return { success: false, message: err.message }
   }
 }
+
+export async function impersonateUser(userId: string) {
+  try {
+    const supabase = await createClient()
+
+    // 1. Verificar que el que llama sea superadmin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, message: 'No autenticado' }
+
+    const { data: perfilCaller } = await supabase
+      .from('perfiles')
+      .select('rol')
+      .eq('id', user.id)
+      .single()
+
+    if (perfilCaller?.rol !== 'superadmin') {
+      return { success: false, message: 'No tienes permisos suficientes' }
+    }
+
+    // 2. Obtener el email y rol del usuario a suplantar
+    const adminClient = await createAdminClient()
+    const { data: targetUser, error: fetchError } = await adminClient
+      .from('perfiles')
+      .select('email, rol')
+      .eq('id', userId)
+      .single()
+
+    if (fetchError || !targetUser || !targetUser.email) {
+      return { success: false, message: 'Usuario no encontrado o no tiene correo electrónico' }
+    }
+
+    // 3. Determinar el path de redirección según el rol del usuario
+    let nextPath = '/dashboard'
+    if (targetUser.rol === 'gestor_local') {
+      nextPath = '/host'
+    } else if (targetUser.rol === 'cliente') {
+      nextPath = '/advertiser'
+    } else if (targetUser.rol === 'superadmin') {
+      nextPath = '/admin'
+    }
+
+    // 4. Obtener origen dinámicamente
+    const headersList = await headers()
+    const host = headersList.get('host')
+    const protocol = host?.includes('localhost') ? 'http' : 'https'
+    const origin = `${protocol}://${host}`
+
+    // 5. Generar link de inicio de sesión único (magiclink)
+    const { data, error } = await adminClient.auth.admin.generateLink({
+      type: 'magiclink',
+      email: targetUser.email,
+      options: {
+        redirectTo: `${origin}/auth/callback`
+      }
+    })
+
+    if (error || !data?.properties?.action_link) {
+      throw error || new Error('No se pudo generar el enlace de inicio de sesión')
+    }
+
+    // 6. Ejecutar la llamada al enlace de Supabase en el servidor para interceptar el redireccionamiento (code/token)
+    const fetchResponse = await fetch(data.properties.action_link, {
+      method: 'GET',
+      redirect: 'manual'
+    })
+
+    const redirectUrl = fetchResponse.headers.get('location')
+    if (!redirectUrl) {
+      throw new Error('No se recibió la cabecera de redirección desde el servidor de autenticación')
+    }
+
+    // 7. Parsear la URL de redirección obtenida
+    const urlObj = new URL(redirectUrl)
+    const code = urlObj.searchParams.get('code')
+
+    if (code) {
+      // Flujo PKCE: intercambiar código por sesión en el cliente de servidor (establece las cookies de sesión del nuevo usuario)
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+      if (exchangeError) throw exchangeError
+    } else {
+      // Flujo implícito: extraer de hash fragment
+      const hash = urlObj.hash.substring(1)
+      const params = new URLSearchParams(hash)
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token')
+
+      if (accessToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        })
+        if (sessionError) throw sessionError
+      } else {
+        throw new Error('No se recibió código de verificación ni token de acceso')
+      }
+    }
+
+    // 8. Retornar éxito y la ruta final
+    return { success: true, redirectUrl: nextPath }
+  } catch (err: any) {
+    console.error('Error impersonating user:', err)
+    return { success: false, message: err.message }
+  }
+}
+
