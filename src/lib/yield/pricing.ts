@@ -95,6 +95,7 @@ export interface PricingParams {
   frecuenciaRelativa?: number // 1x, 2x, 3x, 4x según plan
   precioBaseImpacto?: number
   comisionMarkupPorcentaje?: number
+  averageDayMultiplier?: number
 }
 
 /**
@@ -111,6 +112,7 @@ export function calculateEstimatedImpacts({
   presupuestoTotal,
   precioBaseImpacto,
   comisionMarkupPorcentaje,
+  averageDayMultiplier,
 }: PricingParams): number {
   if (presupuestoTotal <= 0 || duracionSegundos <= 0) return 0
 
@@ -133,13 +135,16 @@ export function calculateEstimatedImpacts({
     baseCost = precioBaseImpacto * (1 + markup / 100)
   }
 
+  const dayMult = averageDayMultiplier !== undefined ? averageDayMultiplier : 1.0
+
   const costPerImpact = baseCost * 
                         zonaMultiplier * 
                         typeMultiplier * 
                         densityMultiplier * 
                         priorityPenalty * 
                         durationMultiplier * 
-                        avgTimeMultiplier
+                        avgTimeMultiplier * 
+                        dayMult
   
   return Math.floor(presupuestoTotal / costPerImpact)
 }

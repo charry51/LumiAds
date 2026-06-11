@@ -79,15 +79,79 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   const [prioridad, setPrioridad] = useState<number>(1)
   const [duracion, setDuracion] = useState<number>(10)
   
-  const planFrequency = userPlan.includes('Dominio') ? 4 : userPlan.includes('Expansión') ? 3 : userPlan.includes('Impacto') ? 2 : 1
-
-  const selectedScreensFull = pantallas.filter(p => selectedMapScreens.includes(p.id))
-  const activeCampaignDays = countCampaignDays(fechaInicio, fechaFin, selectedDays)
+  const planFrequency = userPlan.includes('Dominio') ? 4 : userPlan.includes('Expansión') ? 3 : userPlan.includes('Impacto') ? 2 : 1  const selectedScreensFull = pantallas.filter(p => selectedMapScreens.includes(p.id))
   
+  // Day-of-week and holiday pricing multipliers helper functions
+  function isHoliday(date: Date): boolean {
+    const month = date.getMonth();
+    const day = date.getDate();
+    const holidays = [
+      { m: 0, d: 1 },   // 1 Ene: Año Nuevo
+      { m: 0, d: 6 },   // 6 Ene: Epifanía / Reyes
+      { m: 3, d: 2 },   // 2 Abr: Jueves Santo
+      { m: 3, d: 3 },   // 3 Abr: Viernes Santo
+      { m: 4, d: 1 },   // 1 May: Fiesta del Trabajo
+      { m: 7, d: 15 },  // 15 Ago: Asunción
+      { m: 9, d: 12 },  // 12 Oct: Fiesta Nacional
+      { m: 10, d: 1 },  // 1 Nov: Todos los Santos
+      { m: 11, d: 6 },  // 6 Dic: Constitución
+      { m: 11, d: 8 },  // 8 Dic: Inmaculada
+      { m: 11, d: 25 }  // 25 Dic: Navidad
+    ];
+    return holidays.some(h => h.m === month && h.d === day);
+  }
+
+  function getDayMultiplier(date: Date): number {
+    if (isHoliday(date)) return 1.2; // Festivo: 1.2x
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) return 1.3; // Viernes, Sábado, Domingo: 1.3x
+    return 1.0; // Laborables (Lun-Jue): 1.0x
+  }
+
+  function getCampaignDayMultipliers(startStr: string, endStr: string, selectedDaysList: number[]) {
+    if (!startStr || !endStr || selectedDaysList.length === 0) {
+      return { activeDays: 1, sumMultipliers: 1.0, averageMultiplier: 1.0 };
+    }
+
+    const start = new Date(`${startStr}T00:00:00`);
+    const end = new Date(`${endStr}T00:00:00`);
+    
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+      return { activeDays: 1, sumMultipliers: 1.0, averageMultiplier: 1.0 };
+    }
+
+    let activeDays = 0;
+    let sumMultipliers = 0;
+    const cursor = new Date(start);
+
+    while (cursor <= end) {
+      if (selectedDaysList.includes(cursor.getDay())) {
+        activeDays += 1;
+        sumMultipliers += getDayMultiplier(cursor);
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    if (activeDays === 0) {
+      return { activeDays: 1, sumMultipliers: 1.0, averageMultiplier: 1.0 };
+    }
+
+    return {
+      activeDays,
+      sumMultipliers,
+      averageMultiplier: sumMultipliers / activeDays
+    };
+  }
+
+  // Calculate days and multiplier average
+  const campaignDaysInfo = getCampaignDayMultipliers(fechaInicio, fechaFin, selectedDays);
+  const activeCampaignDays = campaignDaysInfo.activeDays;
+  const campaignAverageMultiplier = campaignDaysInfo.averageMultiplier;
+
   const totalWeight = selectedScreensFull.reduce((sum, s) => sum + (screenWeights[s.id] || 1), 0)
 
   // Función para obtener el coste por impacto en UI
-  function getScreenCostPerImpact(screen: Pantalla, priorityVal: number, durationVal: number) {
+  function getScreenCostPerImpact(screen: Pantalla, priorityVal: number, durationVal: number, averageDayMultiplier: number) {
     const typeMult = screen.tipo_pantalla ? (
       screen.tipo_pantalla === 'calle_principal' ? 2.5 :
       screen.tipo_pantalla === 'centro_comercial' ? 2.0 :
@@ -112,12 +176,12 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
       baseCost = screen.precio_base_impacto * (1 + markup / 100);
     }
 
-    return baseCost * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier;
+    return baseCost * typeMult * densMult * priorityPenalty * durationMultiplier * avgTimeMultiplier * averageDayMultiplier;
   }
 
   // Coste estimado por impacto para cada pantalla seleccionada
   const screenCostEstimations = selectedScreensFull.reduce((acc, screen) => {
-    acc[screen.id] = getScreenCostPerImpact(screen, prioridad, duracion)
+    acc[screen.id] = getScreenCostPerImpact(screen, prioridad, duracion, campaignAverageMultiplier)
     return acc
   }, {} as Record<string, number>)
 
@@ -137,7 +201,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   )
 
   const presupuestoTotal = pricingMode === 'frequency' ? calculatedTotalBudget : manualPresupuesto
-  
+
   const selectedScreenSummary = selectedScreensFull.map((screen) => {
     const weight = screenWeights[screen.id] || 1
     const dailyCapacity = getDailyCapacity(screen)
@@ -161,7 +225,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         densidadNivel: screen.densidad_poblacion_nivel || 'medio',
         frecuenciaRelativa: planFrequency,
         precioBaseImpacto: screen.precio_base_impacto,
-        comisionMarkupPorcentaje: screen.comision_markup_porcentaje
+        comisionMarkupPorcentaje: screen.comision_markup_porcentaje,
+        averageDayMultiplier: campaignAverageMultiplier
       })
       const maxImpacts = dailyCapacity * activeCampaignDays
       estimatedImpacts = Math.min(rawImpacts, maxImpacts)
@@ -189,6 +254,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         tipoPantalla: targetType,
         densidadNivel: targetDensity,
         frecuenciaRelativa: planFrequency,
+        averageDayMultiplier: campaignAverageMultiplier
       })
 
   const isPremium = userPlan.toLowerCase().includes('expansión') || userPlan.toLowerCase().includes('dominio')
