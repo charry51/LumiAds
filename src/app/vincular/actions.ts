@@ -4,6 +4,10 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { calculateHostCommission, type ScreenType, type DensityLevel } from '@/lib/yield/pricing'
 
+function isMissingDailyCapacityColumn(error: { message?: string } | null) {
+  return error?.message?.includes('capacidad_impactos_diarios')
+}
+
 /**
  * Genera un código único de 6 caracteres para vincular una TV.
  * La TV llama a esto al arrancar. No requiere sesión.
@@ -65,7 +69,8 @@ export async function activatePairingCode(
   esTactil?: boolean,
   tamanoPulgadas?: number,
   sospechoso?: boolean,
-  precioBaseImpacto: number = 0.05
+  precioBaseImpacto: number = 0.05,
+  impactosDiarios: number = 1000
 ): Promise<{ success: boolean; pantallaId?: string; error?: string }> {
   const supabase = await createClient()
 
@@ -103,30 +108,45 @@ export async function activatePairingCode(
   }
 
   const adminClient = await createAdminClient()
+  const capacidadImpactosDiarios = Math.max(1, Math.floor(Number(impactosDiarios) || 1000))
+  const pantallaPayload = {
+    nombre,
+    ciudad,
+    ubicacion,
+    latitud,
+    longitud,
+    estado: 'activa',
+    es_publica: esPublica,
+    tipo_pantalla: tipoPantalla,
+    densidad_poblacion_nivel: densidadNivel,
+    organizacion_id: perfil?.organizacion_id,
+    creado_por: user.id,
+    resolucion,
+    es_tactil: esTactil,
+    tamano_pulgadas: tamanoPulgadas,
+    sospechoso,
+    precio_base_impacto: precioBaseImpacto,
+    capacidad_impactos_diarios: capacidadImpactosDiarios
+  }
 
   // 3. Crear la pantalla en la BD
-  const { data: pantalla, error: insertError } = await adminClient
+  let { data: pantalla, error: insertError } = await adminClient
     .from('pantallas')
-    .insert({
-      nombre,
-      ciudad,
-      ubicacion,
-      latitud,
-      longitud,
-      estado: 'activa',
-      es_publica: esPublica,
-      tipo_pantalla: tipoPantalla,
-      densidad_poblacion_nivel: densidadNivel,
-      organizacion_id: perfil?.organizacion_id,
-      creado_por: user.id,
-      resolucion,
-      es_tactil: esTactil,
-      tamano_pulgadas: tamanoPulgadas,
-      sospechoso,
-      precio_base_impacto: precioBaseImpacto
-    })
+    .insert(pantallaPayload)
     .select('id')
     .single()
+
+  if (isMissingDailyCapacityColumn(insertError)) {
+    const { capacidad_impactos_diarios, ...fallbackPayload } = pantallaPayload
+    const fallback = await adminClient
+      .from('pantallas')
+      .insert(fallbackPayload)
+      .select('id')
+      .single()
+
+    pantalla = fallback.data
+    insertError = fallback.error
+  }
 
   if (insertError || !pantalla) {
     return { success: false, error: insertError?.message || 'Error creando pantalla' }
@@ -237,7 +257,8 @@ export async function createHostPantallaManually(
   longitud?: number,
   tipoPantalla: string = 'gimnasio',
   densidadNivel: string = 'medio',
-  precioBaseImpacto: number = 0.05
+  precioBaseImpacto: number = 0.05,
+  impactosDiarios: number = 1000
 ): Promise<{ success: boolean; pantallaId?: string; error?: string }> {
   const supabase = await createClient()
 
@@ -265,26 +286,41 @@ export async function createHostPantallaManually(
   }
 
   const adminClient = await createAdminClient()
+  const capacidadImpactosDiarios = Math.max(1, Math.floor(Number(impactosDiarios) || 1000))
+  const pantallaPayload = {
+    nombre,
+    ciudad,
+    ubicacion,
+    latitud,
+    longitud,
+    estado: 'activa',
+    es_publica: esPublica,
+    tipo_pantalla: tipoPantalla,
+    densidad_poblacion_nivel: densidadNivel,
+    organizacion_id: perfil?.organizacion_id,
+    creado_por: user.id,
+    precio_base_impacto: precioBaseImpacto,
+    capacidad_impactos_diarios: capacidadImpactosDiarios
+  }
 
   // 3. Crear la pantalla en la BD
-  const { data: pantalla, error: insertError } = await adminClient
+  let { data: pantalla, error: insertError } = await adminClient
     .from('pantallas')
-    .insert({
-      nombre,
-      ciudad,
-      ubicacion,
-      latitud,
-      longitud,
-      estado: 'activa',
-      es_publica: esPublica,
-      tipo_pantalla: tipoPantalla,
-      densidad_poblacion_nivel: densidadNivel,
-      organizacion_id: perfil?.organizacion_id,
-      creado_por: user.id,
-      precio_base_impacto: precioBaseImpacto
-    })
+    .insert(pantallaPayload)
     .select('id')
     .single()
+
+  if (isMissingDailyCapacityColumn(insertError)) {
+    const { capacidad_impactos_diarios, ...fallbackPayload } = pantallaPayload
+    const fallback = await adminClient
+      .from('pantallas')
+      .insert(fallbackPayload)
+      .select('id')
+      .single()
+
+    pantalla = fallback.data
+    insertError = fallback.error
+  }
 
   if (insertError || !pantalla) {
     return { success: false, error: insertError?.message || 'Error creando pantalla' }

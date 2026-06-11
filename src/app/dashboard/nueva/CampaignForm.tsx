@@ -27,6 +27,28 @@ type Pantalla = {
   densidad_poblacion_nivel?: DensityLevel
   precio_base_impacto?: number
   comision_markup_porcentaje?: number
+  capacidad_impactos_diarios?: number | null
+}
+
+function countCampaignDays(fechaInicio: string, fechaFin: string, selectedDays: number[]) {
+  if (!fechaInicio || !fechaFin || selectedDays.length === 0) return 1
+
+  const start = new Date(`${fechaInicio}T00:00:00`)
+  const end = new Date(`${fechaFin}T00:00:00`)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 1
+
+  let count = 0
+  const cursor = new Date(start)
+  while (cursor <= end) {
+    if (selectedDays.includes(cursor.getDay())) count += 1
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return Math.max(1, count)
+}
+
+function getDailyCapacity(screen: Pantalla) {
+  return Math.max(1, Number(screen.capacidad_impactos_diarios ?? 1000))
 }
 
 export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', walletBalance = 0 }: { pantallas: Pantalla[], userPlan?: string, walletBalance?: number }) {
@@ -37,6 +59,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   const [selectedMapScreens, setSelectedMapScreens] = useState<string[]>([])
   const [screenWeights, setScreenWeights] = useState<Record<string, number>>({})
   const [selectedCity, setSelectedCity] = useState<string>('todas')
+  const [fechaInicio, setFechaInicio] = useState('')
+  const [fechaFin, setFechaFin] = useState('')
   
   const uniqueCities = Array.from(new Set(pantallas.map(p => p.ciudad).filter(Boolean))).sort()
   // Drag and Drop States
@@ -57,6 +81,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   const planFrequency = userPlan.includes('Dominio') ? 4 : userPlan.includes('Expansión') ? 3 : userPlan.includes('Impacto') ? 2 : 1
 
   const selectedScreensFull = pantallas.filter(p => selectedMapScreens.includes(p.id))
+  const activeCampaignDays = countCampaignDays(fechaInicio, fechaFin, selectedDays)
   
   const totalWeight = selectedScreensFull.reduce((sum, s) => sum + (screenWeights[s.id] || 1), 0)
   
@@ -66,7 +91,7 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         const budgetFraction = totalWeight > 0 ? (weight / totalWeight) : 0
         const screenBudget = presupuestoTotal * budgetFraction
         
-        return sum + calculateEstimatedImpacts({
+        const rawImpacts = calculateEstimatedImpacts({
           presupuestoTotal: screenBudget,
           prioridad,
           duracionSegundos: duracion,
@@ -77,6 +102,8 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
           precioBaseImpacto: screen.precio_base_impacto,
           comisionMarkupPorcentaje: screen.comision_markup_porcentaje
         })
+        const maxScreenImpacts = getDailyCapacity(screen) * activeCampaignDays
+        return sum + Math.min(rawImpacts, maxScreenImpacts)
       }, 0))
     : calculateEstimatedImpacts({
         presupuestoTotal,
@@ -87,6 +114,35 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
         densidadNivel: targetDensity,
         frecuenciaRelativa: planFrequency,
       })
+
+  const selectedScreenSummary = selectedScreensFull.map((screen) => {
+    const weight = screenWeights[screen.id] || 1
+    const budgetFraction = totalWeight > 0 ? weight / totalWeight : 0
+    const screenBudget = presupuestoTotal * budgetFraction
+    const rawImpacts = calculateEstimatedImpacts({
+      presupuestoTotal: screenBudget,
+      prioridad,
+      duracionSegundos: duracion,
+      zona: 'standard',
+      tipoPantalla: screen.tipo_pantalla || 'gimnasio',
+      densidadNivel: screen.densidad_poblacion_nivel || 'medio',
+      frecuenciaRelativa: planFrequency,
+      precioBaseImpacto: screen.precio_base_impacto,
+      comisionMarkupPorcentaje: screen.comision_markup_porcentaje
+    })
+    const dailyCapacity = getDailyCapacity(screen)
+    const maxImpacts = dailyCapacity * activeCampaignDays
+    const estimatedImpacts = Math.min(rawImpacts, maxImpacts)
+
+    return {
+      screen,
+      weight,
+      share: Math.round(budgetFraction * 100),
+      dailyCapacity,
+      estimatedImpacts,
+      isLimited: rawImpacts > maxImpacts,
+    }
+  })
 
   const isPremium = userPlan.toLowerCase().includes('expansión') || userPlan.toLowerCase().includes('dominio')
 
@@ -340,11 +396,29 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
              <div className="flex flex-col gap-2">
                <Label htmlFor="fecha_inicio" className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Fecha de Inicio</Label>
-               <Input id="fecha_inicio" name="fecha_inicio" type="date" required disabled={isLoading} className="bg-white/5 border-white/10 focus:border-[#2BC8FF]/50 text-white h-14 rounded-xl px-4 transition-colors hover:bg-white/10 [color-scheme:dark]" />
+               <Input
+                 id="fecha_inicio"
+                 name="fecha_inicio"
+                 type="date"
+                 required
+                 value={fechaInicio}
+                 onChange={(e) => setFechaInicio(e.target.value)}
+                 disabled={isLoading}
+                 className="bg-white/5 border-white/10 focus:border-[#2BC8FF]/50 text-white h-14 rounded-xl px-4 transition-colors hover:bg-white/10 [color-scheme:dark]"
+               />
              </div>
              <div className="flex flex-col gap-2">
                <Label htmlFor="fecha_fin" className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Fecha de Fin</Label>
-               <Input id="fecha_fin" name="fecha_fin" type="date" required disabled={isLoading} className="bg-white/5 border-white/10 focus:border-[#2BC8FF]/50 text-white h-14 rounded-xl px-4 transition-colors hover:bg-white/10 [color-scheme:dark]" />
+               <Input
+                 id="fecha_fin"
+                 name="fecha_fin"
+                 type="date"
+                 required
+                 value={fechaFin}
+                 onChange={(e) => setFechaFin(e.target.value)}
+                 disabled={isLoading}
+                 className="bg-white/5 border-white/10 focus:border-[#2BC8FF]/50 text-white h-14 rounded-xl px-4 transition-colors hover:bg-white/10 [color-scheme:dark]"
+               />
              </div>
            </div>
 
@@ -510,10 +584,19 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                 </div>
                              </div>
 
+                             <div className="flex items-end justify-between relative z-10 mt-3">
+                                <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">
+                                   Impactos al dia
+                                </div>
+                                <div className="text-sm font-black font-mono text-zinc-200 tracking-tighter">
+                                   {getDailyCapacity(pantalla).toLocaleString('es-ES')}
+                                </div>
+                             </div>
+
                              {isSelected && (
                                <div className="mt-4 pt-4 border-t border-[#2BC8FF]/20 relative z-10">
                                  <div className="flex justify-between items-center mb-2">
-                                   <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">Prioridad / Peso</Label>
+                                   <Label className="text-[9px] uppercase font-bold tracking-widest text-[#2BC8FF]">Aparecer aqui</Label>
                                    <span className="text-xs font-mono text-white">{screenWeights[pantalla.id] || 1}/10</span>
                                  </div>
                                  <input 
@@ -525,6 +608,10 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                                    onChange={(e) => setScreenWeights(prev => ({ ...prev, [pantalla.id]: parseInt(e.target.value) }))}
                                    className="w-full accent-[#2BC8FF]"
                                  />
+                                 <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
+                                   <span>Menos</span>
+                                   <span>Mas</span>
+                                 </div>
                                </div>
                              )}
                           </div>
@@ -532,6 +619,62 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
                     })
                  )}
               </div>
+           )}
+
+           {selectedScreenSummary.length > 0 && (
+             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+               <div className="mb-4 flex items-center justify-between gap-3">
+                 <Label className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">
+                   Reparto por pantalla
+                 </Label>
+                 <span className="text-[9px] uppercase tracking-widest text-zinc-500">
+                   {activeCampaignDays} dias activos
+                 </span>
+               </div>
+
+               <div className="space-y-4">
+                 {selectedScreenSummary.map(({ screen, weight, share, dailyCapacity, estimatedImpacts, isLimited }) => (
+                   <div key={screen.id} className="rounded-xl border border-white/10 bg-black/30 p-4">
+                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                       <div>
+                         <p className="text-sm font-black uppercase tracking-tight text-white">{screen.nombre}</p>
+                         <p className="mt-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+                           {screen.ciudad} · {dailyCapacity.toLocaleString('es-ES')} impactos/dia
+                         </p>
+                       </div>
+                       <div className="text-left sm:text-right">
+                         <p className="text-lg font-black font-mono text-[#2BC8FF]">
+                           {estimatedImpacts.toLocaleString('es-ES')}
+                         </p>
+                         <p className="text-[9px] uppercase tracking-widest text-zinc-500">
+                           {share}% del reparto{isLimited ? ' · limite diario' : ''}
+                         </p>
+                       </div>
+                     </div>
+
+                     <div className="mt-4">
+                       <div className="mb-2 flex items-center justify-between">
+                         <span className="text-[9px] font-bold uppercase tracking-widest text-[#2BC8FF]">Aparecer aqui</span>
+                         <span className="text-xs font-mono text-white">{weight}/10</span>
+                       </div>
+                       <input
+                         type="range"
+                         min="1"
+                         max="10"
+                         step="1"
+                         value={weight}
+                         onChange={(e) => setScreenWeights(prev => ({ ...prev, [screen.id]: parseInt(e.target.value, 10) }))}
+                         className="w-full accent-[#2BC8FF]"
+                       />
+                       <div className="mt-1 flex justify-between text-[8px] uppercase tracking-widest text-zinc-500">
+                         <span>Menos</span>
+                         <span>Mas</span>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
            )}
         </div>
 

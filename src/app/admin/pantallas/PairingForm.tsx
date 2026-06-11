@@ -42,6 +42,7 @@ export function PairingForm() {
   const [resolucion, setResolucion] = useState('')
   const [esTactil, setEsTactil] = useState(false)
   const [sospechoso, setSospechoso] = useState(false)
+  const [impactosDiarios, setImpactosDiarios] = useState(1000)
 
   const currentTier = getScreenTier(tipoPantalla, densidadNivel)
   const multiplier = getTierMultiplier(tipoPantalla, densidadNivel)
@@ -185,7 +186,9 @@ export function PairingForm() {
       resolucion,
       esTactil,
       tamanoPulgadas,
-      sospechoso
+      sospechoso,
+      0.05,
+      impactosDiarios
     )
 
     if (result.success) {
@@ -349,6 +352,21 @@ export function PairingForm() {
           className="bg-muted border-border text-foreground h-10"
           disabled={loading}
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label className="text-muted-foreground text-xs uppercase tracking-widest">Impactos disponibles al dia</Label>
+        <Input
+          type="number"
+          min={1}
+          step={1}
+          value={impactosDiarios}
+          onChange={e => setImpactosDiarios(parseInt(e.target.value, 10) || 1)}
+          placeholder="1000"
+          className="bg-muted border-border text-foreground h-10"
+          disabled={loading}
+        />
+        <p className="text-[9px] text-zinc-500 font-mono uppercase">Capacidad diaria estimada para anunciantes.</p>
       </div>
 
       <div className="flex flex-col gap-2">

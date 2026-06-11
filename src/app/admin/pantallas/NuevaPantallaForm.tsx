@@ -139,6 +139,20 @@ export function NuevaPantallaForm() {
               <Label htmlFor="ubicacion" className="text-zinc-400 text-xs uppercase tracking-widest">Ubicación Fina</Label>
               <Input id="ubicacion" name="ubicacion" placeholder="Ej: Planta 2, Zona Restauración" className="bg-zinc-950 border-zinc-800" disabled={loading} />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacidad_impactos_diarios" className="text-zinc-400 text-xs uppercase tracking-widest">Impactos disponibles al dia</Label>
+              <Input
+                id="capacidad_impactos_diarios"
+                name="capacidad_impactos_diarios"
+                type="number"
+                min="1"
+                step="1"
+                defaultValue="1000"
+                placeholder="1000"
+                className="bg-zinc-950 border-zinc-800"
+                disabled={loading}
+              />
+            </div>
 
             <div className="flex flex-col gap-2">
               <div className="rounded-xl overflow-hidden border border-zinc-800 h-[150px] bg-zinc-950 w-full relative z-0">

@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import CampaignForm from './CampaignForm'
 
+const screensSelectBase =
+  'id, nombre, ubicacion, ciudad, latitud, longitud, precio_emision, precio_base, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel'
+
+function isMissingDailyCapacityColumn(error: { message?: string } | null) {
+  return error?.message?.includes('capacidad_impactos_diarios')
+}
+
 export default async function NuevaCampanaPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -21,11 +28,25 @@ export default async function NuevaCampanaPage() {
   }
 
   // Fetch only active, public screens with Yield data.
-  const { data: pantallas, error } = await supabase
+  let { data: pantallas, error } = await supabase
     .from('pantallas')
-    .select('id, nombre, ubicacion, ciudad, latitud, longitud, precio_emision, precio_base, precio_base_impacto, comision_markup_porcentaje, tipo_pantalla, densidad_poblacion_nivel')
+    .select(`${screensSelectBase}, capacidad_impactos_diarios`)
     .eq('estado', 'activa')
     .eq('es_publica', true)
+
+  if (isMissingDailyCapacityColumn(error)) {
+    const fallback = await supabase
+      .from('pantallas')
+      .select(screensSelectBase)
+      .eq('estado', 'activa')
+      .eq('es_publica', true)
+
+    pantallas = fallback.data?.map((pantalla) => ({
+      ...pantalla,
+      capacidad_impactos_diarios: 1000,
+    })) || null
+    error = fallback.error
+  }
 
   if (error) {
     return (

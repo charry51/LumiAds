@@ -47,6 +47,7 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
   const [esTactil, setEsTactil] = useState(false)
   const [sospechoso, setSospechoso] = useState(false)
   const [precioBaseVincular, setPrecioBaseVincular] = useState('0.05')
+  const [impactosDiariosVincular, setImpactosDiariosVincular] = useState('1000')
 
   const currentTierVincular = getScreenTier(tipoPantallaVincular, densidadNivelVincular)
   const multiplierVincular = getTierMultiplier(tipoPantallaVincular, densidadNivelVincular)
@@ -227,7 +228,8 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
       esTactil,
       tamanoPulgadas,
       sospechoso,
-      parseFloat(precioBaseVincular) || 0.05
+      parseFloat(precioBaseVincular) || 0.05,
+      parseInt(impactosDiariosVincular, 10) || 1000
     )
 
     if (result.success) {
@@ -240,6 +242,7 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
       setUbicacionVincular('')
       setCoordsVincular(null)
       setPrecioBaseVincular('0.05')
+      setImpactosDiariosVincular('1000')
       if (typeof window !== 'undefined') {
         localStorage.removeItem('LuminAdd_latest_pairing_code')
       }
@@ -396,6 +399,21 @@ export function ConectarPantallaModal({ trigger }: { trigger: React.ReactElement
               disabled={loading}
             />
             <p className="text-[9px] text-zinc-500 font-mono uppercase">Este es el precio neto que recibirás por cada reproducción completa en tu pantalla.</p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label className="text-zinc-400 text-[10px] uppercase tracking-widest font-mono">Impactos disponibles al dia</Label>
+            <Input
+              type="number"
+              min="1"
+              step="1"
+              value={impactosDiariosVincular}
+              onChange={e => setImpactosDiariosVincular(e.target.value)}
+              placeholder="1000"
+              className="bg-zinc-900 border-zinc-800 text-white h-10 text-xs font-mono focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              disabled={loading}
+            />
+            <p className="text-[9px] text-zinc-500 font-mono uppercase">Define cuantos impactos publicitarios puede ofrecer esta pantalla en un dia normal.</p>
           </div>
 
           <div className="flex flex-col gap-2">
