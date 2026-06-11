@@ -109,7 +109,29 @@ export default function CampaignForm({ pantallas, userPlan = 'Plan Básico', wal
   }
 
   function getCampaignDayMultipliers(startStr: string, endStr: string, selectedDaysList: number[]) {
-    if (!startStr || !endStr || selectedDaysList.length === 0) {
+    if (!startStr || !endStr) {
+      if (selectedDaysList.length === 0) {
+        return { activeDays: 1, sumMultipliers: 1.0, averageMultiplier: 1.0 };
+      }
+      
+      let sumMultipliers = 0;
+      selectedDaysList.forEach(dayOfWeek => {
+        // Viernes=5, Sabado=6, Domingo=0 son 1.3x. Otros son 1.0x
+        if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) {
+          sumMultipliers += 1.3;
+        } else {
+          sumMultipliers += 1.0;
+        }
+      });
+
+      return {
+        activeDays: selectedDaysList.length,
+        sumMultipliers,
+        averageMultiplier: sumMultipliers / selectedDaysList.length
+      };
+    }
+
+    if (selectedDaysList.length === 0) {
       return { activeDays: 1, sumMultipliers: 1.0, averageMultiplier: 1.0 };
     }
 
