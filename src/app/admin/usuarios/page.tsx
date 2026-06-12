@@ -44,30 +44,30 @@ export default async function UserManagementPage({
         </div>
       </header>
 
-      <Card className="bg-zinc-900/50 border-zinc-800/50">
+      <Card className="bg-card border-border shadow-soft">
         <CardHeader className="pb-0">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
              <form className="relative flex-1 max-w-sm" method="GET">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input 
-                  type="text" 
-                  name="q"
-                  defaultValue={searchQuery}
-                  placeholder="Buscar por nombre o correo..." 
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-10 pr-4 py-2 text-sm text-zinc-100 outline-none focus:ring-1 focus:ring-[#7C3CFF] transition-all"
-                />
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                 <input 
+                   type="text" 
+                   name="q"
+                   defaultValue={searchQuery}
+                   placeholder="Buscar por nombre o correo..." 
+                   className="w-full bg-black/40 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-zinc-100 outline-none focus:ring-1 focus:ring-lumi-violet/60 transition-all"
+                 />
              </form>
              <div className="flex gap-2">
-                <button className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white transition-colors">
-                   <Filter className="h-3.5 w-3.5" /> Filtrar por Rol
-                </button>
+                 <button className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white transition-colors">
+                    <Filter className="h-3.5 w-3.5" /> Filtrar por Rol
+                 </button>
              </div>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="rounded-xl border border-zinc-800 overflow-x-auto bg-black/20">
+          <div className="rounded-xl border border-white/[0.08] overflow-x-auto bg-black/20">
             <table className="w-full min-w-[800px] whitespace-nowrap text-sm text-left">
-              <thead className="bg-zinc-950/50 text-zinc-400 font-medium">
+              <thead className="bg-black/40 text-zinc-400 font-medium border-b border-white/[0.08]">
                 <tr>
                   <th className="px-6 py-4">Usuario / Empresa</th>
                   <th className="px-6 py-4">Rol Actual</th>
@@ -76,9 +76,9 @@ export default async function UserManagementPage({
                   <th className="px-6 py-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50">
+              <tbody className="divide-y divide-white/[0.04]">
                 {usuarios && usuarios.length > 0 ? usuarios.map(user => (
-                  <tr key={user.id} className="hover:bg-zinc-800/20 transition-colors">
+                  <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium text-zinc-200">
                         {user.nombre || user.nombre_empresa || 'Cliente Sin Nombre'}

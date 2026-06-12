@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { logout } from '@/app/login/actions'
@@ -80,16 +81,28 @@ export default async function AdvertiserDashboardPage() {
     <div className="min-h-screen bg-black text-zinc-100 p-4 sm:p-8 font-sans selection:bg-[#2BC8FF]/30">
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-zinc-900 pb-8 relative">
         <div className="flex items-center gap-4 relative z-10">
-           <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(43,200,255,0.2)]">
-             <Target className="w-6 h-6 text-[#2BC8FF]" />
-           </div>
-           <div>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-black uppercase tracking-tighter text-white">Lumi<span className="text-[#2BC8FF]">Ads</span></span>
-                <span className="bg-[#2BC8FF]/10 text-[#2BC8FF] text-[9px] font-black px-2 py-0.5 rounded border border-[#2BC8FF]/20 uppercase tracking-widest">ADVERTISER</span>
-              </div>
-              <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Hola, {userName}</p>
-           </div>
+          <Link href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/LogoPequeno.png"
+              alt="LumiAds Icon"
+              width={512}
+              height={512}
+              className="h-[52px] md:h-[64px] w-auto group-hover:scale-110 transition-transform"
+            />
+            <Image
+              src="/LogoTexto.png"
+              alt="LumiAds Brand"
+              width={720}
+              height={400}
+              className="h-[64px] md:h-[82px] w-auto hidden sm:block"
+            />
+          </Link>
+          <div className="border-l border-white/10 pl-4 py-1 flex flex-col justify-center">
+            <span className="bg-[#2BC8FF]/10 text-[#2BC8FF] text-[9px] font-black px-2 py-0.5 rounded border border-[#2BC8FF]/20 uppercase tracking-widest w-fit">
+              ADVERTISER
+            </span>
+            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Hola, {userName}</p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">

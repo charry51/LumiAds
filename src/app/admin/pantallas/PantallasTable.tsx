@@ -41,7 +41,7 @@ function ContactHostDialog({ email, screenName }: { email: string, screenName: s
           <span>✉️</span> Contactar Dueño
         </button>
       } />
-      <DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-[425px]">
+      <DialogContent className="bg-card border-border text-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-[#7C3CFF] uppercase tracking-widest text-sm font-black">
             Mensaje al Propietario
@@ -50,15 +50,15 @@ function ContactHostDialog({ email, screenName }: { email: string, screenName: s
         <form onSubmit={handleSend} className="flex flex-col gap-4 mt-4">
           <div className="flex flex-col gap-2">
             <Label className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">Pantalla Afectada</Label>
-            <Input disabled value={screenName} className="bg-zinc-900 border-zinc-800 text-zinc-500 text-xs h-9 cursor-not-allowed italic" />
+            <Input disabled value={screenName} className="bg-black/20 border-white/10 text-zinc-500 text-xs h-9 cursor-not-allowed italic" />
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">Asunto del Correo</Label>
-            <Input name="subject" required className="bg-zinc-900 border-zinc-700 focus-visible:ring-[#7C3CFF] text-sm h-10 font-bold" defaultValue={`Luminia: Aviso sobre tu pantalla - ${screenName}`} />
+            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Asunto del Correo</Label>
+            <Input name="subject" required className="bg-black/20 border-white/10 focus-visible:ring-lumi-violet text-sm h-10 font-bold" defaultValue={`Luminia: Aviso sobre tu pantalla - ${screenName}`} />
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">Cuerpo del Mensaje</Label>
-            <Textarea name="message" required className="bg-zinc-900 border-zinc-700 min-h-[140px] focus-visible:ring-[#7C3CFF] text-sm leading-relaxed" placeholder="Escribe aquí el mensaje oficial que recibirá el anfitrión. Este correo se enviará en formato HTML con el branding de LuminAdd." />
+            <Label className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Cuerpo del Mensaje</Label>
+            <Textarea name="message" required className="bg-black/20 border-white/10 min-h-[140px] focus-visible:ring-lumi-violet text-sm leading-relaxed" placeholder="Escribe aquí el mensaje oficial que recibirá el anfitrión. Este correo se enviará en formato HTML con el branding de LuminAdd." />
           </div>
           <DialogFooter className="mt-4">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={loading} className="text-xs uppercase hover:bg-zinc-800 text-zinc-400">Cancelar</Button>
@@ -89,9 +89,9 @@ export function PantallasTable({ initialData }: { initialData: any[] }) {
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-x-auto">
+    <div className="bg-card border border-border rounded-lg overflow-x-auto shadow-soft">
       <table className="w-full min-w-[700px] whitespace-nowrap text-sm text-left text-zinc-300">
-        <thead className="text-xs text-zinc-400 uppercase bg-zinc-950 border-b border-zinc-800">
+        <thead className="text-xs text-zinc-400 uppercase bg-black/40 border-b border-white/[0.08]">
           <tr>
             <th className="px-6 py-4">ID</th>
             <th className="px-6 py-4">Nombre y Ciudad</th>

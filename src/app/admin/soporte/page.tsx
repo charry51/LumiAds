@@ -30,7 +30,7 @@ export default async function AdminSupportPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-zinc-900 pb-8">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.08] pb-8">
         <div>
           <h1 className="text-3xl font-heading text-white uppercase tracking-tighter italic font-black">
              Centro de Resoluciones
@@ -41,15 +41,15 @@ export default async function AdminSupportPage() {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="px-6 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center gap-4">
+          <div className="px-6 py-3 bg-[#0E1426] border border-white/[0.08] rounded-xl flex items-center gap-4">
             <div className="text-center">
                <p className="text-[8px] text-zinc-500 uppercase font-mono mb-1">Pendientes</p>
                <p className="text-xl font-heading text-amber-500">{pendingCount}</p>
             </div>
-            <div className="w-px h-8 bg-zinc-800" />
+            <div className="w-px h-8 bg-white/[0.08]" />
             <div className="text-center">
                <p className="text-[8px] text-zinc-500 uppercase font-mono mb-1">En Proceso</p>
-               <p className="text-xl font-heading text-[#7C3CFF]">{inProgressCount}</p>
+               <p className="text-xl font-heading text-lumi-violet">{inProgressCount}</p>
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default async function AdminSupportPage() {
                   <h3 className="text-xl font-heading text-white uppercase truncate mb-2 group-hover:text-[#7C3CFF] transition-colors">{ticket.asunto}</h3>
                   
                   <div className="flex flex-wrap items-center gap-4 text-xs">
-                    <div className="flex items-center gap-1.5 text-zinc-300 bg-zinc-900/80 px-2 py-1 rounded">
+                    <div className="flex items-center gap-1.5 text-zinc-300 bg-black/20 border border-white/5 px-2 py-1 rounded">
                       <User className="w-3.5 h-3.5 text-zinc-500" />
                       <span className="font-bold">{ticket.perfiles?.nombre_empresa || 'Empresa Desconocida'}</span>
                       <span className="text-zinc-600 font-mono text-[10px]">({ticket.perfiles?.email})</span>

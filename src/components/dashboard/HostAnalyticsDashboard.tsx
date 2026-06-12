@@ -162,58 +162,14 @@ export function HostAnalyticsDashboard({
     })
   }
 
-  // 2. Generate simulated daily analytics & commission data for empty database states
-  // to ensure a high-fidelity visual experience
+  // 2. Map real commission data from database
   const simulatedCommissions = useMemo(() => {
-    if (initialScreens.length === 0) return []
-
-    // If we have actual commissions in the DB, let's use them!
-    // But if we have very few or none, let's enrich them with simulated metrics to draw nice charts.
-    const hasEnoughData = initialCommissions.length > 5
-    if (hasEnoughData) {
-      return initialCommissions.map(c => ({
-        ...c,
-        createdDate: new Date(c.created_at)
-      }))
-    }
-
-    // Generate simulated commissions for the last 30 days
-    const simulated: any[] = []
-    const adsNames = ['Promo Nike', 'Campaña CocaCola', 'Estreno Netflix', 'Gatorade Hydrate', 'Burger King Duo', 'Audi e-Tron']
-    
-    initialScreens.forEach((screen, screenIdx) => {
-      // Create daily events for the past 45 days
-      for (let i = 45; i >= 0; i--) {
-        const date = new Date()
-        date.setDate(date.getDate() - i)
-        date.setHours(10 + (screenIdx % 3), 0, 0, 0)
-
-        // Seed random revenue and loops per day per screen
-        const randomLoops = Math.floor(120 + Math.random() * 200) // loops per day
-        const commissionPerLoop = screen.precio_base_impacto > 0 ? screen.precio_base_impacto * 0.7 : 0.05
-        const dailyRevenue = randomLoops * commissionPerLoop
-        
-        simulated.push({
-          id: `sim-${screen.pantalla_id}-${i}`,
-          host_id: screen.host_id,
-          pantalla_id: screen.pantalla_id,
-          pantalla_nombre: screen.pantalla_nombre,
-          ciudad: screen.ciudad,
-          importe_total: dailyRevenue / (screen.porcentaje / 100),
-          comision: dailyRevenue,
-          porcentaje: screen.porcentaje,
-          created_at: date.toISOString(),
-          createdDate: date,
-          campanas: {
-            nombre_campana: adsNames[(i + screenIdx) % adsNames.length]
-          },
-          loops: randomLoops
-        })
-      }
-    })
-
-    return simulated
-  }, [initialScreens, initialCommissions])
+    return initialCommissions.map(c => ({
+      ...c,
+      createdDate: new Date(c.created_at),
+      loops: 1 // Each commission record represents 1 ad emission/play
+    }))
+  }, [initialCommissions])
 
   // 3. Main Data Aggregation Workflow: Filters the screen list and calculates analytics
   const analyticsData = useMemo(() => {
@@ -268,14 +224,14 @@ export function HostAnalyticsDashboard({
       })
 
       const totalRevenue = screenCommissions.reduce((sum, c) => sum + (c.comision || 0), 0)
-      const totalLoops = screenCommissions.reduce((sum, c) => sum + (c.loops || Math.floor(100 + Math.random() * 50)), 0)
+      const totalLoops = screenCommissions.reduce((sum, c) => sum + (c.loops || 1), 0)
 
       // Simulate Uptime based on active status
       const isOnline = s.estado === 'activa'
       if (isOnline) activeScreens++
       else offlineScreens++
 
-      const uptimePercent = isOnline ? 98.5 + (parseFloat(s.pantalla_id.charCodeAt(0).toString()) % 15) / 10 : 0
+      const uptimePercent = isOnline ? 100 : 0
       totalUptimeSum += uptimePercent
 
       return {

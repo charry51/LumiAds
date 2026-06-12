@@ -35,7 +35,7 @@ export default async function AdminMessagesPage() {
           </div>
           
           <div className="flex flex-col items-end gap-1">
-            <div className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center gap-2">
+            <div className="px-4 py-2 bg-[#0E1426] border border-white/[0.08] rounded-lg flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <span className="text-[10px] font-bold uppercase text-zinc-400">Total: {messages?.length || 0}</span>
             </div>
@@ -51,7 +51,7 @@ export default async function AdminMessagesPage() {
               <div 
                 key={msg.id} 
                 className={`cyber-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300 ${
-                  msg.status === 'unread' ? 'border-primary/30 bg-primary/5' : 'border-zinc-800 bg-black/40'
+                  msg.status === 'unread' ? 'border-primary/30 bg-primary/5 shadow-[0_0_20px_rgba(124,60,255,0.05)]' : 'border-white/[0.08] bg-[#0E1426]/40'
                 }`}
               >
                 <div className="flex-1 min-w-0">

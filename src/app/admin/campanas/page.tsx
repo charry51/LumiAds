@@ -26,7 +26,7 @@ export default async function GestionCampanasPage() {
 
   return (
     <div className="p-8 font-sans">
-      <header className="mb-8 border-b border-zinc-800 pb-6 flex justify-between items-end">
+      <header className="mb-8 border-b border-white/[0.08] pb-6 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-heading font-black text-gradient uppercase tracking-tight">Gestión de Campañas</h1>
           <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] mt-1">Monitor de Moderación IA Activo</p>
@@ -38,7 +38,7 @@ export default async function GestionCampanasPage() {
 
       <div className="cyber-card overflow-x-auto">
         <table className="w-full min-w-[900px] whitespace-nowrap text-sm text-left border-collapse">
-          <thead className="bg-zinc-950 text-zinc-400 font-heading text-[10px] uppercase tracking-widest border-b border-zinc-800">
+          <thead className="bg-black/40 text-zinc-400 font-heading text-[10px] uppercase tracking-widest border-b border-white/[0.08]">
             <tr>
               <th className="px-6 py-4">Campaña / IA Status</th>
               <th className="px-6 py-4">Pantalla Destino</th>
@@ -48,7 +48,7 @@ export default async function GestionCampanasPage() {
               <th className="px-6 py-4 text-right pr-10">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800 text-zinc-300">
+          <tbody className="divide-y divide-white/[0.04] text-zinc-300">
             {campanas && campanas.length > 0 ? (
               campanas.map((camp: any) => {
                 const ia = camp.ia_metadata || {}
@@ -103,7 +103,7 @@ export default async function GestionCampanasPage() {
               })
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-zinc-600 bg-zinc-900 border-t border-zinc-800">
+                <td colSpan={6} className="px-6 py-12 text-center text-zinc-600 bg-black/20 border-t border-white/[0.08]">
                   No hay campañas registradas en el sistema.
                 </td>
               </tr>
