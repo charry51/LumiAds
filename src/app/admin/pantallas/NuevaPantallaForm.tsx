@@ -81,13 +81,13 @@ export function NuevaPantallaForm() {
           </Button>
         } 
       />
-      <DialogContent className="sm:max-w-[480px] bg-zinc-900 text-white border-zinc-800 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[480px] bg-card text-white border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading uppercase tracking-widest text-sm">Nueva Pantalla en la Red</DialogTitle>
         </DialogHeader>
 
         {/* Pestañas */}
-        <div className="flex gap-1 p-1 bg-zinc-950 rounded-lg mt-2">
+        <div className="flex gap-1 p-1 bg-black/40 border border-white/5 rounded-lg mt-2">
           <button
             onClick={() => setTab('vincular')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -102,7 +102,7 @@ export function NuevaPantallaForm() {
             onClick={() => setTab('manual')}
             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-[11px] font-black uppercase tracking-widest transition-all ${
               tab === 'manual' 
-                ? 'bg-zinc-700 text-white shadow-md' 
+                ? 'bg-white/10 text-white shadow-md' 
                 : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
@@ -119,28 +119,28 @@ export function NuevaPantallaForm() {
         {tab === 'manual' && (
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             <div className="space-y-2">
-              <Label htmlFor="nombre" className="text-zinc-400 text-xs uppercase tracking-widest">Nombre Público</Label>
-              <Input id="nombre" name="nombre" placeholder="Ej: LED Centro Comercial" className="bg-zinc-950 border-zinc-800" disabled={loading} />
+              <Label htmlFor="nombre" className="text-zinc-500 text-xs uppercase tracking-widest">Nombre Público</Label>
+              <Input id="nombre" name="nombre" placeholder="Ej: LED Centro Comercial" className="bg-black/20 border-white/10" disabled={loading} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ciudad" className="text-zinc-400 text-xs uppercase tracking-widest flex items-center justify-between">
-                 Dirección completa
-                 {geocoding && <span className="text-[9px] text-zinc-500 animate-pulse lowercase">buscando en mapa...</span>}
+              <Label htmlFor="ciudad" className="text-zinc-500 text-xs uppercase tracking-widest flex items-center justify-between">
+                  Dirección completa
+                  {geocoding && <span className="text-[9px] text-zinc-500 animate-pulse lowercase">buscando en mapa...</span>}
               </Label>
               <Input 
                 id="ciudad" name="ciudad" 
                 placeholder="Ej: Madrid, Calle Gran Vía 15" 
                 value={ciudad}
                 onChange={e => setCiudad(e.target.value)}
-                className="bg-zinc-950 border-zinc-800" disabled={loading} 
+                className="bg-black/20 border-white/10" disabled={loading} 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ubicacion" className="text-zinc-400 text-xs uppercase tracking-widest">Ubicación Fina</Label>
-              <Input id="ubicacion" name="ubicacion" placeholder="Ej: Planta 2, Zona Restauración" className="bg-zinc-950 border-zinc-800" disabled={loading} />
+              <Label htmlFor="ubicacion" className="text-zinc-500 text-xs uppercase tracking-widest">Ubicación Fina</Label>
+              <Input id="ubicacion" name="ubicacion" placeholder="Ej: Planta 2, Zona Restauración" className="bg-black/20 border-white/10" disabled={loading} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="capacidad_impactos_diarios" className="text-zinc-400 text-xs uppercase tracking-widest">Impactos disponibles al dia</Label>
+              <Label htmlFor="capacidad_impactos_diarios" className="text-zinc-500 text-xs uppercase tracking-widest">Impactos disponibles al dia</Label>
               <Input
                 id="capacidad_impactos_diarios"
                 name="capacidad_impactos_diarios"
@@ -149,13 +149,13 @@ export function NuevaPantallaForm() {
                 step="1"
                 defaultValue="1000"
                 placeholder="1000"
-                className="bg-zinc-950 border-zinc-800"
+                className="bg-black/20 border-white/10"
                 disabled={loading}
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="rounded-xl overflow-hidden border border-zinc-800 h-[150px] bg-zinc-950 w-full relative z-0">
+             <div className="flex flex-col gap-2">
+              <div className="rounded-xl overflow-hidden border border-white/10 h-[150px] bg-black/40 w-full relative z-0">
                   <MapSelector 
                       onSelect={(lat, lng) => {
                           setLatitud(lat.toString())
@@ -168,27 +168,27 @@ export function NuevaPantallaForm() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                  <Label htmlFor="latitud" className="text-zinc-400 text-xs uppercase tracking-widest">Latitud</Label>
+                  <Label htmlFor="latitud" className="text-zinc-500 text-xs uppercase tracking-widest">Latitud</Label>
                   <Input 
                     id="latitud" name="latitud" placeholder="40.4168" type="number" step="any" 
                     value={latitud}
                     onChange={e => setLatitud(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800" disabled={loading} 
+                    className="bg-black/20 border-white/10" disabled={loading} 
                   />
               </div>
               <div className="space-y-2">
-                  <Label htmlFor="longitud" className="text-zinc-400 text-xs uppercase tracking-widest">Longitud</Label>
+                  <Label htmlFor="longitud" className="text-zinc-500 text-xs uppercase tracking-widest">Longitud</Label>
                   <Input 
                     id="longitud" name="longitud" placeholder="-3.7038" type="number" step="any" 
                     value={longitud}
                     onChange={e => setLongitud(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800" disabled={loading} 
+                    className="bg-black/20 border-white/10" disabled={loading} 
                   />
               </div>
             </div>
             <div className="flex flex-col gap-2 py-2">
-              <Label className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Visibilidad Marketplace</Label>
-              <div className="grid grid-cols-2 gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+              <Label className="text-zinc-500 text-xs uppercase tracking-widest mb-1">Visibilidad Marketplace</Label>
+              <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-xl border border-white/10">
                   <button
                       type="button"
                       onClick={() => setEsPublica(true)}
@@ -206,7 +206,7 @@ export function NuevaPantallaForm() {
                       onClick={() => setEsPublica(false)}
                       className={`flex flex-col items-center gap-1 py-3 rounded-lg border transition-all ${
                           !esPublica 
-                              ? 'bg-zinc-800 border-zinc-700 text-white' 
+                              ? 'bg-white/10 border-white/20 text-white' 
                               : 'border-transparent text-zinc-500 hover:text-zinc-400'
                       }`}
                   >

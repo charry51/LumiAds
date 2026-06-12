@@ -58,8 +58,8 @@ export async function authorizeCampaignStatus(campaignId: string, newStatus: 'ap
           host_id: host.id,
           campana_id: campaignId,
           pantalla_id: campana.pantalla_id,
-          importe_bruto: precioBase,
-          importe_host: comisionImporte,
+          importe_total: precioBase,
+          comision: comisionImporte,
           porcentaje: host.porcentaje,
           estado: 'pendiente'
         })

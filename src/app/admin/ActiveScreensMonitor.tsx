@@ -32,9 +32,9 @@ export function ActiveScreensMonitor() {
   }, [])
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800 text-white border-l-4 border-l-green-500">
+    <Card className="bg-card border-border text-white border-l-4 border-l-green-500 shadow-soft">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-medium text-zinc-400">Pantallas Online (Realtime)</CardTitle>
+        <CardTitle className="text-sm font-medium text-zinc-500">Pantallas Online (Realtime)</CardTitle>
         <span className="relative flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>

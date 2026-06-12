@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { revalidatePath } from 'next/cache'
 import { Button } from '@/components/ui/button'
 import { Plus, Tv, TrendingUp, Wallet, History, ChevronRight, Zap, Monitor, ArrowUpCircle } from 'lucide-react'
@@ -105,21 +106,48 @@ export default async function HostDashboardPage({
     comisiones = data || []
   }
 
+  // Real screen telemetry metrics
+  let totalImpactosPantalla = 0
+  let hardwareLoad = 0
+  if (pantalla?.id) {
+    const { data: screenCampanas } = await supabase
+      .from('campanas')
+      .select('impactos_reales, estado')
+      .eq('pantalla_id', pantalla.id)
+    
+    totalImpactosPantalla = screenCampanas?.reduce((sum, c) => sum + (c.impactos_reales || 0), 0) || 0
+    const activeCampanasCount = screenCampanas?.filter(c => c.estado === 'aprobada').length || 0
+    const capacidadMax = pantalla?.capacidad_maxima || 10
+    hardwareLoad = Math.min(100, Math.round((activeCampanasCount / capacidadMax) * 100))
+  }
+
   return (
     <div className="min-h-screen bg-black text-zinc-100 p-4 sm:p-8 font-sans selection:bg-violet-500/30">
       {/* HEADER SIMILAR A ADVERTISER */}
       <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-zinc-900 pb-8 relative">
         <div className="flex items-center gap-4 relative z-10">
-           <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(124,60,255,0.2)]">
-             <Monitor className="w-6 h-6 text-violet-500" />
-           </div>
-           <div>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-black uppercase tracking-tighter text-white">Lumi<span className="text-violet-500">Host</span></span>
-                <span className="bg-violet-500/10 text-violet-400 text-[9px] font-black px-2 py-0.5 rounded border border-violet-500/20 uppercase tracking-widest">DUEÑO DE PANTALLAS</span>
-              </div>
-              <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[4px]">Hola, {userName}</p>
-           </div>
+          <Link href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/LogoPequeno.png"
+              alt="LumiAds Icon"
+              width={512}
+              height={512}
+              className="h-[52px] md:h-[64px] w-auto group-hover:scale-110 transition-transform"
+            />
+            <Image
+              src="/LogoTexto.png"
+              alt="LumiAds Brand"
+              width={720}
+              height={400}
+              className="h-[64px] md:h-[82px] w-auto hidden sm:block"
+            />
+          </Link>
+          <div className="border-l border-white/10 pl-4 py-1 flex flex-col justify-center">
+            <span className="bg-lumi-violet/10 text-lumi-violet text-[9px] font-black px-2 py-0.5 rounded border border-lumi-violet/20 uppercase tracking-widest w-fit">
+              DUEÑO DE PANTALLAS
+            </span>
+            <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-[4px] mt-1">Hola, {userName}</p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 justify-end w-full md:w-auto relative z-10">
@@ -307,11 +335,11 @@ export default async function HostDashboardPage({
                           </div>
                           <div>
                              <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-widest mb-1">Audiencia (Impactos)</p>
-                             <p className="text-2xl font-black font-mono text-white">4,205</p>
+                             <p className="text-2xl font-black font-mono text-white">{totalImpactosPantalla.toLocaleString('es-ES')}</p>
                           </div>
                           <div>
                              <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-widest mb-1">Carga de Hardware</p>
-                             <p className="text-2xl font-black font-mono text-emerald-400">32%</p>
+                             <p className="text-2xl font-black font-mono text-emerald-400">{hardwareLoad}%</p>
                           </div>
                        </div>
                     </div>
